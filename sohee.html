@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sohee Wall - RII7E Project</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+<style>
+body {
+  font-family: 'Playfair Display', serif;
+  background-color:black;
+  background-image:url('https://www.transparenttextures.com/patterns/stardust.png');
+  color:white;
+  margin:0;
+  padding:0;
+  text-align:center;
+}
+header {padding:40px;}
+h1 {color:gold;}
+section {padding:40px;}
+.wall {
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:flex-start;
+  gap:20px;
+  overflow-x:auto;
+  padding-bottom:20px;
+}
+.sticky-note {
+  width:200px;
+  height:150px;
+  background:white;
+  border-radius:15px;
+  padding:10px;
+  position:relative;
+  box-shadow:3px 3px 10px rgba(0,0,0,0.5);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+.sticky-note img {width:100%; border-radius:10px;}
+.sticky-note .text {
+  position:absolute;
+  top:10px;
+  left:10px;
+  right:10px;
+  bottom:30px;
+  overflow-wrap: break-word;
+  color:black;
+  font-size:0.9em;
+  white-space:pre-wrap;
+}
+.frame {border:5px solid #FFFF00; border-radius:15px; background:white;}
+.like-btn {
+  position:absolute;
+  bottom:5px;
+  left:50%;
+  transform:translateX(-50%);
+  padding:5px 10px;
+  cursor:pointer;
+  background:gold;
+  border:none;
+  border-radius:5px;
+  color:black;
+  font-weight:bold;
+}
+footer {
+  padding:30px 0;
+  border-top:2px solid gold;
+  margin-top:50px;
+}
+footer a {color:gold; text-decoration:none;}
+footer a:hover{text-decoration:underline;}
+.delete-btn {
+  position:absolute;
+  top:5px;
+  right:5px;
+  background:red;
+  color:white;
+  border:none;
+  border-radius:5px;
+  padding:3px 7px;
+  cursor:pointer;
+}
+.top-note {
+  border: 5px solid gold;
+  box-shadow: 0 0 15px gold;
+}
+</style>
+</head>
+<body>
+
+<header>
+<h1>SOHEE Wall</h1>
+<p>All submitted sticky notes for Sohee. Give love by clicking ❤!</p>
+<a href="index.html">← Back to Homepage</a>
+</header>
+
+<section class="wall" id="sohee-wall">
+  <!-- Notes will appear here dynamically -->
+</section>
+
+<footer>
+<p>Project organized by <a href="https://x.com/Eclip7e_project" target="_blank">@Eclip7e_project</a></p>
+<img src="LOGO_PLACEHOLDER.png" alt="Logo" height="80">
+</footer>
+
+<script>
+// Config
+const memberName = "sohee";
+const wall = document.getElementById('sohee-wall');
+
+// Load notes from localStorage
+let notes = JSON.parse(localStorage.getItem(memberName) || '[]');
+
+// Identify top note for current week
+const currentWeek = Math.floor((new Date()-new Date('2025-09-01'))/(7*24*60*60*1000))+1;
+
+// Get user's own note ID if exists
+let currentUserNoteId = localStorage.getItem('currentUserNoteId_' + memberName);
+
+// Render notes
+function renderNotes() {
+  wall.innerHTML = '';
+  let maxLikes = -1;
+  let topNoteIndex = -1;
+
+  notes.forEach((note, i) => {
+    if(note.week === currentWeek && note.likes > maxLikes){
+      maxLikes = note.likes;
+      topNoteIndex = i;
+    }
+  });
+
+  notes.forEach((note, i) => {
+    const div = document.createElement('div');
+    div.className = 'sticky-note frame';
+    if(i===topNoteIndex) div.classList.add('top-note');
+
+    div.innerHTML = `
+      <img src="${note.img}" alt="Sticky Note">
+      <div class="text">${note.text}</div>
+      <button class="like-btn" data-id="${i}">❤ ${note.likes || 0}</button>
+    `;
+
+    // Delete button only for your note
+    if(note.id == currentUserNoteId){
+      const deleteBtn = document.createElement('button');
+      deleteBtn.textContent='Delete';
+      deleteBtn.className='delete-btn';
+      deleteBtn.onclick = () => {
+        if(!confirm("Delete your note?")) return;
+        notes = notes.filter(n=>n.id !== note.id);
+        localStorage.setItem(memberName, JSON.stringify(notes));
+        localStorage.removeItem('currentUserNoteId_' + memberName);
+        renderNotes();
+      };
+      div.appendChild(deleteBtn);
+    }
+
+    wall.appendChild(div);
+  });
+
+  // Like functionality (only once per browser)
+  document.querySelectorAll('.like-btn').forEach(btn=>{
+    btn.onclick = (e)=>{
+      const id = e.target.dataset.id;
+      let likedNotes = JSON.parse(localStorage.getItem('likedNotes') || '[]');
+      if(likedNotes.includes(`${memberName}-${id}`)){
+        alert("You've already liked this note!");
+        return;
+      }
+      notes[id].likes = notes[id].likes ? notes[id].likes+1 : 1;
+      localStorage.setItem(memberName, JSON.stringify(notes));
+      likedNotes.push(`${memberName}-${id}`);
+      localStorage.setItem('likedNotes', JSON.stringify(likedNotes));
+      renderNotes();
+    };
+  });
+}
+
+// Initial render
+renderNotes();
+</script>
+
+</body>
+</html>
