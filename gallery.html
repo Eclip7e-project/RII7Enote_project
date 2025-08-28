@@ -1,0 +1,325 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RII7E Fan Gallery</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+<style>
+body {
+  font-family: 'Playfair Display', serif;
+  margin:0; padding:0;
+  background:#111; color:white;
+}
+header {
+  text-align:center; padding:50px 20px; background:black; border-bottom:3px solid gold;
+}
+header h1 {color:gold; font-size:2.5em; letter-spacing:2px; margin-bottom:10px;}
+nav {text-align:center; margin:15px 0;}
+nav a {color:gold; margin:0 10px; text-decoration:none; font-weight:bold;}
+nav a:hover {text-decoration:underline;}
+section {padding:30px;}
+#submission {
+  text-align:center; background:#222; border-radius:15px; padding:20px; box-shadow:0 0 20px rgba(255,215,0,0.3);
+  margin-bottom:40px;
+}
+#submission input, #submission select, #submission button, #submission textarea {
+  margin:5px; padding:10px; border-radius:10px; border:none; font-size:1em;
+}
+#submission button {background:gold; color:black; font-weight:bold; cursor:pointer; transition:0.3s;}
+#submission button:hover {background:#daa520;}
+#search-bar {margin-bottom:30px; text-align:center;}
+#search-bar input {padding:10px; width:220px; border-radius:10px; border:none; font-size:1em;}
+.gallery {
+  display:grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px,1fr));
+  gap:20px;
+}
+.gallery-item {
+  position:relative; cursor:pointer;
+  display:flex; flex-direction:column; color:black;
+  background:white; border-radius:15px; overflow:hidden;
+  box-shadow:0 5px 20px rgba(0,0,0,0.5); transition:0.3s;
+}
+.gallery-item:hover {transform:scale(1.03); box-shadow:0 10px 25px rgba(255,215,0,0.4);}
+.gallery-item img {width:100%; object-fit:cover; height:200px; display:block;}
+.gallery-item .info {padding:10px; display:flex; justify-content:space-between; align-items:center; font-size:0.9em;}
+.gallery-item .info span {font-weight:bold;}
+.gallery-item .info button {padding:5px 8px; font-weight:bold; border:none; border-radius:5px; cursor:pointer; transition:0.2s;}
+.gallery-item .info button:hover {opacity:0.8;}
+.category-label {position:absolute; top:8px; left:8px; background:gold; color:black; padding:3px 7px; border-radius:5px; font-size:0.8em; font-weight:bold;}
+.delete-btn {position:absolute; top:8px; right:8px; background:red; color:white; border:none; border-radius:5px; padding:4px 8px; cursor:pointer; font-weight:bold; z-index:2;}
+
+/* Lightbox / Detail View */
+#lightbox {
+  display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+  background:rgba(0,0,0,0.9); z-index:1000; overflow:auto;
+}
+.lightbox-content {
+  display:flex; flex-wrap:wrap; max-width:1200px; margin:50px auto; background:#111; border-radius:15px; overflow:hidden;
+}
+.lightbox-left {
+  flex:1 1 60%; min-width:300px; max-height:80vh; overflow:hidden;
+}
+.lightbox-left img {width:100%; height:100%; object-fit:contain;}
+.lightbox-right {
+  flex:1 1 40%; min-width:250px; max-height:80vh; overflow-y:auto; background:#222; padding:20px; box-sizing:border-box;
+  display:flex; flex-direction:column;
+}
+.lightbox-right h2 {color:gold; margin-top:0;}
+.lightbox-right .message {font-style:italic; margin-bottom:10px;}
+.lightbox-right .likes-comments {margin-bottom:15px;}
+.lightbox-right .comments {flex:1 1 auto; overflow-y:auto; margin-bottom:15px;}
+.lightbox-right .comments div {padding:5px 8px; margin-bottom:5px; border-radius:5px; background:#333;}
+.lightbox-right textarea {width:100%; border-radius:10px; padding:8px; margin-bottom:5px; border:none;}
+.lightbox-right button {padding:8px 12px; border-radius:10px; border:none; background:gold; color:black; font-weight:bold; cursor:pointer; margin-bottom:5px; transition:0.3s;}
+.lightbox-right button:hover {background:#daa520;}
+#close-lightbox {position:absolute; top:20px; right:20px; font-size:2em; color:white; cursor:pointer; font-weight:bold;}
+.lightbox-right .suggestions {display:flex; flex-wrap:wrap; gap:10px;}
+.lightbox-right .suggestions img {width:60px; height:60px; object-fit:cover; border-radius:10px; cursor:pointer; border:2px solid gold;}
+@media(max-width:800px){
+  .lightbox-content {flex-direction:column;}
+  .lightbox-left, .lightbox-right {flex:1 1 100%; max-height:none;}
+  .lightbox-right {margin-top:10px;}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>RII7E Fan Gallery</h1>
+  <nav>
+    <a href="index.html">HOME</a>
+    <a href="shotaro.html">SHOTARO</a>
+    <a href="eunseok.html">EUNSEOK</a>
+    <a href="sungchan.html">SUNGCHAN</a>
+    <a href="wonbin.html">WONBIN</a>
+    <a href="seunghan.html">SEUNGHAN</a>
+    <a href="sohee.html">SOHEE</a>
+    <a href="anton.html">ANTON</a>
+    <a href="brii7e.html">BRII7E</a>
+  </nav>
+</header>
+
+<section id="submission">
+  <h2>Submit Your Favorite Image</h2>
+  <input type="file" id="imageFile" accept="image/*"><br>
+  <select id="imageMember">
+    <option value="shotaro">SHOTARO</option>
+    <option value="eunseok">EUNSEOK</option>
+    <option value="sungchan">SUNGCHAN</option>
+    <option value="wonbin">WONBIN</option>
+    <option value="seunghan">SEUNGHAN</option>
+    <option value="sohee">SOHEE</option>
+    <option value="anton">ANTON</option>
+    <option value="brii7e">BRII7E</option>
+    <option value="rii7e">RII7E</option>
+    <option value="other">OTHER</option>
+  </select><br>
+  <textarea id="imageMessage" placeholder="Add a message or title (optional)" rows="2"></textarea><br>
+  <button id="submitImage">Submit Image</button>
+  <p id="submitMsg" style="color:gold;"></p>
+</section>
+
+<section id="search-bar">
+  <input type="text" id="searchInput" placeholder="Search by member or category...">
+</section>
+
+<section class="gallery" id="galleryContainer"></section>
+
+<!-- Lightbox -->
+<div id="lightbox">
+  <span id="close-lightbox">&times;</span>
+  <div class="lightbox-content">
+    <div class="lightbox-left">
+      <img id="lightbox-img" src="">
+    </div>
+    <div class="lightbox-right">
+      <h2 id="lightbox-member"></h2>
+      <div class="message" id="lightbox-message"></div>
+      <div class="likes-comments">
+        <button id="lightbox-like">❤ 0</button>
+      </div>
+      <div class="comments" id="lightbox-comments"></div>
+      <textarea id="lightbox-new-comment" placeholder="Add a comment"></textarea>
+      <button id="lightbox-submit-comment">Submit Comment</button>
+      <h3 style="margin-top:10px;">Suggestions</h3>
+      <div class="suggestions" id="lightbox-suggestions"></div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+// ---------------- Setup ----------------
+const galleryContainer = document.getElementById('galleryContainer');
+const submitBtn = document.getElementById('submitImage');
+const imageFile = document.getElementById('imageFile');
+const imageMember = document.getElementById('imageMember');
+const imageMessage = document.getElementById('imageMessage');
+const submitMsg = document.getElementById('submitMsg');
+const searchInput = document.getElementById('searchInput');
+
+const lightbox = document.getElementById('lightbox');
+const closeLightbox = document.getElementById('close-lightbox');
+const lightboxImg = document.getElementById('lightbox-img');
+const lightboxMember = document.getElementById('lightbox-member');
+const lightboxMessage = document.getElementById('lightbox-message');
+const lightboxComments = document.getElementById('lightbox-comments');
+const lightboxNewComment = document.getElementById('lightbox-new-comment');
+const lightboxSubmitComment = document.getElementById('lightbox-submit-comment');
+const lightboxLikeBtn = document.getElementById('lightbox-like');
+const lightboxSuggestions = document.getElementById('lightbox-suggestions');
+
+let currentImage = null;
+
+// ---------------- Helpers ----------------
+function generateID(){ return Date.now().toString() + Math.floor(Math.random()*1000); }
+
+function getGallery() { return JSON.parse(localStorage.getItem('fanGallery')||'[]'); }
+function setGallery(gallery) { localStorage.setItem('fanGallery', JSON.stringify(gallery)); }
+
+function getUserImages() { return JSON.parse(localStorage.getItem('userImages')||'[]'); }
+function setUserImages(arr) { localStorage.setItem('userImages', JSON.stringify(arr)); }
+
+function getLikedGallery() { return JSON.parse(localStorage.getItem('likedGallery')||'[]'); }
+function setLikedGallery(arr) { localStorage.setItem('likedGallery', JSON.stringify(arr)); }
+
+// ---------------- Render Gallery ----------------
+function renderGallery(filter=''){
+  let gallery = getGallery();
+  galleryContainer.innerHTML='';
+  gallery.filter(item=>{
+    return !filter || item.member.toLowerCase().includes(filter.toLowerCase()) 
+           || item.category.toLowerCase().includes(filter.toLowerCase());
+  }).forEach(item=>{
+    const div = document.createElement('div');
+    div.className='gallery-item';
+    div.innerHTML = `
+      <div class="category-label">${item.category.toUpperCase()}</div>
+      <img src="${item.src}">
+      <div class="info">
+        <span>${item.member.toUpperCase()}</span>
+        <span>
+          <button class="like-btn" data-id="${item.id}">❤ ${item.likes||0}</button>
+        </span>
+      </div>
+    `;
+    // Delete button if user owns image
+    let userImages = getUserImages();
+    if(userImages.includes(item.id)){
+      const delBtn = document.createElement('button');
+      delBtn.className='delete-btn';
+      delBtn.textContent='Delete';
+      delBtn.onclick=()=>{
+        if(!confirm('Delete this image?')) return;
+        gallery = gallery.filter(g=>g.id!==item.id);
+        setGallery(gallery);
+        setUserImages(userImages.filter(uid=>uid!==item.id));
+        renderGallery(searchInput.value);
+      };
+      div.appendChild(delBtn);
+    }
+
+    // Open lightbox on click
+    div.querySelector('img').onclick = ()=>openLightbox(item.id);
+    galleryContainer.appendChild(div);
+
+    // Like button
+    div.querySelector('.like-btn').onclick=()=>{
+      let liked = getLikedGallery();
+      if(liked.includes(item.id)){alert("Already liked!"); return;}
+      item.likes = item.likes?item.likes+1:1;
+      let allGallery = getGallery().map(g=>g.id===item.id?item:g);
+      setGallery(allGallery);
+      liked.push(item.id);
+      setLikedGallery(liked);
+      renderGallery(searchInput.value);
+    };
+  });
+}
+
+// ---------------- Image Submission ----------------
+submitBtn.onclick=()=>{
+  const file = imageFile.files[0];
+  if(!file){submitMsg.textContent='Select an image!'; return;}
+  const member = imageMember.value;
+  const message = imageMessage.value.trim();
+  const category = member; // member itself as category
+  const reader = new FileReader();
+  reader.onload = function(e){
+    let gallery = getGallery();
+    const id = generateID();
+    const newItem = {id:id, src:e.target.result, member:member, category:category, message:message, likes:0, comments:[]};
+    gallery.push(newItem);
+    setGallery(gallery);
+    let userImages = getUserImages(); userImages.push(id); setUserImages(userImages);
+    renderGallery(searchInput.value);
+    submitMsg.textContent='Image submitted successfully!';
+    imageFile.value=''; imageMessage.value='';
+  };
+  reader.readAsDataURL(file);
+};
+
+// ---------------- Search ----------------
+searchInput.oninput = ()=>renderGallery(searchInput.value);
+
+// ---------------- Lightbox ----------------
+function openLightbox(id){
+  let gallery = getGallery();
+  const item = gallery.find(g=>g.id===id);
+  if(!item) return;
+  currentImage = item;
+  lightboxImg.src = item.src;
+  lightboxMember.textContent = item.member.toUpperCase();
+  lightboxMessage.textContent = item.message||'';
+  lightboxLikeBtn.textContent = `❤ ${item.likes||0}`;
+
+  // Render comments
+  lightboxComments.innerHTML='';
+  (item.comments||[]).forEach(c=>{
+    const div = document.createElement('div'); div.textContent=c; lightboxComments.appendChild(div);
+  });
+
+  // Render suggestions (other images)
+  lightboxSuggestions.innerHTML='';
+  gallery.filter(g=>g.id!==item.id).slice(0,8).forEach(s=>{
+    const img = document.createElement('img'); img.src=s.src;
+    img.onclick = ()=>openLightbox(s.id);
+    lightboxSuggestions.appendChild(img);
+  });
+
+  lightbox.style.display='block';
+  document.body.style.overflow='hidden';
+}
+
+closeLightbox.onclick = ()=>{lightbox.style.display='none'; document.body.style.overflow='auto';}
+
+// ---------------- Lightbox Comments ----------------
+lightboxSubmitComment.onclick=()=>{
+  const txt = lightboxNewComment.value.trim();
+  if(!txt){alert("Write a comment!"); return;}
+  if(!currentImage.comments) currentImage.comments=[];
+  currentImage.comments.push(txt);
+  lightboxNewComment.value='';
+  renderGallery(searchInput.value);
+  openLightbox(currentImage.id);
+};
+
+// ---------------- Lightbox Likes ----------------
+lightboxLikeBtn.onclick=()=>{
+  let liked = getLikedGallery();
+  if(liked.includes(currentImage.id)){alert("Already liked!"); return;}
+  currentImage.likes = currentImage.likes?currentImage.likes+1:1;
+  let allGallery = getGallery().map(g=>g.id===currentImage.id?currentImage:g);
+  setGallery(allGallery);
+  liked.push(currentImage.id); setLikedGallery(liked);
+  openLightbox(currentImage.id);
+};
+
+// ---------------- Initial Render ----------------
+renderGallery();
+</script>
+</body>
+</html>
