@@ -14,45 +14,47 @@
       color: white;
     }
 
-    /* HEADER WITH SMALLER BANNER */
-    header {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      background: black;
-      border-bottom: 2px solid gold;
-    }
+   /* HEADER WITH SMALLER BANNER */
+header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: black;
+  border-bottom: 2px solid gold;
+}
 
-    header img.banner {
-      width: 100%;
-      height: auto;
-      object-fit: contain;
-      border-bottom: 2px solid gold;
-      display: block;
-      margin: 0 auto;
-      background: black;
-    }
+header img.banner {
+  width: 100%;
+  height: auto; /* Keep full aspect ratio */
+  max-height: none; /* No forced cropping */
+  object-fit: contain; /* Show entire image */
+  border-bottom: 2px solid gold;
+  display: block;
+  margin: 0 auto;
+  background: black; /* Background to fill empty space */
+}
 
-    /* HEADER TEXT BELOW BANNER */
-    .header-text {
-      text-align: center;
-      padding: 20px;
-      max-width: 900px;
-    }
 
-    .header-text h1 {
-      font-size: 2.5rem;
-      color: gold;
-      margin: 10px 0;
-      text-shadow: 2px 2px 5px rgba(0,0,0,0.7);
-    }
+/* HEADER TEXT BELOW BANNER */
+.header-text {
+  text-align: center;
+  padding: 20px;
+}
 
-    .header-text p {
-      font-size: 1rem;
-      margin: 0 auto;
-      color: white;
-      text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
-    }
+.header-text h1 {
+  font-size: 2.5rem; /* Smaller title */
+  color: gold;
+  margin: 10px 0;
+  text-shadow: 2px 2px 5px rgba(0,0,0,0.7);
+}
+
+.header-text p {
+  max-width: 700px;
+  font-size: 1rem;
+  margin: 0 auto;
+  color: white;
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
+}
 
     /* NAVIGATION SECTION */
     nav {
@@ -131,37 +133,6 @@
       position: absolute; top: 0; right: 0; background: red;
       color: white; border: none; cursor: pointer;
     }
-
-    /* INFO & GUIDELINES */
-    #info-section {
-      padding: 40px; 
-      background: #111; 
-      margin-top: 50px; 
-      border-top: 2px solid gold;
-      border-radius: 12px;
-      max-width: 900px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-    #info-section h2 {color: gold; text-align: center; margin-bottom: 20px;}
-    #info-section h3 {color: gold; margin-top: 30px; margin-bottom: 10px; text-align: left;}
-    #info-section p {line-height: 1.6; text-align: left;}
-    #info-section ul {padding-left: 20px; list-style: disc; margin-bottom: 20px;}
-    #info-section li {margin-bottom: 8px; line-height: 1.5;}
-    #info-section a.btn-placeholder {
-      display: inline-block;
-      margin-top: 15px;
-      padding: 10px 18px;
-      background: gold;
-      color: black;
-      font-weight: bold;
-      border-radius: 8px;
-      text-decoration: none;
-    }
-    #info-section a.btn-placeholder:hover {
-      background: #d4af37cc;
-    }
-
   </style>
 </head>
 <body>
@@ -229,6 +200,7 @@
   <div id="designContainer" class="design-container"></div>
 </section>
 
+
 <!-- INFO SECTION -->
 <section id="info-section">
   <h2>Info & Guidelines</h2>
@@ -258,6 +230,8 @@
   <a href="YOUR_GOOGLE_FORM_LINK" target="_blank" class="btn-placeholder">📋 Submit Feedback</a>
 </section>
 
+
+
 <!-- FOOTER -->
 <footer>
   <p>Project organized by <a href="https://x.com/Eclip7e_project" target="_blank">@Eclip7e_project</a></p>
@@ -276,9 +250,131 @@
 </div>
 
 <script>
-  // JS unchanged from previous version (members array, modal, note submission, design submission)
-</script>
+  // JS from your version (unchanged for functionality)
+  const members = [
+    {name:'shotaro', color:'#8B0000', container:'shotaro-selection'},
+    {name:'eunseok', color:'#D3D3D3', container:'eunseok-selection'},
+    {name:'sungchan', color:'#008000', container:'sungchan-selection'},
+    {name:'wonbin', color:'#FF0000', container:'wonbin-selection'},
+    {name:'seunghan', color:'#0000FF', container:'seunghan-selection'},
+    {name:'sohee', color:'#FFFF00', container:'sohee-selection'},
+    {name:'anton', color:'#1E3A5F', container:'anton-selection'},
+    {name:'brii7e', color:'#FFA500', container:'brii7e-selection'}
+  ];
+  const modal = document.getElementById('modal');
+  const modalClose = document.getElementById('modal-close');
+  const modalMember = document.getElementById('modal-member');
+  const modalImg = document.getElementById('modal-img');
+  const noteText = document.getElementById('note-text');
+  const submitBtn = document.getElementById('submitNote');
 
+  let currentMember = '';
+  let currentImg = '';
+
+  function renderSelectionWall(memberName){
+    const containerDiv = document.querySelector(`#${memberName}-selection .wall`);
+    containerDiv.innerHTML = '';
+    const defaultCount = 2;
+    for(let i=1; i<=defaultCount; i++){
+      const div = document.createElement('div');
+      div.className = 'sticky-note';
+      const color = members.find(m => m.name === memberName).color;
+      div.style.borderColor = color;
+      const imgFile = `${memberName}${i}.png`;
+      div.innerHTML = `<img src="${imgFile}" alt="${memberName} note ${i}">`;
+      div.onclick = () => openModal(memberName, imgFile);
+      containerDiv.appendChild(div);
+    }
+    let designs = JSON.parse(localStorage.getItem(memberName + '_designs') || '[]');
+    designs.forEach(src => {
+      const div = document.createElement('div');
+      div.className = 'sticky-note';
+      div.style.borderColor = members.find(m => m.name === memberName).color;
+      div.innerHTML = `<img src="${src}">`;
+      div.onclick = () => openModal(memberName, src);
+      containerDiv.appendChild(div);
+    });
+  }
+
+  function openModal(memberName, imgSrc){
+    modal.style.display = 'block';
+    modalMember.textContent = memberName.toUpperCase();
+    modalImg.src = imgSrc;
+    currentMember = memberName;
+    currentImg = imgSrc;
+  }
+
+  members.forEach(m => renderSelectionWall(m.name));
+  modalClose.onclick = () => {modal.style.display = 'none';};
+  window.onclick = e => {if(e.target == modal) modal.style.display = 'none';};
+
+  function getCurrentWeek(){
+    const startDate = new Date('2025-09-01');
+    const now = new Date();
+    return Math.floor((now-startDate)/(7*24*60*60*1000)) + 1;
+  }
+
+  submitBtn.onclick = () => {
+    const text = noteText.value.trim();
+    if(!text){alert("Write something!"); return;}
+    const week = getCurrentWeek();
+    let notes = JSON.parse(localStorage.getItem(currentMember) || '[]');
+    notes.push({img: currentImg, text: text, likes: 0, week: week});
+    localStorage.setItem(currentMember, JSON.stringify(notes));
+    noteText.value = '';
+    modal.style.display = 'none';
+    alert(`Your note has been submitted to ${currentMember.toUpperCase()}'s wall!`);
+  };
+
+  const submitDesignBtn = document.getElementById('submitDesign');
+  const designFileInput = document.getElementById('design-file');
+  const designMember = document.getElementById('design-member');
+  const designMsg = document.getElementById('design-msg');
+
+  submitDesignBtn.onclick = () => {
+    const file = designFileInput.files[0];
+    const member = designMember.value;
+    if(!file){designMsg.textContent='Select a file!'; return;}
+    const reader = new FileReader();
+    reader.onload = function(e){
+      let designs = JSON.parse(localStorage.getItem(member+'_designs') || '[]');
+      designs.push(e.target.result);
+      localStorage.setItem(member+'_designs', JSON.stringify(designs));
+      designMsg.textContent = 'Design submitted successfully!';
+      designFileInput.value = '';
+      renderSelectionWall(member);
+      renderDesigns();
+    };
+    reader.readAsDataURL(file);
+  };
+
+  function renderDesigns() {
+    const container = document.getElementById('designContainer');
+    container.innerHTML = '';
+    members.forEach(member => {
+      let designs = JSON.parse(localStorage.getItem(member.name+'_designs') || '[]');
+      designs.forEach((src,index)=>{
+        const div=document.createElement('div');
+        const img=document.createElement('img');
+        img.src=src;
+        img.style.border='2px solid '+member.color;
+        div.appendChild(img);
+        const delBtn=document.createElement('button');
+        delBtn.textContent='Delete';
+        delBtn.onclick=()=>{
+          if(!confirm('Delete this design?')) return;
+          designs.splice(index,1);
+          localStorage.setItem(member.name+'_designs', JSON.stringify(designs));
+          renderSelectionWall(member.name);
+          renderDesigns();
+        };
+        div.appendChild(delBtn);
+        container.appendChild(div);
+      });
+    });
+  }
+  renderDesigns();
+</script>
 </body>
 </html>
 
