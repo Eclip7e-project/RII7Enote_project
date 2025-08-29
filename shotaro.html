@@ -15,16 +15,52 @@ body {
   padding:0;
   text-align:center;
 }
-header {padding:40px;}
-h1 {color:gold;}
-section {padding:40px;}
-.wall {
+
+/* HEADER: Title and Description */
+.header-section {
+  padding:40px 20px 20px 20px;
+}
+.header-section h1 {
+  color: gold;
+  font-size:2.5rem;
+  margin-bottom:10px;
+  text-shadow: 2px 2px 5px rgba(0,0,0,0.7);
+}
+.header-section p {
+  max-width:700px;
+  margin:0 auto;
+  color:white;
+  font-size:1rem;
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
+}
+
+/* HERO MINI SUBSECTION: Member Pics */
+.hero-mini-section {
+  display:flex;
+  justify-content:center;
+  gap:20px;
+  padding:20px 0;
+  background-color:#222; /* neutral dark background */
+  border-radius:15px;
+  margin: 20px auto;
+  max-width:800px;
+}
+.hero-mini-section img {
+  width:150px;
+  height:150px;
+  border:4px solid #8B0000; /* Shotaro border color */
+  border-radius:12px;
+  object-fit:cover;
+}
+
+/* WALL STYLING */
+section.wall {
   display:flex;
   flex-wrap:wrap;
   justify-content:flex-start;
   gap:20px;
   overflow-x:auto;
-  padding-bottom:20px;
+  padding:20px;
 }
 .sticky-note {
   width:200px; 
@@ -64,13 +100,6 @@ section {padding:40px;}
   color:black; 
   font-weight:bold;
 }
-footer {
-  padding:30px 0; 
-  border-top:2px solid gold; 
-  margin-top:50px;
-}
-footer a {color:gold; text-decoration:none;}
-footer a:hover{text-decoration:underline;}
 .delete-btn {
   position:absolute;
   top:5px;
@@ -87,67 +116,56 @@ footer a:hover{text-decoration:underline;}
   box-shadow: 0 0 15px gold;
 }
 
-/* HERO MINI SECTION */
-.hero-mini {
-  display:flex;
-  justify-content:center;
-  gap:20px;
-  margin-bottom:30px;
+/* FOOTER */
+footer {
+  padding:30px 0; 
+  border-top:2px solid gold; 
+  margin-top:50px;
 }
-.hero-mini img {
-  width:120px;
-  height:120px;
-  border:4px solid #8B0000; /* Shotaro color */
-  border-radius:12px;
-  object-fit:cover;
-}
+footer a {color:gold; text-decoration:none;}
+footer a:hover{text-decoration:underline;}
 </style>
 </head>
 <body>
 
-<header>
-<h1>Shotaro Wall</h1>
-<p>All submitted sticky notes for Shotaro. Give love by clicking ❤!</p>
-<a href="index.html">← Back to Homepage</a>
-</header>
+<!-- HEADER -->
+<div class="header-section">
+  <h1>Shotaro Wall</h1>
+  <p>All submitted sticky notes for Shotaro. Give love by clicking ❤!</p>
+  <a href="index.html" style="color:gold; text-decoration:underline;">← Back to Homepage</a>
+</div>
 
-<!-- HERO MINI SECTION -->
-<section class="hero-mini">
+<!-- HERO MINI SUBSECTION -->
+<div class="hero-mini-section">
   <img src="placeholder1.jpg" alt="Shotaro image 1">
   <img src="placeholder2.jpg" alt="Shotaro image 2">
   <img src="placeholder3.jpg" alt="Shotaro image 3">
-</section>
+</div>
 
+<!-- STICKY NOTE WALL -->
 <section class="wall" id="shotaro-wall">
   <!-- Notes will appear here dynamically -->
 </section>
 
+<!-- FOOTER -->
 <footer>
-<p>Project organized by <a href="https://x.com/Eclip7e_project" target="_blank">@Eclip7e_project</a></p>
-<img src="logo.png" alt="Logo" height="80">
+  <p>Project organized by <a href="https://x.com/Eclip7e_project" target="_blank">@Eclip7e_project</a></p>
+  <img src="logo.png" alt="Logo" height="80">
 </footer>
 
 <script>
 // Config
 const memberName = "shotaro";
 const wall = document.getElementById('shotaro-wall');
-
-// Load notes from localStorage
 let notes = JSON.parse(localStorage.getItem(memberName) || '[]');
-
-// Identify top note for current week
 const currentWeek = Math.floor((new Date()-new Date('2025-09-01'))/(7*24*60*60*1000))+1;
-
-// Get user's own note ID if exists
 let currentUserNoteId = localStorage.getItem('currentUserNoteId_' + memberName);
 
-// Render notes
 function renderNotes() {
   wall.innerHTML = '';
   let maxLikes = -1;
   let topNoteIndex = -1;
 
-  // Find top note this week
   notes.forEach((note, i) => {
     if(!note.deleted && note.week === currentWeek && note.likes > maxLikes){
       maxLikes = note.likes;
@@ -202,11 +220,12 @@ function renderNotes() {
   });
 }
 
-// Initial render
 renderNotes();
 </script>
 
 </body>
 </html>
+
+
 
 
