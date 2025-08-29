@@ -86,6 +86,21 @@ footer a:hover{text-decoration:underline;}
   border: 5px solid gold;
   box-shadow: 0 0 15px gold;
 }
+
+/* HERO MINI SECTION */
+.hero-mini {
+  display:flex;
+  justify-content:center;
+  gap:20px;
+  margin-bottom:30px;
+}
+.hero-mini img {
+  width:120px;
+  height:120px;
+  border:4px solid #8B0000; /* Shotaro color */
+  border-radius:12px;
+  object-fit:cover;
+}
 </style>
 </head>
 <body>
@@ -95,6 +110,13 @@ footer a:hover{text-decoration:underline;}
 <p>All submitted sticky notes for Shotaro. Give love by clicking ❤!</p>
 <a href="index.html">← Back to Homepage</a>
 </header>
+
+<!-- HERO MINI SECTION -->
+<section class="hero-mini">
+  <img src="placeholder1.jpg" alt="Shotaro image 1">
+  <img src="placeholder2.jpg" alt="Shotaro image 2">
+  <img src="placeholder3.jpg" alt="Shotaro image 3">
+</section>
 
 <section class="wall" id="shotaro-wall">
   <!-- Notes will appear here dynamically -->
@@ -134,7 +156,7 @@ function renderNotes() {
   });
 
   notes.forEach((note, i) => {
-    if(note.deleted) return; // skip deleted notes
+    if(note.deleted) return;
 
     const div = document.createElement('div');
     div.className = 'sticky-note frame';
@@ -146,7 +168,6 @@ function renderNotes() {
       <button class="like-btn" data-id="${i}">❤ ${note.likes || 0}</button>
     `;
 
-    // Delete button only for your note
     if(note.id == currentUserNoteId){
       const deleteBtn = document.createElement('button');
       deleteBtn.textContent='Delete';
@@ -164,7 +185,6 @@ function renderNotes() {
     wall.appendChild(div);
   });
 
-  // Like functionality (only once per browser)
   document.querySelectorAll('.like-btn').forEach(btn=>{
     btn.onclick = (e)=>{
       const id = e.target.dataset.id;
@@ -188,4 +208,5 @@ renderNotes();
 
 </body>
 </html>
+
 
