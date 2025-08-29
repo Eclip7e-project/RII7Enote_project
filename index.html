@@ -25,10 +25,15 @@ header {
 
 header img.banner {
   width: 100%;
-  max-height: 200px; /* 🔥 Shrinks banner height */
-  object-fit: cover;
+  height: auto; /* Keep full aspect ratio */
+  max-height: none; /* No forced cropping */
+  object-fit: contain; /* Show entire image */
   border-bottom: 2px solid gold;
+  display: block;
+  margin: 0 auto;
+  background: black; /* Background to fill empty space */
 }
+
 
 /* HEADER TEXT BELOW BANNER */
 .header-text {
@@ -357,6 +362,7 @@ header img.banner {
 </script>
 </body>
 </html>
+
 
 
 
