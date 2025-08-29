@@ -1,383 +1,510 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>RII7E Sticky Notes Project</title>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
   <style>
-    body {
-      margin: 0;
-      font-family: 'Playfair Display', serif;
-      background-color: black;
-      background-image: url('https://www.transparenttextures.com/patterns/stardust.png');
-      color: white;
+    :root{
+      --gold:#d4af37;
+      --gold-soft:rgba(212,175,55,0.35);
+      --bg:#000;
+      --ink:#fff;
+      --panel:#111;
+      --panel-2:#1a1a1a;
     }
 
-   /* HEADER WITH SMALLER BANNER */
-header {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  background: black;
-  border-bottom: 2px solid gold;
-}
-
-header img.banner {
-  width: 100%;
-  height: auto; /* Keep full aspect ratio */
-  max-height: none; /* No forced cropping */
-  object-fit: contain; /* Show entire image */
-  border-bottom: 2px solid gold;
-  display: block;
-  margin: 0 auto;
-  background: black; /* Background to fill empty space */
-}
-
-
-/* HEADER TEXT BELOW BANNER */
-.header-text {
-  text-align: center;
-  padding: 20px;
-}
-
-.header-text h1 {
-  font-size: 2.5rem; /* Smaller title */
-  color: gold;
-  margin: 10px 0;
-  text-shadow: 2px 2px 5px rgba(0,0,0,0.7);
-}
-
-.header-text p {
-  max-width: 700px;
-  font-size: 1rem;
-  margin: 0 auto;
-  color: white;
-  text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
-}
-
-    /* NAVIGATION SECTION */
-    nav {
-      background: #111;
-      border-bottom: 2px solid gold;
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      padding: 15px 0;
-      position: sticky;
-      top: 0;
-      z-index: 50;
+    /* Base */
+    html,body{height:100%;}
+    body{
+      margin:0;
+      font-family:'Playfair Display', serif;
+      background: var(--bg) url('https://www.transparenttextures.com/patterns/stardust.png');
+      color:var(--ink);
     }
-    nav a {
-      color: gold;
-      text-decoration: none;
-      margin: 0 12px;
-      font-weight: bold;
-      font-size: 1rem;
-      transition: color 0.3s ease;
+    a{color:var(--gold);}
+
+    /* HEADER (banner on top, text below) */
+    header{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      background:#000;
+      border-bottom:2px solid var(--gold);
     }
-    nav a:hover {
-      color: white;
-      text-decoration: underline;
+    header img.banner{
+      width:100%;
+      height:auto;               /* show full 1500x500 image without crop */
+      object-fit:contain;
+      display:block;
+      border-bottom:2px solid var(--gold);
+      background:#000;
+    }
+    .header-text{
+      text-align:center;
+      padding:20px 16px 28px;
+      max-width:900px;
+    }
+    .header-text h1{
+      font-size:2.25rem;
+      color:var(--gold);
+      margin:8px 0 10px;
+      letter-spacing:0.5px;
+      text-shadow:2px 2px 6px rgba(0,0,0,0.6);
+    }
+    .header-text p{
+      font-size:1rem;
+      line-height:1.55;
+      margin:0 auto;
+      max-width:760px;
+      color:#fff;
+      text-shadow:1px 1px 3px rgba(0,0,0,0.5);
     }
 
-    section {padding: 30px;}
-    .member-section {margin-top: 50px;}
-    h2, h3 {margin-bottom: 20px; text-align: center;}
+    /* NAV (sticky under header) */
+    nav{
+      position:sticky; top:0; z-index:50;
+      background:var(--panel);
+      border-bottom:2px solid var(--gold);
+      display:flex; justify-content:center; gap:16px;
+      padding:12px 10px; flex-wrap:wrap;
+      box-shadow:0 6px 16px rgba(0,0,0,0.35);
+    }
+    nav a{
+      color:var(--gold);
+      text-decoration:none;
+      font-weight:bold;
+      font-size:0.98rem;
+      padding:4px 2px;
+      transition:color .2s ease, transform .15s ease;
+    }
+    nav a:hover{ color:#fff; text-decoration:underline; transform: translateY(-1px); }
 
-    .wall {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 20px;
-    }
-    .sticky-note {
-      width: 150px; min-height: 150px;
-      background: white; border-radius: 15px;
-      padding: 10px; box-shadow: 3px 3px 10px rgba(0,0,0,0.5);
-      display: flex; flex-direction: column;
-      align-items: center; position: relative;
-      cursor: pointer;
-    }
-    .sticky-note img {width: 100%; border-radius: 10px;}
-    .sticky-note .text {color: black; margin-top: 5px; white-space: pre-wrap;}
-    button {padding: 8px 12px; margin-top: 5px; cursor: pointer;}
-    footer {padding: 30px 0; border-top: 2px solid gold; margin-top: 50px; text-align: center;}
-    footer a {color: gold; text-decoration: none;}
-    footer a:hover{text-decoration: underline;}
+    /* Sections */
+    section{ padding:30px 16px; }
+    h2,h3{ text-align:center; margin:0 0 18px; }
 
-    /* MODAL STYLING */
-    .modal {
-      display: none; position: fixed; z-index: 100; left: 0; top: 0;
-      width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.8);
+    /* Sticky note selection walls */
+    .member-section{ margin-top:42px; }
+    .wall{
+      display:flex; flex-wrap:wrap; justify-content:center; gap:20px;
+      max-width:1100px; margin:0 auto;
     }
-    .modal-content {
-      background-color: #fefefe; margin: 5% auto; padding: 20px; border-radius: 15px;
-      width: 90%; max-width: 700px; position: relative;
+    .sticky-note{
+      width:150px; min-height:150px;
+      background:#fff; border-radius:15px; border:2px solid transparent;
+      padding:10px; box-shadow:3px 6px 14px rgba(0,0,0,0.5);
+      display:flex; flex-direction:column; align-items:center; gap:6px;
+      cursor:pointer; transition:transform .2s ease, box-shadow .2s ease;
     }
-    .close {
-      position: absolute; top: 10px; right: 20px; color: black;
-      font-size: 28px; font-weight: bold; cursor: pointer;
-    }
-    textarea {
-      width: 100%; margin-top: 10px; padding: 8px;
-      border-radius: 10px; resize: none;
+    .sticky-note:hover{ transform:translateY(-2px); box-shadow:6px 10px 20px rgba(0,0,0,0.6); }
+    .sticky-note img{ width:100%; border-radius:10px; display:block; }
+    .note-fallback{
+      width:100%; height:100px; border-radius:10px;
+      display:grid; place-items:center;
+      background:linear-gradient(135deg, var(--gold-soft), rgba(255,255,255,0.85));
+      color:#111; font-weight:700; letter-spacing:1px;
     }
 
-    .design-container img {
-      width: 100px; border-radius: 10px; border: 2px solid;
-      margin: 5px;
+    button{ padding:8px 12px; margin-top:5px; cursor:pointer; }
+
+    /* Design management preview */
+    .design-container{ max-width:1100px; margin:0 auto; }
+    .design-container img{
+      width:100px; border-radius:10px; border:2px solid; margin:5px;
     }
-    .design-container div {display: inline-block; position: relative; margin: 5px;}
-    .design-container button {
-      position: absolute; top: 0; right: 0; background: red;
-      color: white; border: none; cursor: pointer;
+    .design-container div{ display:inline-block; position:relative; margin:5px; }
+    .design-container button{
+      position:absolute; top:0; right:0;
+      background:#c21; color:#fff; border:none; cursor:pointer;
+      padding:4px 8px; border-radius:8px 0 8px 0;
     }
+
+    /* Modal */
+    .modal{
+      display:none; position:fixed; inset:0; z-index:100;
+      background:rgba(0,0,0,0.8);
+      overflow:auto;
+    }
+    .modal-content{
+      background:#fefefe; color:#111;
+      margin:4% auto; padding:20px; border-radius:15px;
+      width:90%; max-width:700px; position:relative;
+      box-shadow:0 10px 30px rgba(0,0,0,0.5);
+    }
+    .close{
+      position:absolute; top:10px; right:16px;
+      color:#000; font-size:28px; font-weight:700; cursor:pointer;
+    }
+    textarea{
+      width:100%; margin-top:10px; padding:10px;
+      border-radius:10px; resize:none; border:1px solid #ddd;
+      font-family:inherit;
+    }
+
+    /* Info & Guidelines (centered + aligned) */
+    #info-guidelines{
+      background:var(--panel);
+      border-top:2px solid var(--gold);
+      border-bottom:2px solid var(--gold);
+      margin:56px auto 20px;
+      padding:42px 18px;
+      border-radius:16px;
+      box-shadow:0 0 18px var(--gold-soft);
+      max-width:1000px;
+    }
+    #info-guidelines .inner{
+      max-width:880px; margin:0 auto;
+    }
+    #info-guidelines h2{
+      color:var(--gold); font-size:2rem; margin-bottom:16px;
+    }
+    #info-guidelines h3{
+      color:var(--gold); text-align:left; margin:22px 0 10px;
+    }
+    #info-guidelines p{
+      margin:0 auto 10px; line-height:1.6; text-align:left;
+      color:#eee;
+    }
+    #info-guidelines ul{
+      list-style:none; padding:0; margin:0 0 6px;
+    }
+    #info-guidelines li{
+      background:var(--panel-2);
+      margin:8px 0; padding:10px 12px;
+      border-radius:12px;
+      border-left:4px solid var(--gold);
+      text-align:left; line-height:1.45;
+    }
+
+    /* Big feedback button */
+    .btn{
+      display:inline-block; text-decoration:none; font-weight:700;
+      padding:12px 18px; border-radius:12px; border:2px solid var(--gold);
+      transition:transform .15s ease, box-shadow .2s ease, background .2s ease, color .2s ease;
+    }
+    .btn-gold{
+      background:transparent; color:var(--gold);
+      box-shadow:0 0 0 rgba(0,0,0,0);
+    }
+    .btn-gold:hover{
+      background:var(--gold); color:#111; transform:translateY(-1px);
+      box-shadow:0 6px 18px rgba(212,175,55,0.35);
+    }
+
+    /* Footer */
+    footer{
+      padding:30px 0; border-top:2px solid var(--gold);
+      margin-top:50px; text-align:center;
+    }
+    footer a{ color:var(--gold); text-decoration:none; }
+    footer a:hover{ text-decoration:underline; }
   </style>
 </head>
 <body>
 
-<!-- HEADER -->
-<header>
-  <img src="banner2.jpg" alt="Banner" class="banner">
-  <div class="header-text">
-    <h1>RII7E Sticky Notes Project</h1>
-    <p>Pick a sticky note for your favorite member, write your message, and submit! 
-       Your message will appear on the member’s wall instantly. Weekly top-liked notes 
-       will be highlighted.</p>
+  <!-- HEADER (banner image + title/info) -->
+  <header>
+    <img src="banner2.jpg" alt="RII7E Project Banner" class="banner">
+    <div class="header-text">
+      <h1>RII7E Sticky Notes Project</h1>
+      <p>
+        Pick a sticky note for your favorite member, write your message, and submit!
+        Your message will appear on the member’s wall instantly. Weekly top-liked notes will be highlighted.
+      </p>
+    </div>
+  </header>
+
+  <!-- NAVIGATION -->
+  <nav>
+    <a href="shotaro.html">SHOTARO</a>
+    <a href="eunseok.html">EUNSEOK</a>
+    <a href="sungchan.html">SUNGCHAN</a>
+    <a href="wonbin.html">WONBIN</a>
+    <a href="seunghan.html">SEUNGHAN</a>
+    <a href="sohee.html">SOHEE</a>
+    <a href="anton.html">ANTON</a>
+    <a href="brii7e.html">BRII7E</a>
+    <a href="favorites.html">FAVORITES</a>
+    <a href="gallery.html">GALLERY</a>
+  </nav>
+
+  <!-- STICKY NOTE SELECTION -->
+  <section id="note-selection">
+    <h2>Pick a Sticky Note</h2>
+
+    <div class="member-section" id="shotaro-selection">
+      <h3>SHOTARO</h3><div class="wall"></div>
+    </div>
+    <div class="member-section" id="eunseok-selection">
+      <h3>EUNSEOK</h3><div class="wall"></div>
+    </div>
+    <div class="member-section" id="sungchan-selection">
+      <h3>SUNGCHAN</h3><div class="wall"></div>
+    </div>
+    <div class="member-section" id="wonbin-selection">
+      <h3>WONBIN</h3><div class="wall"></div>
+    </div>
+    <div class="member-section" id="seunghan-selection">
+      <h3>SEUNGHAN</h3><div class="wall"></div>
+    </div>
+    <div class="member-section" id="sohee-selection">
+      <h3>SOHEE</h3><div class="wall"></div>
+    </div>
+    <div class="member-section" id="anton-selection">
+      <h3>ANTON</h3><div class="wall"></div>
+    </div>
+    <div class="member-section" id="brii7e-selection">
+      <h3>BRII7E</h3><div class="wall"></div>
+    </div>
+  </section>
+
+  <!-- DESIGN SUBMISSION -->
+  <section id="design-submission">
+    <h2>Submit Your Sticky Note Design</h2>
+    <p>Upload your design so other fans can use it!</p>
+    <input type="file" id="design-file" accept="image/*">
+    <select id="design-member">
+      <option value="shotaro">SHOTARO</option>
+      <option value="eunseok">EUNSEOK</option>
+      <option value="sungchan">SUNGCHAN</option>
+      <option value="wonbin">WONBIN</option>
+      <option value="seunghan">SEUNGHAN</option>
+      <option value="sohee">SOHEE</option>
+      <option value="anton">ANTON</option>
+      <option value="brii7e">BRII7E</option>
+    </select>
+    <button id="submitDesign">Submit Design</button>
+    <p id="design-msg" style="color:var(--gold);"></p>
+  </section>
+
+  <!-- DESIGN MANAGEMENT -->
+  <section id="design-management">
+    <h2>Manage Your Designs</h2>
+    <div id="designContainer" class="design-container"></div>
+  </section>
+
+  <!-- INFO & GUIDELINES (centered + aligned + Google Form placeholder) -->
+  <section id="info-guidelines">
+    <div class="inner">
+      <h2>ℹ️ Info & Guidelines</h2>
+      <p>Welcome to the <strong>RII7E Sticky Notes Project</strong> & <strong>Fan Gallery</strong>! Here’s everything you need to know:</p>
+
+      <h3>📝 Sticky Notes Project</h3>
+      <ul>
+        <li>Pick a sticky note for your favorite member and write your message (up to 300 characters).</li>
+        <li>Your submitted note appears instantly on that member’s wall.</li>
+        <li>You can <strong>delete your own submissions</strong> via the delete button on your note.</li>
+        <li>Show love by clicking ❤️ — each browser can only like a note once.</li>
+        <li><strong>Weekly top-liked notes</strong> are highlighted in gold and featured on the Favorites page.</li>
+        <li>If you’re the creator of a top-liked note, click it to unlock a hidden surprise!</li>
+        <li>We upload <strong>new sticky note designs every two weeks</strong>. Keep an eye out for fresh drops.</li>
+      </ul>
+
+      <h3>🖼 Fan Gallery</h3>
+      <ul>
+        <li>Upload <strong>images, fan art, and RII7E-related content</strong> to share with the community.</li>
+        <li>Click on any image to open full view — leave comments and like it there.</li>
+        <li>Discover <strong>personalized suggestions</strong> under each photo.</li>
+        <li>You can delete your own uploaded images anytime.</li>
+        <li>Gallery supports <strong>projects, edits, and other creative content</strong> — be creative!</li>
+      </ul>
+
+      <h3>💡 Suggest Improvements</h3>
+      <p>We want your feedback! Please use the form below to tell us what you’d love to see here:</p>
+      <p style="text-align:center;">
+        <a class="btn btn-gold" href="YOUR_GOOGLE_FORM_LINK" target="_blank" rel="noopener">
+          📋 Submit Feedback (Google Form)
+        </a>
+      </p>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>Project organized by <a href="https://x.com/Eclip7e_project" target="_blank">@Eclip7e_project</a></p>
+    <img src="logo.png" alt="Logo" height="80">
+  </footer>
+
+  <!-- MODAL -->
+  <div id="modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-member">
+    <div class="modal-content">
+      <span class="close" id="modal-close" aria-label="Close">&times;</span>
+      <h3 id="modal-member">Member</h3>
+      <img id="modal-img" src="" alt="Sticky Note" style="width:100%; border-radius:10px;">
+      <textarea id="note-text" rows="5" maxlength="300" placeholder="Write your message (max 300 chars)"></textarea>
+      <button id="submitNote">Submit</button>
+    </div>
   </div>
-</header>
 
-<!-- NAVIGATION -->
-<nav>
-  <a href="shotaro.html">SHOTARO</a>
-  <a href="eunseok.html">EUNSEOK</a>
-  <a href="sungchan.html">SUNGCHAN</a>
-  <a href="wonbin.html">WONBIN</a>
-  <a href="seunghan.html">SEUNGHAN</a>
-  <a href="sohee.html">SOHEE</a>
-  <a href="anton.html">ANTON</a>
-  <a href="brii7e.html">BRII7E</a>
-  <a href="favorites.html">FAVORITES</a>
-  <a href="gallery.html">GALLERY</a>
-</nav>
+  <script>
+    /* --- Members config --- */
+    const members = [
+      {name:'shotaro',  color:'#8B0000', container:'shotaro-selection'},
+      {name:'eunseok',  color:'#D3D3D3', container:'eunseok-selection'},
+      {name:'sungchan', color:'#008000', container:'sungchan-selection'},
+      {name:'wonbin',   color:'#FF0000', container:'wonbin-selection'},
+      {name:'seunghan', color:'#0000FF', container:'seunghan-selection'},
+      {name:'sohee',    color:'#FFFF00', container:'sohee-selection'},
+      {name:'anton',    color:'#1E3A5F', container:'anton-selection'},
+      {name:'brii7e',   color:'#FFA500', container:'brii7e-selection'}
+    ];
 
-<!-- STICKY NOTE SECTIONS -->
-<section id="note-selection">
-  <h2>Pick a Sticky Note</h2>
-  <div class="member-section" id="shotaro-selection"><h3>SHOTARO</h3><div class="wall"></div></div>
-  <div class="member-section" id="eunseok-selection"><h3>EUNSEOK</h3><div class="wall"></div></div>
-  <div class="member-section" id="sungchan-selection"><h3>SUNGCHAN</h3><div class="wall"></div></div>
-  <div class="member-section" id="wonbin-selection"><h3>WONBIN</h3><div class="wall"></div></div>
-  <div class="member-section" id="seunghan-selection"><h3>SEUNGHAN</h3><div class="wall"></div></div>
-  <div class="member-section" id="sohee-selection"><h3>SOHEE</h3><div class="wall"></div></div>
-  <div class="member-section" id="anton-selection"><h3>ANTON</h3><div class="wall"></div></div>
-  <div class="member-section" id="brii7e-selection"><h3>BRII7E</h3><div class="wall"></div></div>
-</section>
+    const modal       = document.getElementById('modal');
+    const modalClose  = document.getElementById('modal-close');
+    const modalMember = document.getElementById('modal-member');
+    const modalImg    = document.getElementById('modal-img');
+    const noteText    = document.getElementById('note-text');
+    const submitBtn   = document.getElementById('submitNote');
 
-<!-- DESIGN SUBMISSION -->
-<section id="design-submission">
-  <h2>Submit Your Sticky Note Design</h2>
-  <p>Upload your design so other fans can use it!</p>
-  <input type="file" id="design-file" accept="image/*">
-  <select id="design-member">
-    <option value="shotaro">SHOTARO</option>
-    <option value="eunseok">EUNSEOK</option>
-    <option value="sungchan">SUNGCHAN</option>
-    <option value="wonbin">WONBIN</option>
-    <option value="seunghan">SEUNGHAN</option>
-    <option value="sohee">SOHEE</option>
-    <option value="anton">ANTON</option>
-    <option value="brii7e">BRII7E</option>
-  </select>
-  <button id="submitDesign">Submit Design</button>
-  <p id="design-msg" style="color:gold;"></p>
-</section>
+    let currentMember = '';
+    let currentImg    = '';
 
-<!-- DESIGN MANAGEMENT -->
-<section id="design-management">
-  <h2>Manage Your Designs</h2>
-  <div id="designContainer" class="design-container"></div>
-</section>
-
-<!-- INFO SECTION -->
-<section id="info-section" style="padding:40px; background:#111; margin-top:50px; border-top:2px solid gold;">
-  <h2 style="color:gold; text-align:center;">Info & Guidelines</h2>
-  <p style="max-width:800px; margin:20px auto; color:white; line-height:1.6;">
-    Welcome to the RII7E Sticky Notes Project! Here’s how it works:
-  </p>
-  <ul style="text-align:left; list-style:disc; padding-left:20px; max-width:800px; margin:0 auto;">
-    <li>Pick a sticky note for your favorite member and write your message (up to 300 characters).</li>
-    <li>Submitted notes will appear instantly on the member's wall.</li>
-    <li>You can only delete <strong>your own submissions</strong> by clicking the delete button that appears on your note.</li>
-    <li>Give love by clicking the ❤️ button! Each note can only be liked once per browser.</li>
-    <li>Weekly top-liked notes are highlighted with a gold border and also appear on the Favorites page.</li>
-    <li>If you are the creator of a top-liked note, click it to reveal a special hidden message!</li>
-    <li>Upload your own sticky note designs to share with others.</li>
-    <li>We upload <strong>new sticky note designs every two weeks</strong>! Keep an eye out for fresh designs.</li>
-  </ul>
-
-<h3>🖼 Fan Gallery</h3>
-  <ul>
-    <li>Upload <strong>images, fan art, and RII7E-related content</strong> to share with the community.</li>
-    <li>Click on any image to open it in full view, where you can leave comments and like it.</li>
-    <li>Get <strong>personalized suggestions</strong> under each photo to explore more amazing content.</li>
-    <li>You can delete your own uploaded images anytime.</li>
-    <li>Gallery supports <strong>projects, edits, and other creative content,</strong> be creative!</li>
-  </ul>
-
- <h3>💡 Suggest Improvements</h3>
- <p>We want your feedback! Please fill out this quick form to let us know what you’d like to see on this site:</p>
-<a href="YOUR_GOOGLE_FORM_LINK" target="_blank" style="color:gold; font-weight:bold; text-decoration:underline;">
-    📋 Click here to submit your feedback
-  </a>
-</section>
-
-<!-- FOOTER -->
-<footer>
-  <p>Project organized by <a href="https://x.com/Eclip7e_project" target="_blank">@Eclip7e_project</a></p>
-  <img src="logo.png" alt="Logo" height="80">
-</footer>
-
-<!-- MODAL -->
-<div id="modal" class="modal">
-  <div class="modal-content">
-    <span class="close" id="modal-close">&times;</span>
-    <h3 id="modal-member">Member</h3>
-    <img id="modal-img" src="" alt="Sticky Note" style="width:100%; border-radius:10px;">
-    <textarea id="note-text" rows="5" maxlength="300" placeholder="Write your message (max 300 chars)"></textarea>
-    <button id="submitNote">Submit</button>
-  </div>
-</div>
-
-<script>
-  // JS from your version (unchanged for functionality)
-  const members = [
-    {name:'shotaro', color:'#8B0000', container:'shotaro-selection'},
-    {name:'eunseok', color:'#D3D3D3', container:'eunseok-selection'},
-    {name:'sungchan', color:'#008000', container:'sungchan-selection'},
-    {name:'wonbin', color:'#FF0000', container:'wonbin-selection'},
-    {name:'seunghan', color:'#0000FF', container:'seunghan-selection'},
-    {name:'sohee', color:'#FFFF00', container:'sohee-selection'},
-    {name:'anton', color:'#1E3A5F', container:'anton-selection'},
-    {name:'brii7e', color:'#FFA500', container:'brii7e-selection'}
-  ];
-  const modal = document.getElementById('modal');
-  const modalClose = document.getElementById('modal-close');
-  const modalMember = document.getElementById('modal-member');
-  const modalImg = document.getElementById('modal-img');
-  const noteText = document.getElementById('note-text');
-  const submitBtn = document.getElementById('submitNote');
-
-  let currentMember = '';
-  let currentImg = '';
-
-  function renderSelectionWall(memberName){
-    const containerDiv = document.querySelector(`#${memberName}-selection .wall`);
-    containerDiv.innerHTML = '';
-    const defaultCount = 2;
-    for(let i=1; i<=defaultCount; i++){
-      const div = document.createElement('div');
-      div.className = 'sticky-note';
-      const color = members.find(m => m.name === memberName).color;
-      div.style.borderColor = color;
-      const imgFile = `${memberName}${i}.png`;
-      div.innerHTML = `<img src="${imgFile}" alt="${memberName} note ${i}">`;
-      div.onclick = () => openModal(memberName, imgFile);
-      containerDiv.appendChild(div);
+    /* Fallback tile if default note image is missing */
+    function makeFallback(member){
+      const f = document.createElement('div');
+      f.className = 'note-fallback';
+      f.innerHTML = `<span>${member.toUpperCase()}</span>`;
+      return f;
     }
-    let designs = JSON.parse(localStorage.getItem(memberName + '_designs') || '[]');
-    designs.forEach(src => {
-      const div = document.createElement('div');
-      div.className = 'sticky-note';
-      div.style.borderColor = members.find(m => m.name === memberName).color;
-      div.innerHTML = `<img src="${src}">`;
-      div.onclick = () => openModal(memberName, src);
-      containerDiv.appendChild(div);
-    });
-  }
 
-  function openModal(memberName, imgSrc){
-    modal.style.display = 'block';
-    modalMember.textContent = memberName.toUpperCase();
-    modalImg.src = imgSrc;
-    currentMember = memberName;
-    currentImg = imgSrc;
-  }
+    /* Render the selection wall for a member */
+    function renderSelectionWall(memberName){
+      const containerDiv = document.querySelector(`#${memberName}-selection .wall`);
+      containerDiv.innerHTML = '';
+      const color = members.find(m => m.name === memberName).color;
 
-  members.forEach(m => renderSelectionWall(m.name));
-  modalClose.onclick = () => {modal.style.display = 'none';};
-  window.onclick = e => {if(e.target == modal) modal.style.display = 'none';};
+      const defaultCount = 2;
+      for(let i=1; i<=defaultCount; i++){
+        const div  = document.createElement('div');
+        div.className = 'sticky-note';
+        div.style.borderColor = color;
 
-  function getCurrentWeek(){
-    const startDate = new Date('2025-09-01');
-    const now = new Date();
-    return Math.floor((now-startDate)/(7*24*60*60*1000)) + 1;
-  }
+        const imgFile = `${memberName}${i}.png`;
+        const img = document.createElement('img');
+        img.alt = `${memberName} note ${i}`;
+        img.src = imgFile;
+        img.onerror = () => { img.replaceWith(makeFallback(memberName)); };
 
-  submitBtn.onclick = () => {
-    const text = noteText.value.trim();
-    if(!text){alert("Write something!"); return;}
-    const week = getCurrentWeek();
-    let notes = JSON.parse(localStorage.getItem(currentMember) || '[]');
-    notes.push({img: currentImg, text: text, likes: 0, week: week});
-    localStorage.setItem(currentMember, JSON.stringify(notes));
-    noteText.value = '';
-    modal.style.display = 'none';
-    alert(`Your note has been submitted to ${currentMember.toUpperCase()}'s wall!`);
-  };
-
-  const submitDesignBtn = document.getElementById('submitDesign');
-  const designFileInput = document.getElementById('design-file');
-  const designMember = document.getElementById('design-member');
-  const designMsg = document.getElementById('design-msg');
-
-  submitDesignBtn.onclick = () => {
-    const file = designFileInput.files[0];
-    const member = designMember.value;
-    if(!file){designMsg.textContent='Select a file!'; return;}
-    const reader = new FileReader();
-    reader.onload = function(e){
-      let designs = JSON.parse(localStorage.getItem(member+'_designs') || '[]');
-      designs.push(e.target.result);
-      localStorage.setItem(member+'_designs', JSON.stringify(designs));
-      designMsg.textContent = 'Design submitted successfully!';
-      designFileInput.value = '';
-      renderSelectionWall(member);
-      renderDesigns();
-    };
-    reader.readAsDataURL(file);
-  };
-
-  function renderDesigns() {
-    const container = document.getElementById('designContainer');
-    container.innerHTML = '';
-    members.forEach(member => {
-      let designs = JSON.parse(localStorage.getItem(member.name+'_designs') || '[]');
-      designs.forEach((src,index)=>{
-        const div=document.createElement('div');
-        const img=document.createElement('img');
-        img.src=src;
-        img.style.border='2px solid '+member.color;
         div.appendChild(img);
-        const delBtn=document.createElement('button');
-        delBtn.textContent='Delete';
-        delBtn.onclick=()=>{
-          if(!confirm('Delete this design?')) return;
-          designs.splice(index,1);
-          localStorage.setItem(member.name+'_designs', JSON.stringify(designs));
-          renderSelectionWall(member.name);
-          renderDesigns();
-        };
-        div.appendChild(delBtn);
-        container.appendChild(div);
+        div.onclick = () => openModal(memberName, imgFile);
+        containerDiv.appendChild(div);
+      }
+
+      // User-submitted designs
+      let designs = JSON.parse(localStorage.getItem(memberName + '_designs') || '[]');
+      designs.forEach(src => {
+        const div  = document.createElement('div');
+        div.className = 'sticky-note';
+        div.style.borderColor = color;
+
+        // Try to show image; if DataURL corrupted, fallback
+        const img = document.createElement('img');
+        img.src = src;
+        img.alt = memberName + ' design';
+        img.onerror = () => { img.replaceWith(makeFallback(memberName)); };
+
+        div.appendChild(img);
+        div.onclick = () => openModal(memberName, src);
+        containerDiv.appendChild(div);
       });
-    });
-  }
-  renderDesigns();
-</script>
+    }
+
+    function openModal(memberName, imgSrc){
+      modal.style.display   = 'block';
+      modalMember.textContent = memberName.toUpperCase();
+      modalImg.src = imgSrc;
+      currentMember = memberName;
+      currentImg    = imgSrc;
+    }
+
+    // Initial render
+    members.forEach(m => renderSelectionWall(m.name));
+
+    // Modal close behavior
+    modalClose.onclick = () => { modal.style.display = 'none'; };
+    window.onclick = (e) => { if(e.target === modal) modal.style.display = 'none'; };
+    window.addEventListener('keydown', e => { if(e.key === 'Escape') modal.style.display = 'none'; });
+
+    // Week calculation
+    function getCurrentWeek(){
+      const startDate = new Date('2025-09-01');
+      const now = new Date();
+      return Math.floor((now - startDate) / (7*24*60*60*1000)) + 1;
+    }
+
+    // Submit note
+    submitBtn.onclick = () => {
+      const text = noteText.value.trim();
+      if(!text){ alert("Write something!"); return; }
+      const week = getCurrentWeek();
+      let notes = JSON.parse(localStorage.getItem(currentMember) || '[]');
+      notes.push({ img: currentImg, text, likes: 0, week });
+      localStorage.setItem(currentMember, JSON.stringify(notes));
+      noteText.value = '';
+      modal.style.display = 'none';
+      alert(`Your note has been submitted to ${currentMember.toUpperCase()}'s wall!`);
+    };
+
+    // Design submission / management
+    const submitDesignBtn   = document.getElementById('submitDesign');
+    const designFileInput   = document.getElementById('design-file');
+    const designMember      = document.getElementById('design-member');
+    const designMsg         = document.getElementById('design-msg');
+
+    submitDesignBtn.onclick = () => {
+      const file = designFileInput.files[0];
+      const member = designMember.value;
+      if(!file){ designMsg.textContent = 'Select a file!'; return; }
+      const reader = new FileReader();
+      reader.onload = function(e){
+        let designs = JSON.parse(localStorage.getItem(member+'_designs') || '[]');
+        designs.push(e.target.result);
+        localStorage.setItem(member+'_designs', JSON.stringify(designs));
+        designMsg.textContent = 'Design submitted successfully!';
+        designFileInput.value = '';
+        renderSelectionWall(member);
+        renderDesigns();
+      };
+      reader.readAsDataURL(file);
+    };
+
+    function renderDesigns(){
+      const container = document.getElementById('designContainer');
+      container.innerHTML = '';
+      members.forEach(member => {
+        let designs = JSON.parse(localStorage.getItem(member.name+'_designs') || '[]');
+        designs.forEach((src, index) => {
+          const wrap = document.createElement('div');
+
+          const img = document.createElement('img');
+          img.src = src;
+          img.alt = member.name + ' design';
+          img.style.border = '2px solid ' + member.color;
+          wrap.appendChild(img);
+
+          const del = document.createElement('button');
+          del.textContent = 'Delete';
+          del.onclick = () => {
+            if(!confirm('Delete this design?')) return;
+            designs.splice(index, 1);
+            localStorage.setItem(member.name+'_designs', JSON.stringify(designs));
+            renderSelectionWall(member.name);
+            renderDesigns();
+          };
+          wrap.appendChild(del);
+
+          container.appendChild(wrap);
+        });
+      });
+    }
+    renderDesigns();
+  </script>
 </body>
 </html>
+
+
 
 
 
