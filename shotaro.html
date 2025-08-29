@@ -15,16 +15,44 @@ body {
   padding:0;
   text-align:center;
 }
-header {padding:40px;}
-h1 {color:gold;}
-section {padding:40px;}
-.wall {
+
+/* HEADER BANNER + TITLE */
+header {
+  border-bottom: 2px solid gold;
+}
+header img.banner {
+  width: 100%;
+  max-height: 300px;
+  object-fit: cover;
+  display:block;
+  margin:0 auto;
+  border-bottom:2px solid gold;
+}
+.header-text {
+  margin:20px auto;
+  max-width:700px;
+  border-top:2px solid gold;
+  border-bottom:2px solid gold;
+  padding:20px 10px;
+}
+.header-text h1 {
+  color:gold;
+  margin:0 0 10px 0;
+}
+.header-text p {
+  color:white;
+  margin:0;
+  line-height:1.5;
+}
+
+/* STICKY NOTES WALL */
+section.wall {
   display:flex;
   flex-wrap:wrap;
   justify-content:flex-start;
   gap:20px;
   overflow-x:auto;
-  padding-bottom:20px;
+  padding:40px;
 }
 .sticky-note {
   width:200px; 
@@ -64,13 +92,6 @@ section {padding:40px;}
   color:black; 
   font-weight:bold;
 }
-footer {
-  padding:30px 0; 
-  border-top:2px solid gold; 
-  margin-top:50px;
-}
-footer a {color:gold; text-decoration:none;}
-footer a:hover{text-decoration:underline;}
 .delete-btn {
   position:absolute;
   top:5px;
@@ -86,16 +107,28 @@ footer a:hover{text-decoration:underline;}
   border: 5px solid gold;
   box-shadow: 0 0 15px gold;
 }
+
+/* FOOTER */
+footer {
+  padding:30px 0; 
+  border-top:2px solid gold; 
+  margin-top:50px;
+}
+footer a {color:gold; text-decoration:none;}
+footer a:hover{text-decoration:underline;}
 </style>
 </head>
 <body>
 
 <header>
-<h1>Shotaro Wall</h1>
-<p>All submitted sticky notes for Shotaro. Give love by clicking ❤!</p>
-<a href="index.html">← Back to Homepage</a>
+  <img src="shotarobanner.jpg" alt="Shotaro Banner" class="banner">
+  <div class="header-text">
+    <h1>Shotaro Wall</h1>
+    <p>All submitted sticky notes for Shotaro. Give love by clicking ❤! Share your messages and check out new sticky note designs uploaded every two weeks.</p>
+  </div>
 </header>
 
+<!-- STICKY NOTES WALL -->
 <section class="wall" id="shotaro-wall">
   <!-- Notes will appear here dynamically -->
 </section>
@@ -188,6 +221,8 @@ renderNotes();
 
 </body>
 </html>
+
+
 
 
 
