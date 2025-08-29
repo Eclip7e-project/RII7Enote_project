@@ -15,52 +15,16 @@ body {
   padding:0;
   text-align:center;
 }
-
-/* HEADER: Title and Description */
-.header-section {
-  padding:40px 20px 20px 20px;
-}
-.header-section h1 {
-  color: gold;
-  font-size:2.5rem;
-  margin-bottom:10px;
-  text-shadow: 2px 2px 5px rgba(0,0,0,0.7);
-}
-.header-section p {
-  max-width:700px;
-  margin:0 auto;
-  color:white;
-  font-size:1rem;
-  text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
-}
-
-/* HERO MINI SUBSECTION: Member Pics */
-.hero-mini-section {
-  display:flex;
-  justify-content:center;
-  gap:20px;
-  padding:20px 0;
-  background-color:#222; /* neutral dark background */
-  border-radius:15px;
-  margin: 20px auto;
-  max-width:800px;
-}
-.hero-mini-section img {
-  width:150px;
-  height:150px;
-  border:4px solid; /* will be set dynamically in JS */
-  border-radius:12px;
-  object-fit:cover;
-}
-
-/* WALL STYLING */
-section.wall {
+header {padding:40px;}
+h1 {color:gold;}
+section {padding:40px;}
+.wall {
   display:flex;
   flex-wrap:wrap;
   justify-content:flex-start;
   gap:20px;
   overflow-x:auto;
-  padding:20px;
+  padding-bottom:20px;
 }
 .sticky-note {
   width:200px; 
@@ -100,6 +64,13 @@ section.wall {
   color:black; 
   font-weight:bold;
 }
+footer {
+  padding:30px 0; 
+  border-top:2px solid gold; 
+  margin-top:50px;
+}
+footer a {color:gold; text-decoration:none;}
+footer a:hover{text-decoration:underline;}
 .delete-btn {
   position:absolute;
   top:5px;
@@ -115,62 +86,37 @@ section.wall {
   border: 5px solid gold;
   box-shadow: 0 0 15px gold;
 }
-
-/* FOOTER */
-footer {
-  padding:30px 0; 
-  border-top:2px solid gold; 
-  margin-top:50px;
-}
-footer a {color:gold; text-decoration:none;}
-footer a:hover{text-decoration:underline;}
 </style>
 </head>
 <body>
 
-<!-- HEADER -->
-<div class="header-section">
-  <h1>Shotaro Wall</h1>
-  <p>All submitted sticky notes for Shotaro. Give love by clicking ❤!</p>
-  <a href="index.html" style="color:gold; text-decoration:underline;">← Back to Homepage</a>
-</div>
+<header>
+<h1>Shotaro Wall</h1>
+<p>All submitted sticky notes for Shotaro. Give love by clicking ❤!</p>
+<a href="index.html">← Back to Homepage</a>
+</header>
 
-<!-- HERO MINI SUBSECTION -->
-<div class="hero-mini-section" id="hero-mini-section">
-  <!-- Images will be generated dynamically -->
-</div>
-
-<!-- STICKY NOTE WALL -->
 <section class="wall" id="shotaro-wall">
   <!-- Notes will appear here dynamically -->
 </section>
 
-<!-- FOOTER -->
 <footer>
-  <p>Project organized by <a href="https://x.com/Eclip7e_project" target="_blank">@Eclip7e_project</a></p>
-  <img src="logo.png" alt="Logo" height="80">
+<p>Project organized by <a href="https://x.com/Eclip7e_project" target="_blank">@Eclip7e_project</a></p>
+<img src="logo.png" alt="Logo" height="80">
 </footer>
 
 <script>
-// MEMBER CONFIG
+// Config
 const memberName = "shotaro";
-const memberColor = "#8B0000"; // Shotaro's color
-const heroMiniSection = document.getElementById('hero-mini-section');
 const wall = document.getElementById('shotaro-wall');
-
-// Generate 3 hero images dynamically
-const heroImages = ["placeholder1.jpg","placeholder2.jpg","placeholder3.jpg"];
-heroImages.forEach(src => {
-  const img = document.createElement('img');
-  img.src = src;
-  img.alt = memberName + " hero";
-  img.style.borderColor = memberColor;
-  heroMiniSection.appendChild(img);
-});
 
 // Load notes from localStorage
 let notes = JSON.parse(localStorage.getItem(memberName) || '[]');
+
+// Identify top note for current week
 const currentWeek = Math.floor((new Date()-new Date('2025-09-01'))/(7*24*60*60*1000))+1;
+
+// Get user's own note ID if exists
 let currentUserNoteId = localStorage.getItem('currentUserNoteId_' + memberName);
 
 // Render notes
@@ -179,6 +125,7 @@ function renderNotes() {
   let maxLikes = -1;
   let topNoteIndex = -1;
 
+  // Find top note this week
   notes.forEach((note, i) => {
     if(!note.deleted && note.week === currentWeek && note.likes > maxLikes){
       maxLikes = note.likes;
@@ -187,7 +134,7 @@ function renderNotes() {
   });
 
   notes.forEach((note, i) => {
-    if(note.deleted) return;
+    if(note.deleted) return; // skip deleted notes
 
     const div = document.createElement('div');
     div.className = 'sticky-note frame';
@@ -199,6 +146,7 @@ function renderNotes() {
       <button class="like-btn" data-id="${i}">❤ ${note.likes || 0}</button>
     `;
 
+    // Delete button only for your note
     if(note.id == currentUserNoteId){
       const deleteBtn = document.createElement('button');
       deleteBtn.textContent='Delete';
@@ -216,6 +164,7 @@ function renderNotes() {
     wall.appendChild(div);
   });
 
+  // Like functionality (only once per browser)
   document.querySelectorAll('.like-btn').forEach(btn=>{
     btn.onclick = (e)=>{
       const id = e.target.dataset.id;
@@ -236,8 +185,10 @@ function renderNotes() {
 // Initial render
 renderNotes();
 </script>
+
 </body>
 </html>
+
 
 
 
