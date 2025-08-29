@@ -16,33 +16,45 @@ body {
   text-align:center;
 }
 
-/* HEADER BANNER + TITLE */
+/* HEADER WITH SMALLER BANNER */
 header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: black;
   border-bottom: 2px solid gold;
 }
+
 header img.banner {
   width: 100%;
-  max-height: 300px;
-  object-fit: cover;
-  display:block;
-  margin:0 auto;
-  border-bottom:2px solid gold;
+  height: auto; /* Keep full aspect ratio */
+  max-height: none; /* No forced cropping */
+  object-fit: contain; /* Show entire image */
+  border-bottom: 2px solid gold;
+  display: block;
+  margin: 0 auto;
+  background: black; /* Background to fill empty space */
 }
+
+/* HEADER TEXT BELOW BANNER */
 .header-text {
-  margin:20px auto;
-  max-width:700px;
-  border-top:2px solid gold;
-  border-bottom:2px solid gold;
-  padding:20px 10px;
+  text-align: center;
+  padding: 20px;
 }
+
 .header-text h1 {
-  color:gold;
-  margin:0 0 10px 0;
+  font-size: 2.5rem; /* Smaller title */
+  color: gold;
+  margin: 10px 0;
+  text-shadow: 2px 2px 5px rgba(0,0,0,0.7);
 }
+
 .header-text p {
-  color:white;
-  margin:0;
-  line-height:1.5;
+  max-width: 700px;
+  font-size: 1rem;
+  margin: 0 auto;
+  color: white;
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
 }
 
 /* STICKY NOTES WALL */
@@ -125,10 +137,10 @@ footer a:hover{text-decoration:underline;}
   <div class="header-text">
     <h1>Shotaro Wall</h1>
     <p>All submitted sticky notes for Shotaro. Give love by clicking ❤! Share your messages and check out new sticky note designs uploaded every two weeks.</p>
+    <a href="index.html" style="color:gold; text-decoration:underline; margin-top:10px; display:inline-block;">← Back to Homepage</a>
   </div>
 </header>
 
-<!-- STICKY NOTES WALL -->
 <section class="wall" id="shotaro-wall">
   <!-- Notes will appear here dynamically -->
 </section>
@@ -221,6 +233,8 @@ renderNotes();
 
 </body>
 </html>
+
+
 
 
 
