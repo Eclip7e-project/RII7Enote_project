@@ -15,16 +15,56 @@ body {
   padding:0;
   text-align:center;
 }
-header {padding:40px;}
-h1 {color:gold;}
-section {padding:40px;}
-.wall {
+
+/* HEADER WITH SMALLER BANNER */
+header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: black;
+  border-bottom: 2px solid gold;
+}
+
+header img.banner {
+  width: 100%;
+  height: auto; 
+  max-height: none;
+  object-fit: contain;
+  border-bottom: 2px solid gold;
+  display: block;
+  margin: 0 auto;
+  background: black;
+}
+
+/* HEADER TEXT BELOW BANNER */
+.header-text {
+  text-align: center;
+  padding: 20px;
+}
+
+.header-text h1 {
+  font-size: 2.5rem;
+  color: gold;
+  margin: 10px 0;
+  text-shadow: 2px 2px 5px rgba(0,0,0,0.7);
+}
+
+.header-text p {
+  max-width: 700px;
+  font-size: 1rem;
+  margin: 0 auto;
+  color: white;
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
+}
+
+/* STICKY NOTES WALL */
+section.wall {
   display:flex;
   flex-wrap:wrap;
   justify-content:flex-start;
   gap:20px;
   overflow-x:auto;
-  padding-bottom:20px;
+  padding:40px;
 }
 .sticky-note {
   width:200px; 
@@ -64,13 +104,6 @@ section {padding:40px;}
   color:black; 
   font-weight:bold;
 }
-footer {
-  padding:30px 0; 
-  border-top:2px solid gold; 
-  margin-top:50px;
-}
-footer a {color:gold; text-decoration:none;}
-footer a:hover{text-decoration:underline;}
 .delete-btn {
   position:absolute;
   top:5px;
@@ -86,14 +119,26 @@ footer a:hover{text-decoration:underline;}
   border: 5px solid gold;
   box-shadow: 0 0 15px gold;
 }
+
+/* FOOTER */
+footer {
+  padding:30px 0; 
+  border-top:2px solid gold; 
+  margin-top:50px;
+}
+footer a {color:gold; text-decoration:none;}
+footer a:hover{text-decoration:underline;}
 </style>
 </head>
 <body>
 
 <header>
-<h1>SUNGCHAN Wall</h1>
-<p>All submitted sticky notes for Sungchan. Give love by clicking ❤!</p>
-<a href="index.html">← Back to Homepage</a>
+  <img src="sungchanbanner.jpg" alt="Sungchan Banner" class="banner">
+  <div class="header-text">
+    <h1>Sungchan Wall</h1>
+    <p>All submitted sticky notes for Sungchan. Give love by clicking ❤! Share your messages and check out new sticky note designs uploaded every two weeks.</p>
+    <a href="index.html" style="color:gold; text-decoration:underline; margin-top:10px; display:inline-block;">← Back to Homepage</a>
+  </div>
 </header>
 
 <section class="wall" id="sungchan-wall">
@@ -126,13 +171,15 @@ function renderNotes() {
   let topNoteIndex = -1;
 
   notes.forEach((note, i) => {
-    if(note.week === currentWeek && note.likes > maxLikes){
+    if(!note.deleted && note.week === currentWeek && note.likes > maxLikes){
       maxLikes = note.likes;
       topNoteIndex = i;
     }
   });
 
   notes.forEach((note, i) => {
+    if(note.deleted) return;
+
     const div = document.createElement('div');
     div.className = 'sticky-note frame';
     if(i===topNoteIndex) div.classList.add('top-note');
@@ -143,14 +190,13 @@ function renderNotes() {
       <button class="like-btn" data-id="${i}">❤ ${note.likes || 0}</button>
     `;
 
-    // Delete button only for your note
     if(note.id == currentUserNoteId){
       const deleteBtn = document.createElement('button');
       deleteBtn.textContent='Delete';
       deleteBtn.className='delete-btn';
       deleteBtn.onclick = () => {
         if(!confirm("Delete your note?")) return;
-        notes = notes.filter(n=>n.id !== note.id);
+        notes = notes.map(n => n.id === note.id ? {...n, deleted:true} : n);
         localStorage.setItem(memberName, JSON.stringify(notes));
         localStorage.removeItem('currentUserNoteId_' + memberName);
         renderNotes();
@@ -161,7 +207,6 @@ function renderNotes() {
     wall.appendChild(div);
   });
 
-  // Like functionality (only once per browser)
   document.querySelectorAll('.like-btn').forEach(btn=>{
     btn.onclick = (e)=>{
       const id = e.target.dataset.id;
@@ -179,10 +224,11 @@ function renderNotes() {
   });
 }
 
-// Initial render
 renderNotes();
 </script>
 
 </body>
 </html>
+
+
 
