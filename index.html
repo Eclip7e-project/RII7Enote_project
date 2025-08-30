@@ -6,400 +6,283 @@
 <title>RII7E Sticky Notes Project</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
 <style>
-body {
-  margin: 0;
-  font-family: 'Playfair Display', serif;
-  background-color: black;
-  background-image: url('https://www.transparenttextures.com/patterns/stardust.png');
-  color: white;
-}
+  body {
+    font-family: 'Playfair Display', serif;
+    margin:0;
+    padding:0;
+    background-color:black;
+    background-image:url('https://www.transparenttextures.com/patterns/stardust.png');
+    color:white;
+    text-align:center;
+  }
 
-/* HEADER WITH SMALLER BANNER */
-header {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  background: black;
-  border-bottom: 2px solid gold;
-}
+  /* HEADER WITH BANNER */
+  header {
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    background:black;
+    border-bottom:2px solid gold;
+  }
+  header img.banner {
+    width:100%;
+    height:auto;
+    object-fit:contain;
+    border-bottom:2px solid gold;
+    background:black;
+    display:block;
+    margin:0 auto;
+  }
+  .header-text {
+    text-align:center;
+    padding:20px;
+  }
+  .header-text h1 {
+    font-size:2.5rem;
+    color:gold;
+    margin:10px 0;
+    text-shadow:2px 2px 5px rgba(0,0,0,0.7);
+  }
+  .header-text p {
+    max-width:700px;
+    font-size:1rem;
+    margin:0 auto;
+    color:white;
+    text-shadow:1px 1px 3px rgba(0,0,0,0.7);
+  }
 
-header img.banner {
-  width: 100%;
-  height: auto;
-  max-height: none;
-  object-fit: contain;
-  border-bottom: 2px solid gold;
-  display: block;
-  margin: 0 auto;
-  background: black;
-}
+  /* NAVIGATION */
+  nav {
+    background:#111;
+    border-bottom:2px solid gold;
+    display:flex;
+    justify-content:center;
+    flex-wrap:wrap;
+    padding:15px 0;
+    position:sticky;
+    top:0;
+    z-index:50;
+  }
+  nav a {
+    color:gold;
+    text-decoration:none;
+    margin:0 12px;
+    font-weight:bold;
+    font-size:1rem;
+    transition:color 0.3s ease;
+  }
+  nav a:hover {
+    color:white;
+    text-decoration:underline;
+  }
 
-/* HEADER TEXT BELOW BANNER */
-.header-text {
-  text-align: center;
-  padding: 20px;
-}
-
-.header-text h1 {
-  font-size: 2.5rem;
-  color: gold;
-  margin: 10px 0;
-  text-shadow: 2px 2px 5px rgba(0,0,0,0.7);
-}
-
-.header-text p {
-  max-width: 700px;
-  font-size: 1rem;
-  margin: 0 auto;
-  color: white;
-  text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
-}
-
-/* NAVIGATION SECTION */
-nav {
-  background: #111;
-  border-bottom: 2px solid gold;
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  padding: 15px 0;
-  position: sticky;
-  top: 0;
-  z-index: 50;
-}
-
-nav a {
-  color: gold;
-  text-decoration: none;
-  margin: 0 12px;
-  font-weight: bold;
-  font-size: 1rem;
-  transition: color 0.3s ease;
-}
-
-nav a:hover {
-  color: white;
-  text-decoration: underline;
-}
-
-section {padding: 30px;}
-
-.member-section {
-  margin-top: 50px;
-}
-
-h2, h3 {margin-bottom: 20px; text-align: center;}
-
-.wall {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 20px;
-}
-
-.sticky-note {
-  width: 150px;
-  min-height: 150px;
-  background: white;
-  border-radius: 15px;
-  padding: 10px;
-  box-shadow: 3px 3px 10px rgba(0,0,0,0.5);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  position: relative;
-  cursor: pointer;
-}
-
-.sticky-note img {width: 100%; border-radius: 10px;}
-.sticky-note .text {color: black; margin-top: 5px; white-space: pre-wrap;}
-
-button {
-  padding: 8px 12px;
-  margin-top: 5px;
-  cursor: pointer;
-}
-
-footer {
-  padding: 30px 0;
-  border-top: 2px solid gold;
-  margin-top: 50px;
-  text-align: center;
-}
-
-footer a {color: gold; text-decoration: none;}
-footer a:hover{text-decoration: underline;}
-
-/* MODAL STYLING */
-.modal {
-  display: none; position: fixed; z-index: 100; left: 0; top: 0;
-  width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.8);
-}
-
-.modal-content {
-  background-color: #fefefe; margin: 5% auto; padding: 20px; border-radius: 15px;
-  width: 90%; max-width: 700px; position: relative;
-}
-
-.close {
-  position: absolute; top: 10px; right: 20px; color: black;
-  font-size: 28px; font-weight: bold; cursor: pointer;
-}
-
-textarea {
-  width: 100%; margin-top: 10px; padding: 8px;
-  border-radius: 10px; resize: none;
-}
-
-/* Plain Sticky Notes Section */
-.plain-notes {
-  padding: 50px 20px;
-  text-align: center;
-  background: #111;
-  border-top: 2px solid gold;
-  margin-top: 40px;
-}
-
-.plain-notes h2 {
-  color: gold;
-  font-size: 2.5rem;
-  margin-bottom: 10px;
-  text-shadow: 1px 1px 5px rgba(0,0,0,0.7);
-}
-
-.plain-notes .subtext {
-  font-size: 1.1rem;
-  color: #ddd;
-  margin-bottom: 30px;
-}
-
-.plain-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 30px;
-  justify-items: center;
-  margin-bottom: 20px;
-}
-
-.plain-card {
-  background: #fff;
-  border: 3px solid #ccc;
-  border-radius: 15px;
-  box-shadow: 3px 3px 10px rgba(0,0,0,0.3);
-  padding: 15px;
-  width: 150px;
-  text-align: center;
-  transition: transform 0.2s ease, border 0.2s ease;
-}
-
-.plain-card:hover {
-  transform: scale(1.05);
-  border: 3px solid gold;
-}
-
-.plain-card img {
-  width: 100%;
-  border-radius: 10px;
-  margin-bottom: 10px;
-}
-
-.plain-card h3 {
-  color: black;
-  font-size: 1.1rem;
-  margin: 5px 0 10px;
-}
-
-.plain-card .btn {
-  background: gold;
-  color: black;
-  font-weight: bold;
-  padding: 8px 12px;
-  border-radius: 5px;
-  text-decoration: none;
-  transition: background 0.2s ease;
-}
-
-.plain-card .btn:hover {
-  background: orange;
-}
-
-.plain-notes .disclaimer {
-  font-size: 0.9rem;
-  color: #bbb;
-  margin-top: 10px;
-}
+  /* WALL SECTIONS */
+  section {padding:30px;}
+  .member-section {margin-top:50px;}
+  h2,h3 {margin-bottom:20px; text-align:center;}
+  .wall {
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:20px;
+  }
+  .sticky-note {
+    width:150px;
+    min-height:150px;
+    background:white;
+    border-radius:15px;
+    padding:10px;
+    box-shadow:3px 3px 10px rgba(0,0,0,0.5);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    position:relative;
+    cursor:pointer;
+  }
+  .sticky-note img {width:100%; border-radius:10px;}
+  .sticky-note .text {color:black; margin-top:5px; white-space:pre-wrap;}
+  button {padding:8px 12px; margin-top:5px; cursor:pointer;}
+  .frame {border:5px solid; border-radius:15px;}
+  .top-note {border:5px solid gold; box-shadow:0 0 15px gold;}
 </style>
 </head>
 <body>
 
 <!-- HEADER -->
 <header>
-  <img src="banner-placeholder.jpg" alt="Banner" class="banner">
+  <img src="banner_placeholder.jpg" alt="Banner" class="banner">
   <div class="header-text">
     <h1>RII7E Sticky Notes Project</h1>
-    <p>Pick a sticky note for your favorite member, write your message, and submit! Your note will appear on the member’s wall instantly.</p>
+    <p>Pick a sticky note for your favorite member or the whole group and share your message instantly!</p>
   </div>
 </header>
 
 <!-- NAVIGATION -->
 <nav>
-  <a href="shotaro.html">SHOTARO</a>
-  <a href="eunseok.html">EUNSEOK</a>
-  <a href="sungchan.html">SUNGCHAN</a>
-  <a href="wonbin.html">WONBIN</a>
-  <a href="seunghan.html">SEUNGHAN</a>
-  <a href="sohee.html">SOHEE</a>
-  <a href="anton.html">ANTON</a>
-  <a href="brii7e.html">BRII7E</a>
-  <a href="favorites.html">FAVORITES</a>
+  <a href="#shotaro">SHOTARO</a>
+  <a href="#eunseok">EUNSEOK</a>
+  <a href="#sungchan">SUNGCHAN</a>
+  <a href="#wonbin">WONBIN</a>
+  <a href="#seunghan">SEUNGHAN</a>
+  <a href="#sohee">SOHEE</a>
+  <a href="#anton">ANTON</a>
+  <a href="#brii7e">BRII7E</a>
+  <a href="#rii7e">RII7E</a>
 </nav>
 
-<!-- MEMBER STICKY NOTES SECTIONS -->
-<section id="note-selection">
-  <div class="member-section" id="shotaro-selection"><h3>SHOTARO</h3><div class="wall"></div></div>
-  <div class="member-section" id="eunseok-selection"><h3>EUNSEOK</h3><div class="wall"></div></div>
-  <div class="member-section" id="sungchan-selection"><h3>SUNGCHAN</h3><div class="wall"></div></div>
-  <div class="member-section" id="wonbin-selection"><h3>WONBIN</h3><div class="wall"></div></div>
-  <div class="member-section" id="seunghan-selection"><h3>SEUNGHAN</h3><div class="wall"></div></div>
-  <div class="member-section" id="sohee-selection"><h3>SOHEE</h3><div class="wall"></div></div>
-  <div class="member-section" id="anton-selection"><h3>ANTON</h3><div class="wall"></div></div>
-  <div class="member-section" id="brii7e-selection"><h3>BRII7E</h3><div class="wall"></div></div>
-</section>
+<!-- MEMBER WALLS -->
+<section id="shotaro" class="member-section"><h3>SHOTARO</h3><div class="wall" id="shotaro-wall"></div></section>
+<section id="eunseok" class="member-section"><h3>EUNSEOK</h3><div class="wall" id="eunseok-wall"></div></section>
+<section id="sungchan" class="member-section"><h3>SUNGCHAN</h3><div class="wall" id="sungchan-wall"></div></section>
+<section id="wonbin" class="member-section"><h3>WONBIN</h3><div class="wall" id="wonbin-wall"></div></section>
+<section id="seunghan" class="member-section"><h3>SEUNGHAN</h3><div class="wall" id="seunghan-wall"></div></section>
+<section id="sohee" class="member-section"><h3>SOHEE</h3><div class="wall" id="sohee-wall"></div></section>
+<section id="anton" class="member-section"><h3>ANTON</h3><div class="wall" id="anton-wall"></div></section>
+<section id="brii7e" class="member-section"><h3>BRII7E</h3><div class="wall" id="brii7e-wall"></div></section>
 
-<!-- ✨ Plain Sticky Notes Section ✨ -->
-<section class="plain-notes">
-  <h2>✨ Simple Sticky Notes ✨</h2>
-  <p class="subtext">Prefer something minimal? Choose a plain one-color sticky note to share your words for RII7E 💙</p>
+<!-- RII7E WALL (Group) -->
+<section id="rii7e" class="member-section"><h3>RII7E</h3><div class="wall" id="rii7e-wall"></div></section>
 
-  <div class="plain-grid">
-    <div class="plain-card">
-      <img src="images/plain-yellow.png" alt="Yellow Sticky Note">
-      <h3>Yellow</h3>
-      <a href="form.html" class="btn">Write a Note</a>
-    </div>
-    <div class="plain-card">
-      <img src="images/plain-pink.png" alt="Pink Sticky Note">
-      <h3>Pink</h3>
-      <a href="form.html" class="btn">Write a Note</a>
-    </div>
-    <div class="plain-card">
-      <img src="images/plain-blue.png" alt="Blue Sticky Note">
-      <h3>Blue</h3>
-      <a href="form.html" class="btn">Write a Note</a>
-    </div>
-    <div class="plain-card">
-      <img src="images/plain-green.png" alt="Green Sticky Note">
-      <h3>Green</h3>
-      <a href="form.html" class="btn">Write a Note</a>
-    </div>
+  <!-- PLAIN STICKY NOTES PREVIEW (PLACEHOLDER IMAGES) -->
+<section class="member-section">
+  <h3>✨ Simple Sticky Notes ✨</h3>
+  <p style="color:white; max-width:700px; margin:0 auto 20px;">Prefer something minimal? Choose a plain one-color sticky note to share your words for RII7E 💙</p>
+  <div class="wall" id="plain-notes-preview">
+    <!-- Placeholder notes -->
+    <div class="sticky-note" style="background:yellow;" onclick="openModal('yellow')"></div>
+    <div class="sticky-note" style="background:pink;" onclick="openModal('pink')"></div>
+    <div class="sticky-note" style="background:blue;" onclick="openModal('blue')"></div>
+    <div class="sticky-note" style="background:green;" onclick="openModal('green')"></div>
   </div>
-
-  <p class="disclaimer">📌 All plain notes will be added to the same member collections, together with the designed ones.</p>
+  <p style="font-size:0.8rem; color:lightgray;">📌 All plain notes will be added to the selected member/group wall together with the designed ones.</p>
 </section>
 
-<!-- FOOTER -->
-<footer>
-  <p>Project organized by <a href="https://x.com/Eclip7e_project" target="_blank">@Eclip7e_project</a></p>
-  <img src="logo.png" alt="Logo" height="80">
-</footer>
+<!-- MODAL -->
+<div id="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:100; justify-content:center; align-items:center;">
+  <div style="background:#fff; border-radius:15px; padding:20px; width:90%; max-width:500px; position:relative;">
+    <span style="position:absolute; top:10px; right:20px; font-size:28px; font-weight:bold; cursor:pointer;" onclick="closeModal()">&times;</span>
+    <h3 id="modal-title">Write your note</h3>
+    
+    <label for="select-member">Choose member/group:</label>
+    <select id="select-member" style="margin:10px 0; width:100%; padding:8px;">
+      <option value="shotaro">SHOTARO</option>
+      <option value="eunseok">EUNSEOK</option>
+      <option value="sungchan">SUNGCHAN</option>
+      <option value="wonbin">WONBIN</option>
+      <option value="seunghan">SEUNGHAN</option>
+      <option value="sohee">SOHEE</option>
+      <option value="anton">ANTON</option>
+      <option value="brii7e">BRII7E</option>
+      <option value="rii7e">RII7E</option>
+    </select>
 
-<!-- MODAL (for member note submission) -->
-<div id="modal" class="modal">
-  <div class="modal-content">
-    <span class="close" id="modal-close">&times;</span>
-    <h3 id="modal-member">Member</h3>
-    <img id="modal-img" src="" alt="Sticky Note" style="width:100%; border-radius:10px;">
-    <textarea id="note-text" rows="5" maxlength="300" placeholder="Write your message (max 300 chars)"></textarea>
-    <button id="submitNote">Submit</button>
+    <label for="note-color">Choose sticky color:</label>
+    <input type="color" id="note-color" value="#ffff00" style="width:100%; margin:10px 0;">
+
+    <label for="text-color">Choose text color:</label>
+    <input type="color" id="text-color" value="#000000" style="width:100%; margin:10px 0;">
+
+    <label for="note-text">Your message:</label>
+    <textarea id="note-text" rows="5" maxlength="300" placeholder="Write your message (max 300 chars)" style="width:100%; padding:8px; border-radius:10px;"></textarea>
+    
+    <button id="submit-note" style="margin-top:10px; padding:8px 12px; background:gold; border:none; border-radius:5px; font-weight:bold; cursor:pointer;">Submit</button>
   </div>
 </div>
 
 <script>
-const members = [
-  {name:'shotaro', color:'#8B0000', container:'shotaro-selection'},
-  {name:'eunseok', color:'#D3D3D3', container:'eunseok-selection'},
-  {name:'sungchan', color:'#008000', container:'sungchan-selection'},
-  {name:'wonbin', color:'#FF0000', container:'wonbin-selection'},
-  {name:'seunghan', color:'#0000FF', container:'seunghan-selection'},
-  {name:'sohee', color:'#FFFF00', container:'sohee-selection'},
-  {name:'anton', color:'#1E3A5F', container:'anton-selection'},
-  {name:'brii7e', color:'#FFA500', container:'brii7e-selection'}
-];
+  const modal = document.getElementById('modal');
+  const noteText = document.getElementById('note-text');
+  const noteColorInput = document.getElementById('note-color');
+  const textColorInput = document.getElementById('text-color');
+  const selectMember = document.getElementById('select-member');
+  const submitBtn = document.getElementById('submit-note');
 
-const modal = document.getElementById('modal');
-const modalClose = document.getElementById('modal-close');
-const modalMember = document.getElementById('modal-member');
-const modalImg = document.getElementById('modal-img');
-const noteText = document.getElementById('note-text');
-const submitBtn = document.getElementById('submitNote');
-
-let currentMember = '';
-let currentImg = '';
-
-function renderSelectionWall(memberName){
-  const containerDiv = document.querySelector(`#${memberName}-selection .wall`);
-  containerDiv.innerHTML = '';
-  const defaultCount = 2;
-  for(let i=1; i<=defaultCount; i++){
-    const div = document.createElement('div');
-    div.className = 'sticky-note';
-    const color = members.find(m => m.name === memberName).color;
-    div.style.borderColor = color;
-    const imgFile = `${memberName}${i}.png`;
-    div.innerHTML = `<img src="${imgFile}" alt="${memberName} note ${i}">`;
-    div.onclick = () => openModal(memberName, imgFile);
-    containerDiv.appendChild(div);
+  // Open modal for plain note (pass color)
+  function openModal(preColor){
+    modal.style.display = "flex";
+    noteColorInput.value = preColor || "#ffff00";
+    noteText.value = "";
+    textColorInput.value = "#000000";
   }
-  let designs = JSON.parse(localStorage.getItem(memberName + '_designs') || '[]');
-  designs.forEach(src => {
-    const div = document.createElement('div');
-    div.className = 'sticky-note';
-    div.style.borderColor = members.find(m => m.name === memberName).color;
-    div.innerHTML = `<img src="${src}">`;
-    div.onclick = () => openModal(memberName, src);
-    containerDiv.appendChild(div);
-  });
-}
 
-function openModal(memberName, imgSrc){
-  modal.style.display = 'block';
-  modalMember.textContent = memberName.toUpperCase();
-  modalImg.src = imgSrc;
-  currentMember = memberName;
-  currentImg = imgSrc;
-}
+  function closeModal(){
+    modal.style.display = "none";
+  }
 
-members.forEach(m => renderSelectionWall(m.name));
-modalClose.onclick = () => {modal.style.display = 'none';};
-window.onclick = e => {if(e.target == modal) modal.style.display = 'none';};
+  submitBtn.onclick = () => {
+    const text = noteText.value.trim();
+    if(!text){ alert("Please write a message."); return; }
 
-function getCurrentWeek(){
-  const startDate = new Date('2025-09-01');
-  const now = new Date();
-  return Math.floor((now-startDate)/(7*24*60*60*1000)) + 1;
-}
+    const member = selectMember.value;
+    const stickyColor = noteColorInput.value;
+    const textColor = textColorInput.value;
 
-submitBtn.onclick = () => {
-  const text = noteText.value.trim();
-  if(!text){alert("Write something!"); return;}
-  const week = getCurrentWeek();
-  let notes = JSON.parse(localStorage.getItem(currentMember) || '[]');
-  notes.push({img: currentImg, text: text, likes: 0, week: week});
-  localStorage.setItem(currentMember, JSON.stringify(notes));
-  noteText.value = '';
-  modal.style.display = 'none';
-  alert(`Your note has been submitted to ${currentMember.toUpperCase()}'s wall!`);
-};
+    const wallDiv = document.getElementById(member + "-wall");
+    const newNote = document.createElement('div');
+    newNote.className = "sticky-note";
+    newNote.style.background = stickyColor;
+    newNote.innerHTML = `<div class="text" style="color:${textColor}; white-space:pre-wrap;">${text}</div>`;
+    wallDiv.appendChild(newNote);
+
+    closeModal();
+  }
 </script>
-</body>
-</html>
 
+  <!-- INFO & GUIDELINES -->
+<section id="info-section" style="padding:40px; background:#111; border-top:2px solid gold; margin-top:50px;">
+  <h2 style="color:gold; text-align:center; margin-bottom:20px;">Info & Guidelines</h2>
+  <p style="max-width:800px; margin:0 auto 20px; color:white; line-height:1.6;">
+    Welcome to the <strong>RII7E Sticky Notes Project</strong>! Here’s how it works:
+  </p>
+  <ul style="text-align:left; list-style:disc; padding-left:20px; max-width:800px; margin:0 auto; color:white;">
+    <li>Pick a sticky note for your favorite member or the whole group and write your message (up to 300 characters).</li>
+    <li>You can select your note color and the text color for plain sticky notes.</li>
+    <li>Submitted notes appear instantly on the selected member’s or group wall.</li>
+    <li>Only your own notes can be deleted by clicking the delete button.</li>
+    <li>Weekly top-liked notes are highlighted with a gold border.</li>
+    <li>Upload your own designs to share with others.</li>
+    <li>New sticky note designs are uploaded every two weeks.</li>
+    <li>Fan gallery images, edits, and other creative content are welcome!</li>
+    <li>Feedback & suggestions can be submitted via the Google Form link below.</li>
+  </ul>
+  <p style="text-align:center; margin-top:20px;">
+    <a href="YOUR_GOOGLE_FORM_LINK" target="_blank" style="color:gold; font-weight:bold; text-decoration:underline;">
+      📋 Submit your feedback or suggestions
+    </a>
+  </p>
+</section>
 
+<!-- FOOTER -->
+<footer style="padding:30px 0; border-top:2px solid gold; text-align:center; margin-top:50px;">
+  <p>Project organized by <a href="https://x.com/Eclip7e_project" target="_blank" style="color:gold; text-decoration:none;">@Eclip7e_project</a></p>
+  <img src="logo.png" alt="Logo" height="80">
+</footer>
 
+<script>
+  // Live preview of plain note while typing
+  const previewNotes = document.querySelectorAll("#plain-notes-preview .sticky-note");
+  previewNotes.forEach(note => {
+    const overlay = document.createElement("div");
+    overlay.className = "text";
+    overlay.style.color = "#000";
+    overlay.style.position = "absolute";
+    overlay.style.top = "10px";
+    overlay.style.left = "10px";
+    overlay.style.right = "10px";
+    overlay.style.bottom = "10px";
+    overlay.style.whiteSpace = "pre-wrap";
+    overlay.style.pointerEvents = "none";
+    note.appendChild(overlay);
 
-
-
-
+    // update overlay text as user types in modal
+    note.addEventListener("click", () => {
+      const tempInput = document.getElementById("note-text");
+      tempInput.addEventListener("input", function updateOverlay() {
+        overlay.textContent = tempInput.value;
+      });
+    });
+  });
+</script>
 
 
 
