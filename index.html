@@ -365,20 +365,20 @@ function renderAllSelectionWalls(){
   members.forEach(m => renderSelectionWall(m.name));
 }
 
-/* Render simple notes placeholders (7) */
+  /* Render simple notes placeholders (7) */
 function renderSimpleNotes(){
-  const wall = $('#simple-note-wall');
+  const wall = document.getElementById('simple-note-wall');
   wall.innerHTML = '';
-  for(let i=1;i<=7;i++){
-    const imgFile = `simple${i}.png`;
+  simpleNotes.forEach(noteData => {
     const note = document.createElement('div');
     note.className = 'sticky-note';
-    note.style.width = '110px'; note.style.height = '110px';
-    note.style.border = `3px solid #ccc`;
-    note.innerHTML = `<img src="${imgFile}" alt="Simple note ${i}">`;
-    note.onclick = ()=> openModalForSimple(imgFile);
+    note.style.width = '110px';
+    note.style.height = '110px';
+    note.style.border = '3px solid #ccc';
+    note.innerHTML = `<img src="${noteData.file}" alt="${noteData.color} note">`;
+    note.onclick = () => openModalForSimple(noteData.file);
     wall.appendChild(note);
-  }
+  });
 }
 
 /* Return member color or default */
@@ -541,6 +541,7 @@ window.refreshAll = refreshAll;
 </script>
 </body>
 </html>
+
 
 
 
