@@ -369,6 +369,7 @@ function renderAllSelectionWalls(){
 function renderSimpleNotes(){
   const wall = document.getElementById('simple-note-wall');
   wall.innerHTML = '';
+
   simpleNotes.forEach(noteData => {
     const note = document.createElement('div');
     note.className = 'sticky-note';
@@ -376,10 +377,14 @@ function renderSimpleNotes(){
     note.style.height = '110px';
     note.style.border = '3px solid #ccc';
     note.innerHTML = `<img src="${noteData.file}" alt="${noteData.color} note">`;
-    note.onclick = () => openModalForSimple(noteData.file);
+
+    note.onclick = () => openModalForSimple(noteData.file); // Make sure this function exists
     wall.appendChild(note);
   });
 }
+
+// Call the function
+renderSimpleNotes();
 
 /* Return member color or default */
 function getMemberColor(name){
@@ -541,6 +546,7 @@ window.refreshAll = refreshAll;
 </script>
 </body>
 </html>
+
 
 
 
