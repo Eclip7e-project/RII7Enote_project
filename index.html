@@ -367,20 +367,18 @@ function renderAllSelectionWalls(){
 
   /* Render simple notes placeholders (7) */
 function renderSimpleNotes(){
-  const wall = document.getElementById('simple-note-wall');
+  const wall = $('#simple-note-wall');
   wall.innerHTML = '';
-
-  simpleNotes.forEach(noteData => {
+  for(let i=1;i<=7;i++){
+    const imgFile = `simple${i}.png`;
     const note = document.createElement('div');
     note.className = 'sticky-note';
-    note.style.width = '110px';
-    note.style.height = '110px';
-    note.style.border = '3px solid #ccc';
-    note.innerHTML = `<img src="${noteData.file}" alt="${noteData.color} note">`;
-
-    note.onclick = () => openModalForSimple(noteData.file); // Make sure this function exists
+    note.style.width = '110px'; note.style.height = '110px';
+    note.style.border = `3px solid #ccc`;
+    note.innerHTML = `<img src="${imgFile}" alt="Simple note ${i}">`;
+    note.onclick = ()=> openModalForSimple(imgFile);
     wall.appendChild(note);
-  });
+  }
 }
 
 
@@ -544,6 +542,7 @@ window.refreshAll = refreshAll;
 </script>
 </body>
 </html>
+
 
 
 
