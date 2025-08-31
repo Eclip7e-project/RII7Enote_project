@@ -16,7 +16,6 @@ body {
   text-align:center;
 }
 
-/* HEADER WITH SMALLER BANNER */
 header {
   display: flex;
   flex-direction: column;
@@ -28,7 +27,6 @@ header {
 header img.banner {
   width: 100%;
   height: auto; 
-  max-height: none;
   object-fit: contain;
   border-bottom: 2px solid gold;
   display: block;
@@ -36,7 +34,6 @@ header img.banner {
   background: black;
 }
 
-/* HEADER TEXT BELOW BANNER */
 .header-text {
   text-align: center;
   padding: 20px;
@@ -57,7 +54,6 @@ header img.banner {
   text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
 }
 
-/* STICKY NOTES WALL */
 section.wall {
   display:flex;
   flex-wrap:wrap;
@@ -66,6 +62,7 @@ section.wall {
   overflow-x:auto;
   padding:40px;
 }
+
 .sticky-note {
   width:200px; 
   height:150px; 
@@ -77,6 +74,7 @@ section.wall {
   display:flex; 
   flex-direction:column; 
   align-items:center;
+  cursor:pointer;
 }
 .sticky-note img {width:100%; border-radius:10px;}
 .sticky-note .text {
@@ -120,14 +118,33 @@ section.wall {
   box-shadow: 0 0 15px gold;
 }
 
-/* FOOTER */
-footer {
-  padding:30px 0; 
-  border-top:2px solid gold; 
-  margin-top:50px;
+/* Modal */
+#modal {
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.75);
+  z-index:60;
+  align-items:center;
+  justify-content:center;
 }
-footer a {color:gold; text-decoration:none;}
-footer a:hover{text-decoration:underline;}
+#modal-content {
+  background:#fff;
+  color:#000;
+  border-radius:12px;
+  max-width:600px;
+  width:90%;
+  padding:20px;
+  position:relative;
+}
+#modal-content img {width:100%; height:auto; border-radius:12px;}
+#modal-close {
+  position:absolute;
+  top:10px;
+  right:12px;
+  font-size:26px;
+  cursor:pointer;
+}
 </style>
 </head>
 <body>
@@ -142,7 +159,7 @@ footer a:hover{text-decoration:underline;}
 </header>
 
 <section class="wall" id="anton-wall">
-  <!-- Notes will appear here dynamically -->
+  <!-- Notes appear dynamically -->
 </section>
 
 <footer>
@@ -150,11 +167,19 @@ footer a:hover{text-decoration:underline;}
 <img src="logo.png" alt="Logo" height="80">
 </footer>
 
+<!-- Modal for full-size note -->
+<div id="modal">
+  <div id="modal-content">
+    <span id="modal-close">&times;</span>
+    <img id="modal-img" src="" alt="Full note">
+    <p id="modal-text" style="color:black; font-weight:bold; margin-top:10px;"></p>
+  </div>
+</div>
 
-
+<!-- Firebase -->
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.24.0/firebase-app.js";
-import { getDatabase, ref, onValue, set, update, push, runTransaction } from "https://www.gstatic.com/firebasejs/9.24.0/firebase-database.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
+import { getDatabase, ref, set, push, onValue, update, get } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCM69r2wUibBFIFpML07Y5RUTrxHgonlSc",
@@ -169,83 +194,110 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
 const memberName = "anton";
-const wall = document.getElementById("anton-wall");
-const currentWeek = Math.floor((new Date()-new Date('2025-09-01'))/(7*24*60*60*1000))+1;
-const currentUserNoteId = localStorage.getItem('myNoteId_' + memberName);
+const wall = document.getElementById('anton-wall');
 
-// Listen for notes in real-time
+let currentUserNoteId = localStorage.getItem('currentUserNoteId_' + memberName) || null;
+
+// Listen to Firebase changes
 const notesRef = ref(db, 'notes/' + memberName);
-onValue(notesRef, snapshot => {
-    const notesObj = snapshot.val() || {};
-    const notes = Object.values(notesObj);
-    renderNotes(notes);
+onValue(notesRef, (snapshot)=>{
+  const data = snapshot.val() || {};
+  const notes = Object.values(data);
+  renderNotes(notes);
 });
 
+// Render function
 function renderNotes(notes){
-    wall.innerHTML = '';
-    if(!notes.length) return;
+  wall.innerHTML='';
+  const currentWeek = Math.floor((new Date()-new Date('2025-09-01'))/(7*24*60*60*1000))+1;
 
-    let maxLikes = -1, topNoteId = null;
-    notes.forEach(n => {
-        if(!n.deleted && n.week === currentWeek && n.likes > maxLikes){
-            maxLikes = n.likes;
-            topNoteId = n.id;
-        }
-    });
+  let topLikes=-1, topIndex=-1;
+  notes.forEach((note,i)=>{ 
+    if(note.week===currentWeek && note.likes>topLikes){ topLikes=note.likes; topIndex=i; }
+  });
 
-    notes.forEach(note => {
-        if(note.deleted) return;
-        const div = document.createElement('div');
-        div.className = 'sticky-note frame';
-        if(note.id === topNoteId) div.classList.add('top-note');
-        div.innerHTML = `
-            <img src="${note.img}" alt="Sticky Note">
-            <div class="text">${note.text}</div>
-            <button class="like-btn">❤ ${note.likes || 0}</button>
-        `;
+  notes.forEach((note,i)=>{
+    const div=document.createElement('div');
+    div.className='sticky-note frame';
+    if(i===topIndex) div.classList.add('top-note');
 
-        const likeBtn = div.querySelector('.like-btn');
-        likeBtn.onclick = e => {
-            e.stopPropagation();
-            const liked = JSON.parse(localStorage.getItem('likedNotes')||'[]');
-            if(liked.includes(note.id)){ alert("Already liked!"); return; }
-            const noteRef = ref(db, 'notes/' + memberName + '/' + note.id + '/likes');
-            runTransaction(noteRef, current => current ? current + 1 : 1);
-            liked.push(note.id);
-            localStorage.setItem('likedNotes', JSON.stringify(liked));
-        };
+    div.innerHTML=`
+      <img src="${note.img}" alt="Sticky Note">
+      <div class="text">${note.text}</div>
+      <button class="like-btn" data-id="${note.id}">❤ ${note.likes || 0}</button>
+    `;
+    // Delete button
+    if(note.id===currentUserNoteId){
+      const delBtn=document.createElement('button');
+      delBtn.textContent='Delete';
+      delBtn.className='delete-btn';
+      delBtn.onclick=()=>{ if(confirm("Delete your note?")) deleteNote(note.id); };
+      div.appendChild(delBtn);
+    }
 
-        if(note.id === currentUserNoteId){
-            const delBtn = document.createElement('button');
-            delBtn.textContent = 'Delete';
-            delBtn.className = 'delete-btn';
-            delBtn.onclick = e => {
-                e.stopPropagation();
-                if(!confirm('Delete your note?')) return;
-                const delRef = ref(db, 'notes/' + memberName + '/' + note.id + '/deleted');
-                set(delRef, true);
-                localStorage.removeItem('myNoteId_' + memberName);
-            };
-            div.appendChild(delBtn);
-        }
+    // Click to open modal
+    div.onclick = (e)=>{
+      if(!e.target.classList.contains('like-btn') && !e.target.classList.contains('delete-btn')){
+        openModal(note.img, note.text);
+      }
+    }
 
-        div.onclick = () => alert(note.text); // full preview on click
-        wall.appendChild(div);
-    });
+    wall.appendChild(div);
+  });
+
+  // Like buttons
+  document.querySelectorAll('.like-btn').forEach(btn=>{
+    btn.onclick = (e)=>{
+      e.stopPropagation();
+      const noteId = e.target.dataset.id;
+      const likedNotes = JSON.parse(localStorage.getItem('likedNotes') || '[]');
+      if(likedNotes.includes(noteId)){ alert("Already liked!"); return; }
+      const noteRef = ref(db,'notes/'+memberName+'/'+noteId+'/likes');
+      get(noteRef).then(snap=>{
+        const currentLikes = snap.val()||0;
+        set(noteRef, currentLikes+1);
+        likedNotes.push(noteId);
+        localStorage.setItem('likedNotes',JSON.stringify(likedNotes));
+      });
+    }
+  });
 }
 
-// Example function to add a note (call this when submitting)
-function addNote(img, text) {
-    const id = Date.now().toString(36) + Math.random().toString(36).slice(2,6);
-    const noteRef = ref(db, 'notes/' + memberName + '/' + id);
-    set(noteRef, { id, img, text, likes:0, week: currentWeek });
-    localStorage.setItem('myNoteId_' + memberName, id);
+// Delete note
+function deleteNote(id){
+  const noteRef = ref(db,'notes/'+memberName+'/'+id);
+  set(noteRef,null);
+  localStorage.removeItem('currentUserNoteId_' + memberName);
 }
+
+// Modal
+const modal = document.getElementById('modal');
+const modalImg = document.getElementById('modal-img');
+const modalText = document.getElementById('modal-text');
+document.getElementById('modal-close').onclick=()=>{ modal.style.display='none'; }
+function openModal(img,text){
+  modal.style.display='flex';
+  modalImg.src=img;
+  modalText.textContent=text;
+}
+
+// Submit new note (example: from prompt)
+function submitNote(){
+  const img = prompt("Enter note image URL:","anton1.png");
+  const text = prompt("Enter your message:");
+  if(!img || !text) return;
+  const id = Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+  const week = Math.floor((new Date()-new Date('2025-09-01'))/(7*24*60*60*1000))+1;
+  const noteRef = ref(db,'notes/'+memberName+'/'+id);
+  set(noteRef,{id,img,text,likes:0,week}).then(()=>{
+    localStorage.setItem('currentUserNoteId_' + memberName,id);
+    alert("Note submitted!");
+  });
+}
+
+// Example: attach to a button or call directly
+// submitNote();
 </script>
-
-
-  
 
 </body>
 </html>
-
