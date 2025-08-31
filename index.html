@@ -296,7 +296,21 @@ function renderSelectionWall(memberName){
   });
 }
 
-function renderAllSelectionWalls(){ members.forEach(m=>renderSelectionWall(m.name)) }
+// **Render submitted notes on member wall**
+function renderMemberNotes(memberName){
+  renderSelectionWall(memberName);
+  const wall = document.querySelector(`#${memberName}-selection .wall`);
+  const notes = JSON.parse(localStorage.getItem(memberName)||'[]');
+  notes.forEach(note=>{
+    const noteDiv = document.createElement('div');
+    noteDiv.className='sticky-note';
+    noteDiv.style.border=`4px solid ${getMemberColor(memberName)}`;
+    noteDiv.innerHTML=`<img src="${note.img}" alt="Note"><div class="label" style="color:${note.color}">${note.text}</div>`;
+    wall.appendChild(noteDiv);
+  });
+}
+
+function renderAllSelectionWalls(){ members.forEach(m=>renderMemberNotes(m.name)) }
 
 function renderSimpleNotes(){
   const wall = $('#simple-note-wall');
@@ -313,13 +327,8 @@ function renderSimpleNotes(){
   });
 }
 
-function openModalForMember(memberName,imgSrc){
-  currentMember=memberName; currentImg=imgSrc; currentMode='member'; setupModal();
-}
-
-function openModalForSimple(imgSrc){
-  currentMember='simple'; currentImg=imgSrc; currentMode='simple'; setupModal();
-}
+function openModalForMember(memberName,imgSrc){ currentMember=memberName; currentImg=imgSrc; currentMode='member'; setupModal(); }
+function openModalForSimple(imgSrc){ currentMember='simple'; currentImg=imgSrc; currentMode='simple'; setupModal(); }
 
 function setupModal(){
   modalImg.src=currentImg;
@@ -365,6 +374,7 @@ modalSubmit.addEventListener('click',()=>{
   localStorage.setItem(userNotesKey,JSON.stringify(userNotes));
   closeModal();
   alert(`Your note has been submitted to ${member.toUpperCase()}'s wall!`);
+  renderMemberNotes(member); // <-- Update wall instantly
 });
 
 function getCurrentWeek(){
@@ -382,7 +392,7 @@ submitDesignBtn.addEventListener('click',()=>{
     localStorage.setItem(member+'_designs',JSON.stringify(designs));
     designMsg.textContent='Design submitted successfully!';
     designFileInput.value='';
-    renderSelectionWall(member); renderDesigns();
+    renderMemberNotes(member); renderDesigns();
     setTimeout(()=>designMsg.textContent='',3000);
   };
   reader.readAsDataURL(file);
@@ -402,7 +412,7 @@ function renderDesigns(){
       delBtn.style.background='red'; delBtn.style.color='#fff'; delBtn.style.border='none';
       delBtn.style.padding='4px 6px'; delBtn.style.cursor='pointer';
       delBtn.onclick=()=>{if(!confirm('Delete this design?'))return; designs.splice(idx,1);
-      localStorage.setItem(member.name+'_designs',JSON.stringify(designs)); renderSelectionWall(member.name); renderDesigns();};
+      localStorage.setItem(member.name+'_designs',JSON.stringify(designs)); renderMemberNotes(member.name); renderDesigns();};
       wrapper.appendChild(delBtn);
       designContainer.appendChild(wrapper);
     });
