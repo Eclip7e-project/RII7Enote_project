@@ -105,9 +105,8 @@ function openModal(note){
   modalImg.src = note.img;
   modalText.textContent = note.text;
   modalLike.textContent = `❤ ${note.likes||0}`;
-  // Only show delete button if this user is the creator
-  modalDelete.style.display = (note.creator === userId) ? 'block' : 'none';
   modal.style.display = 'flex';
+  modalDelete.style.display = (note.creator===userId)?'block':'none';
 }
 
 // Close modal
@@ -120,7 +119,7 @@ modalLike.onclick = async () => {
   if(!currentModalNote) return;
   let liked = JSON.parse(localStorage.getItem('likedNotes')||'[]');
   if(liked.includes(currentModalNote.id)){ alert("Already liked!"); return; }
-  await updateDoc(doc(db,'notes',memberName,'memberNotes',currentModalNote.id), { likes:(currentModalNote.likes||0)+1 });
+  await updateDoc(doc(db,'notes',memberName,'memberNotes',currentModalNote.id),{ likes:(currentModalNote.likes||0)+1 });
   currentModalNote.likes = (currentModalNote.likes||0)+1;
   modalLike.textContent = `❤ ${currentModalNote.likes}`;
   liked.push(currentModalNote.id);
@@ -128,20 +127,22 @@ modalLike.onclick = async () => {
 };
 
 // Delete button
-modalDelete.onclick = async (e) => {
-  e.stopPropagation();
+modalDelete.onclick = async () => {
   if(!currentModalNote) return;
   if(!confirm("Delete your note?")) return;
   await deleteDoc(doc(db,'notes',memberName,'memberNotes',currentModalNote.id));
   modal.style.display='none';
 };
 
-// Render notes
+// Render notes (hide old notes without creator)
 function renderNotes(notes){
   wall.innerHTML='';
   let maxLikes = -1;
   let topNoteId = null;
   const currentWeek = Math.floor((new Date()-new Date('2025-09-01'))/(7*24*60*60*1000))+1;
+
+  // Filter out old notes without creator
+  notes = notes.filter(n => n.creator);
 
   notes.forEach(n=>{
     if(n.week === currentWeek && (n.likes||0) > maxLikes){
@@ -163,9 +164,19 @@ function renderNotes(notes){
 // Firestore realtime
 const notesCol = collection(db,'notes',memberName,'memberNotes');
 onSnapshot(notesCol, snapshot=>{
-  const notes = snapshot.docs.map(d=>({id:d.id,...d.data()}));
+  const notes = snapshot.docs.map(d=>{
+    const data = d.data();
+    return {id:d.id, creator: data.creator, ...data};
+  });
   renderNotes(notes);
 });
+
+// Optional: Function to submit a new note (ensures creator is set)
+async function submitNote(imgSrc, text){
+  const week = Math.floor((new Date()-new Date('2025-09-01'))/(7*24*60*60*1000))+1;
+  const noteData = { img: imgSrc, text, likes:0, week, creator: userId, timestamp: Date.now() };
+  await addDoc(collection(db,'notes',memberName,'memberNotes'), noteData);
+}
 </script>
 </body>
 </html>
