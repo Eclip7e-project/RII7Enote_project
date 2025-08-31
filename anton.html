@@ -45,37 +45,35 @@ section.wall {
   height:180px;
   background:white;
   border-radius:15px;
-  padding:10px;
   position:relative;
   box-shadow:3px 3px 10px rgba(0,0,0,0.5);
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:flex-start;
   overflow:hidden;
   cursor:pointer;
+  border:5px solid #1E3A5F;
 }
 .sticky-note img {
   width:100%;
-  border-radius:10px;
-  max-height:90px;
+  height:100%;
   object-fit:cover;
+  border-radius:10px;
 }
 .sticky-note .text {
-  margin-top:5px;
-  font-size:0.9em;
+  position:absolute;
+  top:10px;
+  left:10px;
+  right:10px;
+  bottom:35px;
+  font-size:0.75em;
   color:black;
+  background:rgba(255,255,255,0.7);
+  padding:5px;
+  border-radius:5px;
   overflow-y:auto;
-  white-space:pre-wrap;
   word-wrap:break-word;
-  flex:1;
-  width:100%;
+  white-space:pre-wrap;
 }
-.frame {
-  border:5px solid #1E3A5F;
-  border-radius:15px;
-  background:white;
-}
+
+/* Buttons */
 .like-btn, .delete-btn {
   position:absolute;
   border:none;
@@ -202,7 +200,7 @@ function renderNotes() {
     if (note.deleted) return;
 
     const div = document.createElement('div');
-    div.className = 'sticky-note frame';
+    div.className = 'sticky-note';
     if (i === topNoteIndex) div.classList.add('top-note');
 
     div.innerHTML = `
@@ -254,6 +252,8 @@ renderNotes();
 
 </body>
 </html>
+
+
 
 
 
