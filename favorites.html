@@ -58,9 +58,9 @@ h1{
   top:10px;
   left:10px;
   right:10px;
-  bottom:40px;
+  bottom:35px;
+  font-size:0.75rem;
   color:black;
-  font-size:0.8rem;
   overflow:auto;
   white-space:pre-wrap;
 }
@@ -70,15 +70,11 @@ h1{
   left:5px;
   right:5px;
   padding:3px 5px;
-  background:rgba(0,0,0,0.6);
+  background:rgba(0,0,0,0.5);
   color:white;
-  font-size:0.8rem;
+  font-size:0.75rem;
   border-radius:5px;
   text-align:center;
-}
-.note:hover{
-  transform:scale(1.05);
-  box-shadow:0 0 15px gold;
 }
 .note.current-week{
   border:3px solid gold;
@@ -102,8 +98,7 @@ footer a:hover{
 
 <header>
 <h1>Weekly Favorites Archive</h1>
-<p>See the top-liked note for each member from every week. Current week is highlighted in gold! Click your own note to see a special message. Click any note to visit that member’s wall.</p>
-<img src="logo.png" alt="Logo" height="80" style="margin-top:20px;">
+<p>Top-liked notes per member for each week. Current week is highlighted in gold! Click your own note to see a special message. Click any note to visit that member’s wall.</p>
 </header>
 
 <div id="favorites-container"></div>
@@ -114,6 +109,7 @@ footer a:hover{
 </footer>
 
 <script>
+// ---------------- Members ----------------
 const members = [
   {name:'shotaro', color:'#8B0000', wall:'shotaro.html'},
   {name:'eunseok', color:'#D3D3D3', wall:'eunseok.html'},
@@ -135,14 +131,14 @@ members.forEach(m => {
   }
 });
 
-// Render Favorites
+// ---------------- Render Favorites ----------------
 function renderFavorites() {
   const container = document.getElementById('favorites-container');
   container.innerHTML='';
 
   members.forEach(member=>{
-    let notes = JSON.parse(localStorage.getItem(member.name+'_favorites') || '[]');
-    notes = notes.filter(n=>n.creator && n.img && !n.deleted);
+    let notes = JSON.parse(localStorage.getItem(member.name) || '[]');
+    notes = notes.filter(n=>n.creator && n.img && !n.deleted && n.text);
 
     if(notes.length===0) return;
 
@@ -186,7 +182,7 @@ function renderFavorites() {
 
       noteDiv.onclick = ()=>{
         const storedUserId = localStorage.getItem('userId_'+member.name);
-        if(storedUserId && note.creator && storedUserId === note.creator){
+        if(storedUserId && storedUserId === note.creator){
           alert(`🎉 Amazing! Your note is this week's favorite 💖🌟`);
         } else {
           window.location.href = member.wall;
