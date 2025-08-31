@@ -262,7 +262,6 @@ const members = [
 
 // ----------------- DOM Helpers -----------------
 const $ = s => document.querySelector(s);
-const $all = s => Array.from(document.querySelectorAll(s));
 
 // ----------------- Modal Elements -----------------
 const modal = $('#modal');
@@ -276,8 +275,12 @@ const colorPicker = $('#color-picker');
 const memberSelect = $('#member-select');
 const memberSelectLabel = $('#member-select-label');
 const modalSubmit = $('#modal-submit');
+const designFileInput = $('#design-file');
+const designMember = $('#design-member');
+const submitDesignBtn = $('#submitDesign');
+const designMsg = $('#design-msg');
+const designContainer = $('#designContainer');
 
-// ----------------- State -----------------
 let currentImg = '';
 let currentMember = '';
 let currentMode = 'member';
@@ -297,7 +300,7 @@ function setupModal() {
     modalMemberTitle.textContent = 'Plain Note';
     memberSelect.style.display = 'block';
     memberSelectLabel.style.display = 'block';
-    memberSelect.value = 'shotaro';
+    memberSelect.value = currentMember || 'shotaro';
   } else {
     modalMemberTitle.textContent = currentMember.toUpperCase();
     memberSelect.style.display = 'none';
@@ -327,21 +330,50 @@ const openModalForMember = (memberName, imgSrc) => {
   setupModal();
 };
 
-const openModalForSimple = imgSrc => {
-  currentMember = 'simple';
+const openModalForSimple = (imgSrc, defaultMember='shotaro') => {
   currentImg = imgSrc;
   currentMode = 'simple';
+  currentMember = defaultMember;
   setupModal();
 };
 
-// ----------------- Render Walls -----------------
+// ----------------- Render Pick Section -----------------
+function renderPickSection(){
+  members.forEach(member => {
+    const wall = document.querySelector(`#${member.name}-selection .wall`);
+    if(!wall) return;
+    wall.innerHTML = '';
+
+    // 1️⃣ Placeholders
+    for(let i=1;i<=4;i++){
+      const imgFile = `${member.name}${i}.png`;
+      const note = document.createElement('div');
+      note.className = 'sticky-note';
+      note.style.border = `4px solid ${getMemberColor(member.name)}`;
+      note.innerHTML = `<img src="${imgFile}" alt="${member.name} placeholder ${i}">`;
+      note.onclick = () => openModalForMember(member.name, imgFile);
+      wall.appendChild(note);
+    }
+
+    // 2️⃣ Uploaded designs by fans (only in pick)
+    const designs = JSON.parse(localStorage.getItem(member.name+'_designs')||'[]');
+    designs.forEach(src => {
+      const note = document.createElement('div');
+      note.className = 'sticky-note';
+      note.style.border = `4px solid ${getMemberColor(member.name)}`;
+      note.innerHTML = `<img src="${src}" alt="Uploaded design">`;
+      note.onclick = () => openModalForMember(member.name, src);
+      wall.appendChild(note);
+    });
+  });
+}
+
+// ----------------- Render Member Walls -----------------
 function renderMemberWall(memberName){
-  const wall = document.querySelector(`#${memberName}-selection .wall`);
+  const wall = document.querySelector(`#${memberName}-wall`);
   if(!wall) return;
+  wall.innerHTML = '';
 
-  wall.innerHTML = ''; // Clear all notes
-
-  // 1️⃣ Firestore notes
   const notesCol = collection(db, 'notes', memberName, 'memberNotes');
   onSnapshot(notesCol, snapshot => {
     snapshot.docs.forEach(docSnap => {
@@ -350,7 +382,6 @@ function renderMemberWall(memberName){
       noteDiv.className = 'sticky-note';
       noteDiv.style.border = `4px solid ${getMemberColor(memberName)}`;
       noteDiv.innerHTML = `<img src="${data.img}" alt="Note"><div class="label">${data.text}</div>`;
-      noteDiv.onclick = () => openModalForMember(memberName, data.img);
       wall.appendChild(noteDiv);
     });
   });
@@ -369,14 +400,74 @@ function renderSimpleNotes(){
     note.style.width = '110px';
     note.style.height = '110px';
     note.style.border = '3px solid #ccc';
-    note.innerHTML = `<img src="${imgFile}" alt="Simple note" data-color="${color}">`;
+    note.innerHTML = `<img src="${imgFile}" alt="Simple note">`;
     note.onclick = () => openModalForSimple(imgFile);
     wall.appendChild(note);
   });
 }
 
+// ----------------- Submit Design -----------------
+submitDesignBtn.addEventListener('click', ()=>{
+  const file = designFileInput.files[0];
+  const member = designMember.value;
+  if(!file){ designMsg.textContent='Select a file!'; return; }
+  const reader = new FileReader();
+  reader.onload = e=>{
+    let designs = JSON.parse(localStorage.getItem(member+'_designs')||'[]');
+    designs.push(e.target.result);
+    localStorage.setItem(member+'_designs', JSON.stringify(designs));
+    designMsg.textContent='Design submitted!';
+    designFileInput.value='';
+    renderPickSection();
+    renderAllDesigns();
+    setTimeout(()=>designMsg.textContent='',3000);
+  };
+  reader.readAsDataURL(file);
+});
+
+// ----------------- Render All Designs -----------------
+function renderAllDesigns(){
+  designContainer.innerHTML='';
+  members.forEach(member=>{
+    const designs = JSON.parse(localStorage.getItem(member.name+'_designs')||'[]');
+    designs.forEach((src,idx)=>{
+      const wrapper = document.createElement('div');
+      wrapper.style.display='inline-block';
+      wrapper.style.position='relative';
+      wrapper.style.margin='6px';
+
+      const img = document.createElement('img');
+      img.src = src;
+      img.style.width = '100px';
+      img.style.border = `2px solid ${member.color}`;
+      img.style.borderRadius = '10px';
+      wrapper.appendChild(img);
+
+      const delBtn = document.createElement('button');
+      delBtn.textContent='Delete';
+      delBtn.style.position='absolute';
+      delBtn.style.top='6px';
+      delBtn.style.right='6px';
+      delBtn.style.background='red';
+      delBtn.style.color='#fff';
+      delBtn.style.border='none';
+      delBtn.style.padding='4px 6px';
+      delBtn.style.cursor='pointer';
+      delBtn.onclick=()=>{
+        if(!confirm('Delete this design?')) return;
+        designs.splice(idx,1);
+        localStorage.setItem(member.name+'_designs', JSON.stringify(designs));
+        renderAllDesigns();
+        renderPickSection();
+      };
+      wrapper.appendChild(delBtn);
+      designContainer.appendChild(wrapper);
+    });
+  });
+}
+
 // ----------------- Submit Modal Note -----------------
-modalSubmit.addEventListener('click', async () => {
+modalSubmit.addEventListener('click', async ()=>{
   const text = noteText.value.trim();
   if(!text){ alert('Write something!'); return; }
 
@@ -384,22 +475,24 @@ modalSubmit.addEventListener('click', async () => {
   const week = getCurrentWeek();
   const member = currentMode === 'simple' ? memberSelect.value : currentMember;
 
-  const noteData = { img: currentImg, text, color, likes: 0, week, timestamp: Date.now() };
+  const noteData = { img: currentImg, text, color, likes:0, week, timestamp: Date.now() };
 
   try {
     await addDoc(collection(db, 'notes', member, 'memberNotes'), noteData);
     closeModal();
+    renderMemberWall(member);
     alert(`Your note has been submitted to ${member.toUpperCase()}'s wall!`);
-  } catch(err) {
+  } catch(err){
     console.error(err);
     alert('Error submitting note.');
   }
 });
 
 // ----------------- Initialize -----------------
-members.forEach(m => renderMemberWall(m.name));
+renderPickSection();
 renderSimpleNotes();
-
+renderAllDesigns();
+members.forEach(m => renderMemberWall(m.name));
 </script>
 
 
@@ -410,6 +503,7 @@ renderSimpleNotes();
 
 
   
+
 
 
 
