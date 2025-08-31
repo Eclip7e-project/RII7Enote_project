@@ -60,6 +60,19 @@
     @media (max-width:800px){
       .modal-grid{grid-template-columns:1fr; max-height:85vh; overflow:auto}
     }
+
+
+
+    /* Modal preview square for simple notes only */
+.modal-left.simple-note {
+  width: 110px !important;
+  height: 110px !important;
+}
+.modal-left.simple-note img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
   </style>
 </head>
 <body>
@@ -328,24 +341,25 @@ function openModalForSimple(imgSrc){
   currentMember='simple'; currentImg=imgSrc; currentMode='simple'; setupModal();
 }
 
-function setupModal(){
-  modalImg.src = currentImg;
+const modalLeft = $('#modal-left');
 
-  if(currentMode === 'simple'){
-    modalMemberTitle.textContent = 'Plain Note';
-    memberSelect.style.display = 'block';
-    memberSelectLabel.style.display = 'block';
-    memberSelect.value = 'shotaro';
+if(currentMode === 'simple'){
+  modalMemberTitle.textContent = 'Plain Note';
+  memberSelect.style.display = 'block';
+  memberSelectLabel.style.display = 'block';
+  memberSelect.value = 'shotaro';
 
-    // Square preview for simple notes
-    const modalLeft = $('#modal-left');
-    modalLeft.style.width = '110px';
-    modalLeft.style.height = '110px';
-    modalImg.style.objectFit = 'cover'; // ensures it fills the square
-  } else {
-    modalMemberTitle.textContent = currentMember.toUpperCase();
-    memberSelect.style.display = 'none';
-    memberSelectLabel.style.display = 'none';
+  // add class to make square
+  modalLeft.classList.add('simple-note');
+} else {
+  modalMemberTitle.textContent = currentMember.toUpperCase();
+  memberSelect.style.display = 'none';
+  memberSelectLabel.style.display = 'none';
+
+  // remove class for member notes
+  modalLeft.classList.remove('simple-note');
+}
+
 
     // Reset to default for member notes
     const modalLeft = $('#modal-left');
@@ -439,6 +453,7 @@ renderAllSelectionWalls(); renderSimpleNotes(); renderDesigns();
 </script>
 </body>
 </html>
+
 
 
 
