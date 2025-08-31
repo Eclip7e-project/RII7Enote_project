@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Anton Wall - RII7E Project</title>
+<title>Anton Wall - Firebase Version</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
 <style>
 body {
@@ -43,38 +43,29 @@ section.wall {
 .sticky-note {
   width:200px;
   height:180px;
-  background:white;
-  border-radius:15px;
-  padding:10px;
   position:relative;
-  box-shadow:3px 3px 10px rgba(0,0,0,0.5);
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:flex-start;
+  border-radius:15px;
   overflow:hidden;
   cursor:pointer;
+  box-shadow:3px 3px 10px rgba(0,0,0,0.5);
 }
 .sticky-note img {
   width:100%;
-  border-radius:10px;
-  max-height:90px;
+  height:100%;
   object-fit:cover;
 }
 .sticky-note .text {
-  margin-top:5px;
-  font-size:0.9em;
-  color:black;
+  position:absolute;
+  bottom:10px;
+  left:10px;
+  right:10px;
+  background:rgba(0,0,0,0.5);
+  color:white;
+  font-size:0.8em;
+  padding:5px;
+  border-radius:5px;
+  max-height:60%;
   overflow-y:auto;
-  white-space:pre-wrap;
-  word-wrap:break-word;
-  flex:1;
-  width:100%;
-}
-.frame {
-  border:5px solid #1E3A5F;
-  border-radius:15px;
-  background:white;
 }
 .like-btn, .delete-btn {
   position:absolute;
@@ -85,22 +76,9 @@ section.wall {
   font-size:0.8em;
   font-weight:bold;
 }
-.like-btn {
-  bottom:5px;
-  left:5px;
-  background:gold;
-  color:black;
-}
-.delete-btn {
-  top:5px;
-  right:5px;
-  background:red;
-  color:white;
-}
-.top-note {
-  border: 5px solid gold;
-  box-shadow: 0 0 15px gold;
-}
+.like-btn { bottom:5px; left:5px; background:gold; color:black; }
+.delete-btn { top:5px; right:5px; background:red; color:white; }
+.top-note { border: 5px solid gold; box-shadow: 0 0 15px gold; }
 
 /* MODAL */
 #noteModal {
@@ -155,9 +133,7 @@ footer a:hover{text-decoration:underline;}
   </div>
 </header>
 
-<section class="wall" id="anton-wall">
-  <!-- Notes load dynamically -->
-</section>
+<section class="wall" id="anton-wall"></section>
 
 <!-- MODAL -->
 <div id="noteModal">
@@ -170,7 +146,21 @@ footer a:hover{text-decoration:underline;}
   <img src="logo.png" alt="Logo" height="80">
 </footer>
 
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-firestore-compat.js"></script>
 <script>
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_PROJECT_ID.appspot.com",
+  messagingSenderId: "SENDER_ID",
+  appId: "APP_ID"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
 // ====== CONFIG ======
 const memberName = "anton";
 const wall = document.getElementById('anton-wall');
@@ -178,32 +168,31 @@ const modal = document.getElementById('noteModal');
 const modalContent = document.getElementById('noteModalContent');
 const modalClose = document.getElementById('noteModalClose');
 
-let notes = JSON.parse(localStorage.getItem(memberName) || '[]');
-
 // ====== MODAL ======
 modalClose.onclick = () => modal.style.display = 'none';
-modal.onclick = e => { if (e.target === modal) modal.style.display = 'none'; };
+modal.onclick = e => { if(e.target === modal) modal.style.display = 'none'; };
 
 // ====== RENDER NOTES ======
-function renderNotes() {
+function renderNotes(notes) {
   wall.innerHTML = '';
   let maxLikes = -1;
-  let topNoteIndex = -1;
+  let topNoteId = null;
+
   const currentWeek = Math.floor((new Date()-new Date('2025-09-01'))/(7*24*60*60*1000))+1;
 
-  notes.forEach((note, i) => {
-    if (!note.deleted && note.week === currentWeek && (note.likes || 0) > maxLikes) {
+  notes.forEach(note => {
+    if(!note.deleted && note.week === currentWeek && (note.likes || 0) > maxLikes){
       maxLikes = note.likes;
-      topNoteIndex = i;
+      topNoteId = note.id;
     }
   });
 
-  notes.forEach((note, i) => {
-    if (note.deleted) return;
+  notes.forEach(note => {
+    if(note.deleted) return;
 
     const div = document.createElement('div');
-    div.className = 'sticky-note frame';
-    if (i === topNoteIndex) div.classList.add('top-note');
+    div.className = 'sticky-note';
+    if(note.id === topNoteId) div.classList.add('top-note');
 
     div.innerHTML = `
       <img src="${note.img}" alt="Note Image">
@@ -215,25 +204,21 @@ function renderNotes() {
     // Like button
     div.querySelector('.like-btn').onclick = e => {
       e.stopPropagation();
-      let likedNotes = JSON.parse(localStorage.getItem('likedNotes') || '[]');
-      if (likedNotes.includes(`${memberName}-${i}`)) {
+      const likedNotes = JSON.parse(localStorage.getItem('likedNotes')||'[]');
+      if(likedNotes.includes(note.id)){
         alert("You've already liked this note!");
         return;
       }
-      note.likes = (note.likes || 0) + 1;
-      likedNotes.push(`${memberName}-${i}`);
+      db.collection(memberName).doc(note.id).update({likes: (note.likes||0)+1});
+      likedNotes.push(note.id);
       localStorage.setItem('likedNotes', JSON.stringify(likedNotes));
-      localStorage.setItem(memberName, JSON.stringify(notes));
-      renderNotes();
     };
 
     // Delete button
     div.querySelector('.delete-btn').onclick = e => {
       e.stopPropagation();
-      if (confirm("Delete this note?")) {
-        notes[i].deleted = true;
-        localStorage.setItem(memberName, JSON.stringify(notes));
-        renderNotes();
+      if(confirm("Delete this note?")){
+        db.collection(memberName).doc(note.id).update({deleted:true});
       }
     };
 
@@ -249,8 +234,16 @@ function renderNotes() {
   });
 }
 
-renderNotes();
+// ====== FIRESTORE REALTIME ======
+db.collection(memberName).onSnapshot(snapshot=>{
+  const notes = [];
+  snapshot.forEach(doc=>{
+    notes.push({...doc.data(), id: doc.id});
+  });
+  renderNotes(notes);
+});
 </script>
 
 </body>
 </html>
+
