@@ -187,8 +187,7 @@ footer a:hover{text-decoration:underline;}
   </div>
 </header>
 
-<section class="wall" id="shotaro-wall">
-</section>
+<section class="wall" id="shotaro-wall"></section>
 
 <!-- Modal -->
 <div id="modal">
@@ -222,82 +221,79 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// ----------------- User ID -----------------
-let userId = localStorage.getItem('userId');
-if(!userId) { userId = crypto.randomUUID(); localStorage.setItem('userId', userId); }
-
 // ----------------- Variables -----------------
 const memberName = "shotaro";
 const wall = document.getElementById('shotaro-wall');
 const modal = document.getElementById('modal');
+const modalContent = document.getElementById('modal-content');
 const modalImg = document.getElementById('modal-img');
 const modalText = document.getElementById('modal-text');
 const modalLike = document.getElementById('modal-like');
 const modalClose = document.getElementById('modal-close');
 
+// Ensure unique userId for creator field
+let userId = localStorage.getItem('userId');
+if(!userId){ userId = crypto.randomUUID(); localStorage.setItem('userId', userId); }
+
 let currentModalNote = null;
 
 // ----------------- Functions -----------------
-function openModal(note) {
+function openModal(note){
   currentModalNote = note;
   modalImg.src = note.img;
   modalText.textContent = note.text;
-  modalLike.textContent = `❤ ${note.likes || 0}`;
+  modalLike.textContent = `❤ ${note.likes||0}`;
   modal.style.display = 'flex';
 }
 
-modalClose.onclick = () => modal.style.display='none';
+// Modal close
+modalClose.onclick = (e)=>{ e.stopPropagation(); modal.style.display='none'; }
 modal.onclick = e => { if(e.target===modal) modal.style.display='none'; }
 
-// ----------------- Like button -----------------
-modalLike.onclick = async () => {
+// Likes once per browser
+modalLike.onclick = async ()=>{
   if(!currentModalNote) return;
-  let likedNotes = JSON.parse(localStorage.getItem('likedNotes') || '[]');
+  let likedNotes = JSON.parse(localStorage.getItem('likedNotes')||'[]');
   if(likedNotes.includes(currentModalNote.id)){
     alert("You've already liked this note!");
     return;
   }
   const noteRef = doc(db,'notes',memberName,'memberNotes',currentModalNote.id);
-  await updateDoc(noteRef,{ likes: (currentModalNote.likes||0)+1 });
-  currentModalNote.likes++;
+  await updateDoc(noteRef,{ likes:(currentModalNote.likes||0)+1 });
+  currentModalNote.likes = (currentModalNote.likes||0)+1;
   modalLike.textContent = `❤ ${currentModalNote.likes}`;
   likedNotes.push(currentModalNote.id);
   localStorage.setItem('likedNotes', JSON.stringify(likedNotes));
-};
+}
 
-// ----------------- Render Notes -----------------
-function renderNotes(notes) {
+// Render notes
+function renderNotes(notes){
   wall.innerHTML = '';
+  const currentWeek = Math.floor((new Date()-new Date('2025-09-01'))/(7*24*60*60*1000))+1;
   let maxLikes = -1;
   let topNoteId = null;
 
-  const currentWeek = Math.floor((new Date()-new Date('2025-09-01'))/(7*24*60*60*1000))+1;
-
-  notes.forEach(n => {
-    if(n.week===currentWeek && (n.likes||0) > maxLikes){
-      maxLikes = n.likes||0;
-      topNoteId = n.id;
-    }
+  notes.forEach(n=>{
+    if(n.week===currentWeek && (n.likes||0)>maxLikes){ maxLikes = n.likes||0; topNoteId = n.id; }
   });
 
-  notes.forEach(n => {
+  notes.forEach(n=>{
     const div = document.createElement('div');
-    div.className = 'sticky-note';
+    div.className='sticky-note';
     if(n.id===topNoteId) div.classList.add('top-note');
-
-    div.innerHTML = `<img src="${n.img}" alt="Note"><div class="text">${n.text}</div>`;
-    div.onclick = () => openModal(n);
+    div.innerHTML = `<img src="${n.img}"><div class="text">${n.text}</div>`;
+    div.onclick = ()=>openModal(n);
 
     // Delete button for creator
     if(n.creator === userId){
       const deleteBtn = document.createElement('button');
-      deleteBtn.textContent = 'Delete';
-      deleteBtn.className = 'delete-btn';
+      deleteBtn.textContent='Delete';
+      deleteBtn.className='delete-btn';
       deleteBtn.onclick = async (e)=>{
         e.stopPropagation();
         if(!confirm("Delete your note?")) return;
         await deleteDoc(doc(db,'notes',memberName,'memberNotes',n.id));
-      };
+      }
       div.appendChild(deleteBtn);
     }
 
@@ -305,7 +301,7 @@ function renderNotes(notes) {
   });
 }
 
-// ----------------- Real-time Firestore -----------------
+// Real-time Firestore
 const notesCol = collection(db,'notes',memberName,'memberNotes');
 onSnapshot(notesCol, snapshot=>{
   const notes = snapshot.docs.map(docSnap=>({id:docSnap.id,...docSnap.data()}));
