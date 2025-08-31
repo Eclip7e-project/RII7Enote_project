@@ -13,21 +13,24 @@ body {
   color:white;
   background-image:url('https://www.transparenttextures.com/patterns/stardust.png');
 }
-header{
+header {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  border-bottom:2px solid gold;
+  background:black;
   padding:30px;
   text-align:center;
 }
-h1{
+header h1 {
   color:gold;
+  margin-bottom:10px;
 }
-.member-section{
-  margin:40px 0;
-}
-.member-section h2{
-  text-align:center;
-  color:gold;
-  margin-bottom:20px;
-  text-transform:uppercase;
+header p {
+  max-width:700px;
+  margin:0 auto 10px;
+  color:white;
+  text-shadow:1px 1px 3px rgba(0,0,0,0.7);
 }
 .wall-container{
   display:flex;
@@ -75,24 +78,35 @@ h1{
   background: rgba(255,255,255,0.8);
   border-radius:10px;
   padding:5px;
-  max-height:85%;
+  max-height:70%;
   overflow:auto;
+}
+.note .week-label{
+  position:absolute;
+  bottom:5px;
+  left:50%;
+  transform:translateX(-50%);
+  z-index:1;
+  background:rgba(255,255,255,0.8);
+  padding:2px 6px;
+  border-radius:5px;
+  font-weight:bold;
 }
 .note.current-week{
   border:3px solid gold;
   box-shadow:0 0 15px gold;
 }
-.note.past-week{
-  border:3px solid;
-  box-shadow:0 0 10px rgba(0,0,0,0.7);
+footer {
+  padding:30px 0;
+  border-top:2px solid gold;
+  text-align:center;
 }
-.likes{
-  position:absolute;
-  bottom:5px;
-  font-weight:bold;
-  background:rgba(255,255,255,0.8);
-  padding:2px 5px;
-  border-radius:5px;
+footer a{
+  color:gold;
+  text-decoration:none;
+}
+footer a:hover{
+  text-decoration:underline;
 }
 </style>
 </head>
@@ -106,7 +120,7 @@ h1{
 <div id="favorites-container"></div>
 
 <footer>
-<p>Project organized by <a href="https://x.com/Eclip7e_project" target="_blank">@Eclip7e_project</a></p>
+<p>Created by <a href="https://x.com/Eclip7e_project" target="_blank">@Eclip7e_project</a></p>
 <img src="logo.png" alt="Logo" height="80">
 </footer>
 
@@ -161,27 +175,35 @@ function renderFavorites() {
     const wallDiv = document.createElement('div');
     wallDiv.className='wall-container';
 
+    // Sort by week ascending
     archive.sort((a,b)=>a.week-b.week);
 
     archive.forEach(n => {
       const noteDiv = document.createElement('div');
       noteDiv.className='note';
-      noteDiv.innerHTML = `
-        <div class="text">${n.text}</div>
-        <div class="likes">Week ${n.week} ❤️ ${n.likes}</div>
-      `;
 
-      // background image if exists
+      // Background image
       if(n.img) {
         const img = document.createElement('img');
         img.src = n.img;
         noteDiv.appendChild(img);
       }
 
+      // Note text
+      const textDiv = document.createElement('div');
+      textDiv.className='text';
+      textDiv.textContent = n.text;
+      noteDiv.appendChild(textDiv);
+
+      // Week label
+      const weekLabel = document.createElement('div');
+      weekLabel.className='week-label';
+      weekLabel.textContent = `Week ${n.week} ❤️ ${n.likes}`;
+      noteDiv.appendChild(weekLabel);
+
       if(n.week === currentWeek){
         noteDiv.classList.add('current-week');
       } else {
-        noteDiv.classList.add('past-week');
         noteDiv.style.borderColor = m.color;
       }
 
