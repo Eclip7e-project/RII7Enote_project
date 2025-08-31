@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -28,6 +27,7 @@ h1{
   text-align:center;
   color:gold;
   margin-bottom:20px;
+  text-transform:uppercase;
 }
 .wall-container{
   display:flex;
@@ -73,6 +73,10 @@ h1{
   border:3px solid gold;
   box-shadow:0 0 15px gold;
 }
+.note.past-week{
+  border:3px solid;
+  box-shadow:0 0 10px rgba(0,0,0,0.7);
+}
 .likes{
   margin-top:5px;
   font-weight:bold;
@@ -103,7 +107,7 @@ footer a:hover{
 
 <footer>
 <p>Project organized by <a href="https://x.com/Eclip7e_project" target="_blank">@Eclip7e_project</a></p>
-  <img src="logo.png" alt="Logo" height="80">
+<img src="logo.png" alt="Logo" height="80">
 </footer>
 
 <script>
@@ -116,6 +120,7 @@ const members = [
   {name:'seunghan', color:'#0000FF', wall:'seunghan.html'},
   {name:'sohee', color:'#FFFF00', wall:'sohee.html'},
   {name:'anton', color:'#1E3A5F', wall:'anton.html'},
+  {name:'rii7e', color:'#FFA500', wall:'rii7e.html'},
   {name:'brii7e', color:'#FFA500', wall:'brii7e.html'}
 ];
 
@@ -126,17 +131,13 @@ function updateWeeklyFavorites() {
   members.forEach(m => {
     let notes = JSON.parse(localStorage.getItem(m.name) || '[]');
     notes = notes.filter(n => !n.deleted); // remove deleted notes
-    let favorites = [];
-
     const weekMap = {};
     notes.forEach(n => {
       if(!weekMap[n.week] || n.likes > weekMap[n.week].likes){
         weekMap[n.week] = n;
       }
     });
-
-    favorites = Object.values(weekMap);
-
+    const favorites = Object.values(weekMap);
     localStorage.setItem(m.name+'_favorites', JSON.stringify(favorites));
   });
 }
@@ -160,11 +161,11 @@ function renderFavorites() {
     const wallDiv = document.createElement('div');
     wallDiv.className='wall-container';
 
+    archive.sort((a,b)=>a.week-b.week); // ascending by week
+
     archive.forEach(n => {
       const noteDiv = document.createElement('div');
       noteDiv.className='note';
-      noteDiv.style.borderColor = m.color;
-      if(n.week===currentWeek) noteDiv.classList.add('current-week');
       noteDiv.innerHTML = `
         <h4>Week ${n.week}</h4>
         <img src="${n.img}">
@@ -172,10 +173,21 @@ function renderFavorites() {
         <div class="likes">❤️ ${n.likes}</div>
       `;
 
+      if(n.week === currentWeek){
+        noteDiv.classList.add('current-week');
+      } else {
+        noteDiv.classList.add('past-week');
+        noteDiv.style.borderColor = m.color;
+      }
+
       noteDiv.onclick = () => {
         const userId = localStorage.getItem('userId_'+m.name);
         if(userId && n.userId === userId){
-          alert("🎉 Congrats! Your note was selected as this week's favorite! 🌟");
+          if(n.week === currentWeek){
+            alert(`🎉✨ Congrats, superstar! Your note is this week’s favorite! 🌟💖`);
+          } else {
+            alert(`💌 You were a star in week ${n.week}! Keep spreading love and creativity! 🌈❤️`);
+          }
         } else {
           window.location.href = m.wall;
         }
@@ -201,6 +213,4 @@ renderFavorites();
 
 </body>
 </html>
-
-
 
