@@ -59,31 +59,13 @@ p.description{
   width:100%;
   height:100%;
   object-fit:cover;
-  position:absolute;
-  top:0; left:0;
-  z-index:1;
   border-radius:15px;
 }
-.text-box{
-  position:relative;
-  z-index:2;
-  color:white;
-  text-align:center;
-  font-size:0.75rem;
-  white-space:pre-wrap;
-  word-wrap:break-word;
-  padding:5px;
-  line-height:1.1em;
-  max-height:120px;
-  overflow:auto;
-}
 .info-box{
-  position:relative;
-  z-index:2;
   font-size:0.75rem;
   text-align:center;
   color:white;
-  background:rgba(0,0,0,0.4);
+  background:rgba(0,0,0,0.5);
   border-radius:4px;
   padding:2px 5px;
   margin:2px 5px 5px 5px;
@@ -107,7 +89,7 @@ footer a:hover{
 
 <header>
 <h1>Weekly Favorites Archive</h1>
-<p class="description">See the top-liked note for each member from every week. Current week is highlighted in gold! Click your own note to see a lovely message 💖. Click any note to visit that member’s wall.</p>
+<p class="description">See the top-liked note for each member from every week. Current week is highlighted in gold! Click your own note to see a special message 💖. Click any note to visit that member’s wall.</p>
 <a href="index.html" style="color:gold; text-decoration:underline;">← Back to Homepage</a>
 </header>
 
@@ -169,23 +151,25 @@ members.forEach(member => {
   onSnapshot(notesCol, snapshot => {
     const notes = snapshot.docs.map(d=>({id:d.id,...d.data()}));
     const validNotes = notes.filter(n=>!n.deleted);
+
     const weekMap = {};
     validNotes.forEach(n=>{
       if(!weekMap[n.week] || (n.likes||0) > (weekMap[n.week].likes||0)){
         weekMap[n.week] = n;
       }
     });
+
     const favorites = Object.values(weekMap).sort((a,b)=>a.week-b.week);
     wallDiv.innerHTML='';
+
     favorites.forEach(note=>{
       const div = document.createElement('div');
       div.className='note';
       div.style.borderColor = (note.week===currentWeek)?'gold':member.color;
       if(note.week===currentWeek) div.classList.add('current-week');
       div.innerHTML = `
-        <img src="${note.img}">
-        <div class="text-box">${note.text}</div>
-        <div class="info-box">❤️ ${note.likes} • Week ${note.week}</div>
+        ${note.html || `<div style="color:${note.color||'black'}">${note.text}</div>`}
+        <div class="info-box">❤️ ${note.likes || 0} • Week ${note.week}</div>
       `;
       div.onclick = ()=>{
         const userId = localStorage.getItem('userId_'+member.name);
