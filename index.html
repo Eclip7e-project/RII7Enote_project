@@ -232,104 +232,40 @@
 
 
 
-<!-- Add this just before your <script> that has your current JS -->
-<!-- Firebase SDKs -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-database-compat.js"></script>
 <script>
-// --- Firebase config ---
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "SENDER_ID",
-  appId: "APP_ID"
+  apiKey: "YOUR_FIREBASE_API_KEY",
+  authDomain: "YOUR_FIREBASE_PROJECT_ID.firebaseapp.com",
+  databaseURL: "https://YOUR_FIREBASE_PROJECT_ID.firebaseio.com",
+  projectId: "YOUR_FIREBASE_PROJECT_ID",
+  storageBucket: "YOUR_FIREBASE_PROJECT_ID.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID"
 };
 firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+const db = firebase.database();
 
-// Override note submit to use Firestore
-modalSubmit.addEventListener('click', async () => {
-  const text = noteText.value.trim();
-  if (!text) { alert('Write something!'); return; }
-  const color = colorPicker.value || '#000000';
-  const member = currentMode === 'simple' ? memberSelect.value : currentMember;
-  const week = getCurrentWeek();
-  const id = genID();
-  try {
-    await db.collection('notes').doc(id).set({
-      id,
-      member,
-      img: currentImg,
-      text,
-      color,
-      likes: 0,
-      week,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-      deleted: false
-    });
-    closeModal();
-    alert(`Your note has been submitted to ${member.toUpperCase()}'s wall!`);
-    renderSelectionWall(member); // refresh the wall
-  } catch (err) {
-    console.error(err);
-    alert('Failed to submit note.');
-  }
-});
-
-// Override renderSelectionWall to fetch Firestore notes
-async function renderSelectionWall(memberName) {
-  const wall = document.querySelector(`#${memberName}-selection .wall`);
-  if (!wall) return;
-  wall.innerHTML = '';
-
-  // Add default 4 images
-  for (let i = 1; i <= 4; i++) {
-    const imgFile = `${memberName}${i}.png`;
-    const note = document.createElement('div');
-    note.className = 'sticky-note';
-    note.style.border = `4px solid ${getMemberColor(memberName)}`;
-    note.innerHTML = `<img src="${imgFile}" alt="${memberName} placeholder ${i}">`;
-    note.onclick = () => openModalForMember(memberName, imgFile);
-    wall.appendChild(note);
-  }
-
-  // Add uploaded designs from localStorage
-  const designs = JSON.parse(localStorage.getItem(memberName + '_designs') || '[]');
-  designs.forEach((src, idx) => {
-    const note = document.createElement('div');
-    note.className = 'sticky-note';
-    note.style.border = `4px solid ${getMemberColor(memberName)}`;
-    note.innerHTML = `<img src="${src}" alt="Uploaded design">`;
-    note.onclick = () => openModalForMember(memberName, src);
-    wall.appendChild(note);
+// Override modal submit
+modalSubmit.addEventListener('click',()=>{
+  const text=noteText.value.trim(); if(!text){alert('Write something!'); return;}
+  const color=colorPicker.value||'#000000';
+  const week=getCurrentWeek();
+  const member=currentMode==='simple'?memberSelect.value:currentMember;
+  const id=Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+  // Push note to Firebase
+  db.ref('notes/' + member + '/' + id).set({
+    id, img: currentImg, text, color, likes: 0, week, deleted: false
   });
-
-  // Fetch Firestore notes for this member
-  try {
-    const snapshot = await db.collection('notes')
-      .where('member', '==', memberName)
-      .where('deleted', '==', false)
-      .orderBy('createdAt', 'desc')
-      .get();
-    snapshot.forEach(doc => {
-      const data = doc.data();
-      const note = document.createElement('div');
-      note.className = 'sticky-note';
-      note.style.border = `4px solid ${getMemberColor(memberName)}`;
-      note.innerHTML = `<img src="${data.img}" alt="Note"><div class="label">${data.text}</div>`;
-      note.onclick = () => openModalForMember(memberName, data.img);
-      wall.appendChild(note);
-    });
-  } catch (err) {
-    console.error('Error fetching notes:', err);
-  }
-}
-
-// Call once at page load
-renderAllSelectionWalls();
+  localStorage.setItem('myNoteId_' + member, id);
+  closeModal();
+  alert(`Your note has been submitted to ${member.toUpperCase()}'s wall!`);
+});
 </script>
+
+
+
 
 
 
@@ -524,3 +460,4 @@ renderAllSelectionWalls(); renderSimpleNotes(); renderDesigns();
 </script>
 </body>
 </html>
+
