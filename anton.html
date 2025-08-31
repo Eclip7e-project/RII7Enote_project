@@ -16,7 +16,7 @@ body {
   text-align:center;
 }
 
-/* HEADER WITH SMALLER BANNER */
+/* HEADER */
 header {
   display: flex;
   flex-direction: column;
@@ -24,106 +24,120 @@ header {
   background: black;
   border-bottom: 2px solid gold;
 }
-
 header img.banner {
   width: 100%;
-  height: auto; 
-  max-height: none;
-  object-fit: contain;
+  height: auto;
   border-bottom: 2px solid gold;
-  display: block;
-  margin: 0 auto;
-  background: black;
 }
+.header-text { padding: 20px; }
+.header-text h1 { font-size: 2.5rem; color: gold; }
 
-/* HEADER TEXT BELOW BANNER */
-.header-text {
-  text-align: center;
-  padding: 20px;
-}
-
-.header-text h1 {
-  font-size: 2.5rem;
-  color: gold;
-  margin: 10px 0;
-  text-shadow: 2px 2px 5px rgba(0,0,0,0.7);
-}
-
-.header-text p {
-  max-width: 700px;
-  font-size: 1rem;
-  margin: 0 auto;
-  color: white;
-  text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
-}
-
-/* STICKY NOTES WALL */
+/* WALL */
 section.wall {
   display:flex;
   flex-wrap:wrap;
   justify-content:flex-start;
   gap:20px;
-  overflow-x:auto;
   padding:40px;
 }
 .sticky-note {
-  width:200px; 
-  height:150px; 
-  background:white; 
+  width:200px;
+  height:180px;
+  background:white;
   border-radius:15px;
-  padding:10px; 
-  position:relative; 
+  padding:10px;
+  position:relative;
   box-shadow:3px 3px 10px rgba(0,0,0,0.5);
-  display:flex; 
-  flex-direction:column; 
+  display:flex;
+  flex-direction:column;
   align-items:center;
-}
-.sticky-note img {width:100%; border-radius:10px;}
-.sticky-note .text {
-  position:absolute;
-  top:10px;
-  left:10px;
-  right:10px;
-  bottom:30px;
-  overflow-wrap: break-word;
-  color:black; 
-  font-size:0.9em; 
-  white-space:pre-wrap;
-}
-.frame {border:5px solid #1E3A5F; border-radius:15px; background:white;}
-.like-btn {
-  position:absolute;
-  bottom:5px;
-  left:50%;
-  transform:translateX(-50%);
-  padding:5px 10px; 
+  justify-content:flex-start;
+  overflow:hidden;
   cursor:pointer;
-  background:gold; 
-  border:none; 
-  border-radius:5px; 
-  color:black; 
+}
+.sticky-note img {
+  width:100%;
+  border-radius:10px;
+  max-height:90px;
+  object-fit:cover;
+}
+.sticky-note .text {
+  margin-top:5px;
+  font-size:0.9em;
+  color:black;
+  overflow-y:auto;
+  white-space:pre-wrap;
+  word-wrap:break-word;
+  flex:1;
+  width:100%;
+}
+.frame {
+  border:5px solid #1E3A5F;
+  border-radius:15px;
+  background:white;
+}
+.like-btn, .delete-btn {
+  position:absolute;
+  border:none;
+  border-radius:5px;
+  padding:5px 8px;
+  cursor:pointer;
+  font-size:0.8em;
   font-weight:bold;
 }
+.like-btn {
+  bottom:5px;
+  left:5px;
+  background:gold;
+  color:black;
+}
 .delete-btn {
-  position:absolute;
   top:5px;
   right:5px;
   background:red;
   color:white;
-  border:none;
-  border-radius:5px;
-  padding:3px 7px;
-  cursor:pointer;
 }
 .top-note {
   border: 5px solid gold;
   box-shadow: 0 0 15px gold;
 }
 
+/* MODAL */
+#noteModal {
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.8);
+  justify-content:center;
+  align-items:center;
+  z-index:1000;
+}
+#noteModalContent {
+  background:white;
+  color:black;
+  padding:20px;
+  border-radius:15px;
+  max-width:600px;
+  max-height:80%;
+  overflow-y:auto;
+  white-space:pre-wrap;
+}
+#noteModalClose {
+  position:absolute;
+  top:20px;
+  right:20px;
+  background:red;
+  color:white;
+  border:none;
+  padding:5px 10px;
+  cursor:pointer;
+  border-radius:5px;
+}
+
 /* FOOTER */
 footer {
-  padding:30px 0; 
-  border-top:2px solid gold; 
+  padding:30px 0;
+  border-top:2px solid gold;
   margin-top:50px;
 }
 footer a {color:gold; text-decoration:none;}
@@ -137,90 +151,101 @@ footer a:hover{text-decoration:underline;}
   <div class="header-text">
     <h1>Anton Wall</h1>
     <p>All submitted sticky notes for Anton. Give love by clicking ❤!</p>
-    <a href="index.html" style="color:gold; text-decoration:underline; margin-top:10px; display:inline-block;">← Back to Homepage</a>
+    <a href="index.html" style="color:gold; text-decoration:underline;">← Back to Homepage</a>
   </div>
 </header>
 
 <section class="wall" id="anton-wall">
-  <!-- Notes will appear here dynamically -->
+  <!-- Notes load dynamically -->
 </section>
 
+<!-- MODAL -->
+<div id="noteModal">
+  <button id="noteModalClose">Close</button>
+  <div id="noteModalContent"></div>
+</div>
+
 <footer>
-<p>Created by <a href="https://x.com/Eclip7e_project" target="_blank">@Eclip7e_project</a></p>
-<img src="logo.png" alt="Logo" height="80">
+  <p>Created by <a href="https://x.com/Eclip7e_project" target="_blank">@Eclip7e_project</a></p>
+  <img src="logo.png" alt="Logo" height="80">
 </footer>
 
 <script>
-// Config
+// ====== CONFIG ======
 const memberName = "anton";
 const wall = document.getElementById('anton-wall');
+const modal = document.getElementById('noteModal');
+const modalContent = document.getElementById('noteModalContent');
+const modalClose = document.getElementById('noteModalClose');
 
-// Load notes from localStorage
 let notes = JSON.parse(localStorage.getItem(memberName) || '[]');
 
-// Identify top note for current week
-const currentWeek = Math.floor((new Date()-new Date('2025-09-01'))/(7*24*60*60*1000))+1;
+// ====== MODAL ======
+modalClose.onclick = () => modal.style.display = 'none';
+modal.onclick = e => { if (e.target === modal) modal.style.display = 'none'; };
 
-// Get user's own note ID if exists
-let currentUserNoteId = localStorage.getItem('currentUserNoteId_' + memberName);
-
-// Render notes
+// ====== RENDER NOTES ======
 function renderNotes() {
   wall.innerHTML = '';
   let maxLikes = -1;
   let topNoteIndex = -1;
+  const currentWeek = Math.floor((new Date()-new Date('2025-09-01'))/(7*24*60*60*1000))+1;
 
   notes.forEach((note, i) => {
-    if(!note.deleted && note.week === currentWeek && note.likes > maxLikes){
+    if (!note.deleted && note.week === currentWeek && (note.likes || 0) > maxLikes) {
       maxLikes = note.likes;
       topNoteIndex = i;
     }
   });
 
   notes.forEach((note, i) => {
-    if(note.deleted) return;
+    if (note.deleted) return;
 
     const div = document.createElement('div');
     div.className = 'sticky-note frame';
-    if(i===topNoteIndex) div.classList.add('top-note');
+    if (i === topNoteIndex) div.classList.add('top-note');
 
     div.innerHTML = `
-      <img src="${note.img}" alt="Sticky Note">
+      <img src="${note.img}" alt="Note Image">
       <div class="text">${note.text}</div>
-      <button class="like-btn" data-id="${i}">❤ ${note.likes || 0}</button>
+      <button class="like-btn">❤ ${note.likes || 0}</button>
+      <button class="delete-btn">🗑</button>
     `;
 
-    if(note.id == currentUserNoteId){
-      const deleteBtn = document.createElement('button');
-      deleteBtn.textContent='Delete';
-      deleteBtn.className='delete-btn';
-      deleteBtn.onclick = () => {
-        if(!confirm("Delete your note?")) return;
-        notes = notes.map(n => n.id === note.id ? {...n, deleted:true} : n);
-        localStorage.setItem(memberName, JSON.stringify(notes));
-        localStorage.removeItem('currentUserNoteId_' + memberName);
-        renderNotes();
-      };
-      div.appendChild(deleteBtn);
-    }
-
-    wall.appendChild(div);
-  });
-
-  document.querySelectorAll('.like-btn').forEach(btn=>{
-    btn.onclick = (e)=>{
-      const id = e.target.dataset.id;
+    // Like button
+    div.querySelector('.like-btn').onclick = e => {
+      e.stopPropagation();
       let likedNotes = JSON.parse(localStorage.getItem('likedNotes') || '[]');
-      if(likedNotes.includes(`${memberName}-${id}`)){
+      if (likedNotes.includes(`${memberName}-${i}`)) {
         alert("You've already liked this note!");
         return;
       }
-      notes[id].likes = notes[id].likes ? notes[id].likes+1 : 1;
-      localStorage.setItem(memberName, JSON.stringify(notes));
-      likedNotes.push(`${memberName}-${id}`);
+      note.likes = (note.likes || 0) + 1;
+      likedNotes.push(`${memberName}-${i}`);
       localStorage.setItem('likedNotes', JSON.stringify(likedNotes));
+      localStorage.setItem(memberName, JSON.stringify(notes));
       renderNotes();
     };
+
+    // Delete button
+    div.querySelector('.delete-btn').onclick = e => {
+      e.stopPropagation();
+      if (confirm("Delete this note?")) {
+        notes[i].deleted = true;
+        localStorage.setItem(memberName, JSON.stringify(notes));
+        renderNotes();
+      }
+    };
+
+    // Fullscreen modal
+    div.onclick = () => {
+      modalContent.innerHTML = `
+        <img src="${note.img}" style="width:100%; border-radius:10px; margin-bottom:10px;">
+        <p>${note.text}</p>`;
+      modal.style.display = 'flex';
+    };
+
+    wall.appendChild(div);
   });
 }
 
