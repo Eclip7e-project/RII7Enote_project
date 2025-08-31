@@ -8,138 +8,54 @@
 <style>
 body {
   font-family: 'Playfair Display', serif;
-  background-color:black;
-  background-image:url('https://www.transparenttextures.com/patterns/stardust.png');
-  color:white;
-  margin:0;
-  padding:0;
-  text-align:center;
+  background: black url('https://www.transparenttextures.com/patterns/stardust.png');
+  color: white; margin: 0; padding: 0; text-align: center;
 }
-
-/* HEADER */
-header {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  background: black;
-  border-bottom: 2px solid gold;
-}
-header img.banner {
-  width: 100%;
-  height: auto;
-  border-bottom: 2px solid gold;
-}
+header { background: black; border-bottom: 2px solid gold; }
+header img.banner { width: 100%; border-bottom: 2px solid gold; }
 .header-text { padding: 20px; }
-.header-text h1 { font-size: 2.5rem; color: gold; }
+.header-text h1 { color: gold; font-size: 2.5rem; }
 
-/* WALL */
-section.wall {
-  display:flex;
-  flex-wrap:wrap;
-  justify-content:flex-start;
-  gap:20px;
-  padding:40px;
+.wall {
+  display: flex; flex-wrap: wrap; justify-content: center;
+  gap: 20px; padding: 40px;
 }
 .sticky-note {
-  width:200px;
-  height:180px;
-  background:white;
-  border-radius:15px;
-  position:relative;
-  box-shadow:3px 3px 10px rgba(0,0,0,0.5);
-  overflow:hidden;
-  cursor:pointer;
-  border:5px solid #1E3A5F;
+  width: 200px; height: 180px; background: white; border-radius: 15px;
+  position: relative; box-shadow: 3px 3px 10px rgba(0,0,0,0.5);
+  border: 5px solid #1E3A5F; overflow: hidden; cursor: pointer;
 }
-.sticky-note img {
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  border-radius:10px;
-}
+.sticky-note img { width: 100%; height: 100%; object-fit: cover; }
 .sticky-note .text {
-  position:absolute;
-  top:10px;
-  left:10px;
-  right:10px;
-  bottom:35px;
-  font-size:0.75em;
-  color:black;
-  background:rgba(255,255,255,0.7);
-  padding:5px;
-  border-radius:5px;
-  overflow-y:auto;
-  word-wrap:break-word;
-  white-space:pre-wrap;
+  position: absolute; top: 8px; left: 8px; right: 8px; bottom: 35px;
+  font-size: 0.75em; color: black; background: rgba(255,255,255,0.7);
+  padding: 5px; border-radius: 5px; overflow-y: auto;
+  word-wrap: break-word; white-space: pre-wrap;
 }
-
-/* Buttons */
 .like-btn, .delete-btn {
-  position:absolute;
-  border:none;
-  border-radius:5px;
-  padding:5px 8px;
-  cursor:pointer;
-  font-size:0.8em;
-  font-weight:bold;
+  position: absolute; border: none; border-radius: 5px;
+  padding: 5px 8px; cursor: pointer; font-size: 0.8em; font-weight: bold;
 }
-.like-btn {
-  bottom:5px;
-  left:5px;
-  background:gold;
-  color:black;
-}
-.delete-btn {
-  top:5px;
-  right:5px;
-  background:red;
-  color:white;
-}
-.top-note {
-  border: 5px solid gold;
-  box-shadow: 0 0 15px gold;
-}
+.like-btn { bottom: 5px; left: 5px; background: gold; color: black; }
+.delete-btn { top: 5px; right: 5px; background: red; color: white; }
+.top-note { border: 5px solid gold; box-shadow: 0 0 15px gold; }
 
-/* MODAL */
 #noteModal {
-  display:none;
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,0.8);
-  justify-content:center;
-  align-items:center;
-  z-index:1000;
+  display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8);
+  justify-content: center; align-items: center; z-index: 1000;
 }
 #noteModalContent {
-  background:white;
-  color:black;
-  padding:20px;
-  border-radius:15px;
-  max-width:600px;
-  max-height:80%;
-  overflow-y:auto;
-  white-space:pre-wrap;
+  background: white; color: black; padding: 20px; border-radius: 15px;
+  max-width: 600px; max-height: 80%; overflow-y: auto; position: relative;
 }
 #noteModalClose {
-  position:absolute;
-  top:20px;
-  right:20px;
-  background:red;
-  color:white;
-  border:none;
-  padding:5px 10px;
-  cursor:pointer;
-  border-radius:5px;
+  position: absolute; top: 10px; right: 10px; background: red; color: white;
+  border: none; padding: 5px 10px; cursor: pointer; border-radius: 5px;
 }
 
-/* FOOTER */
-footer {
-  padding:30px 0;
-  border-top:2px solid gold;
-  margin-top:50px;
-}
-footer a {color:gold; text-decoration:none;}
-footer a:hover{text-decoration:underline;}
+footer { padding: 30px 0; border-top: 2px solid gold; margin-top: 50px; }
+footer a { color: gold; text-decoration: none; }
+footer a:hover { text-decoration: underline; }
 </style>
 </head>
 <body>
@@ -155,10 +71,12 @@ footer a:hover{text-decoration:underline;}
 
 <section class="wall" id="anton-wall"></section>
 
-<!-- MODAL -->
+<!-- Fullscreen Modal -->
 <div id="noteModal">
-  <button id="noteModalClose">Close</button>
-  <div id="noteModalContent"></div>
+  <div id="noteModalContent">
+    <button id="noteModalClose">Close</button>
+    <div id="noteModalInner"></div>
+  </div>
 </div>
 
 <footer>
@@ -166,14 +84,12 @@ footer a:hover{text-decoration:underline;}
   <img src="logo.png" alt="Logo" height="80">
 </footer>
 
-<!-- Firebase -->
 <script type="module">
-  // Import Firebase SDK
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, onSnapshot } 
+  import { getFirestore, collection, doc, updateDoc, onSnapshot } 
   from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-  // ==== 🔥 PASTE YOUR FIREBASE CONFIG HERE ====
+  // 🔥 Your Firebase Config
   const firebaseConfig = {
     apiKey: "YOUR_API_KEY",
     authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
@@ -183,74 +99,59 @@ footer a:hover{text-decoration:underline;}
     appId: "YOUR_APP_ID"
   };
 
-  // Init Firebase
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
-  const wall = document.getElementById('anton-wall');
-  const modal = document.getElementById('noteModal');
-  const modalContent = document.getElementById('noteModalContent');
-  const modalClose = document.getElementById('noteModalClose');
-  modalClose.onclick = () => modal.style.display = 'none';
-  modal.onclick = e => { if (e.target === modal) modal.style.display = 'none'; };
-
   const notesRef = collection(db, "antonNotes");
+  const wall = document.getElementById("anton-wall");
+  const modal = document.getElementById("noteModal");
+  const modalInner = document.getElementById("noteModalInner");
+  const modalClose = document.getElementById("noteModalClose");
 
-  // Render notes
+  modalClose.onclick = () => modal.style.display = "none";
+  modal.onclick = e => { if (e.target === modal) modal.style.display = "none"; };
+
   function renderNotes(notes) {
-    wall.innerHTML = '';
-    let maxLikes = -1;
-    let topNoteId = null;
-    const currentWeek = Math.floor((new Date()-new Date('2025-09-01'))/(7*24*60*60*1000))+1;
+    wall.innerHTML = "";
+    let maxLikes = -1, topNoteId = null;
+    const currentWeek = Math.floor((Date.now() - new Date("2025-09-01")) / (7 * 24 * 60 * 60 * 1000)) + 1;
 
     notes.forEach(note => {
       if (!note.deleted && note.week === currentWeek && (note.likes || 0) > maxLikes) {
-        maxLikes = note.likes;
-        topNoteId = note.id;
+        maxLikes = note.likes; topNoteId = note.id;
       }
     });
 
     notes.forEach(note => {
       if (note.deleted) return;
-      const div = document.createElement('div');
-      div.className = 'sticky-note';
-      if (note.id === topNoteId) div.classList.add('top-note');
+      const div = document.createElement("div");
+      div.className = "sticky-note";
+      if (note.id === topNoteId) div.classList.add("top-note");
       div.innerHTML = `
-        <img src="${note.img}" alt="Note Image">
+        <img src="${note.img}">
         <div class="text">${note.text}</div>
         <button class="like-btn">❤ ${note.likes || 0}</button>
         <button class="delete-btn">🗑</button>
       `;
-
-      // Like
-      div.querySelector('.like-btn').onclick = async e => {
+      div.querySelector(".like-btn").onclick = async e => {
         e.stopPropagation();
         await updateDoc(doc(db, "antonNotes", note.id), { likes: (note.likes || 0) + 1 });
       };
-
-      // Delete
-      div.querySelector('.delete-btn').onclick = async e => {
+      div.querySelector(".delete-btn").onclick = async e => {
         e.stopPropagation();
         if (confirm("Delete this note?")) {
           await updateDoc(doc(db, "antonNotes", note.id), { deleted: true });
         }
       };
-
-      // Fullscreen
       div.onclick = () => {
-        modalContent.innerHTML = `
-          <img src="${note.img}" style="width:100%; border-radius:10px; margin-bottom:10px;">
-          <p>${note.text}</p>`;
-        modal.style.display = 'flex';
+        modalInner.innerHTML = `<img src="${note.img}" style="width:100%;"><p>${note.text}</p>`;
+        modal.style.display = "flex";
       };
-
       wall.appendChild(div);
     });
   }
 
-  // Listen for changes in real-time
   onSnapshot(notesRef, snapshot => {
-    const notes = snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
-    renderNotes(notes);
+    renderNotes(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
   });
 </script>
 
