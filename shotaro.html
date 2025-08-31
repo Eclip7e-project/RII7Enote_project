@@ -72,7 +72,14 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebas
 import { getFirestore, collection, onSnapshot, doc, updateDoc, deleteDoc, addDoc } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
 // Firebase
-const firebaseConfig = { apiKey:"AIzaSyCM69r2wUibBFIFpML07Y5RUTrxHgonlSc", authDomain:"rii7e-sticky-notes-project.firebaseapp.com", projectId:"rii7e-sticky-notes-project", storageBucket:"rii7e-sticky-notes-project.firebasestorage.app", messagingSenderId:"962319162792", appId:"1:962319162792:web:8fad2b11c316766c8a119d" };
+const firebaseConfig = {
+  apiKey:"AIzaSyCM69r2wUibBFIFpML07Y5RUTrxHgonlSc",
+  authDomain:"rii7e-sticky-notes-project.firebaseapp.com",
+  projectId:"rii7e-sticky-notes-project",
+  storageBucket:"rii7e-sticky-notes-project.firebasestorage.app",
+  messagingSenderId:"962319162792",
+  appId:"1:962319162792:web:8fad2b11c316766c8a119d"
+};
 initializeApp(firebaseConfig);
 const db = getFirestore();
 
@@ -98,8 +105,9 @@ function openModal(note){
   modalImg.src = note.img;
   modalText.textContent = note.text;
   modalLike.textContent = `❤ ${note.likes||0}`;
+  // Only show delete button if this user is the creator
+  modalDelete.style.display = (note.creator === userId) ? 'block' : 'none';
   modal.style.display = 'flex';
-  modalDelete.style.display = (note.creator===userId)?'block':'none';
 }
 
 // Close modal
@@ -112,7 +120,7 @@ modalLike.onclick = async () => {
   if(!currentModalNote) return;
   let liked = JSON.parse(localStorage.getItem('likedNotes')||'[]');
   if(liked.includes(currentModalNote.id)){ alert("Already liked!"); return; }
-  await updateDoc(doc(db,'notes',memberName,'memberNotes',currentModalNote.id),{ likes:(currentModalNote.likes||0)+1 });
+  await updateDoc(doc(db,'notes',memberName,'memberNotes',currentModalNote.id), { likes:(currentModalNote.likes||0)+1 });
   currentModalNote.likes = (currentModalNote.likes||0)+1;
   modalLike.textContent = `❤ ${currentModalNote.likes}`;
   liked.push(currentModalNote.id);
@@ -120,7 +128,8 @@ modalLike.onclick = async () => {
 };
 
 // Delete button
-modalDelete.onclick = async () => {
+modalDelete.onclick = async (e) => {
+  e.stopPropagation();
   if(!currentModalNote) return;
   if(!confirm("Delete your note?")) return;
   await deleteDoc(doc(db,'notes',memberName,'memberNotes',currentModalNote.id));
@@ -133,12 +142,19 @@ function renderNotes(notes){
   let maxLikes = -1;
   let topNoteId = null;
   const currentWeek = Math.floor((new Date()-new Date('2025-09-01'))/(7*24*60*60*1000))+1;
-  notes.forEach(n=>{ if(n.week===currentWeek && (n.likes||0)>maxLikes){ maxLikes=n.likes||0; topNoteId=n.id; } });
+
+  notes.forEach(n=>{
+    if(n.week === currentWeek && (n.likes||0) > maxLikes){
+      maxLikes = n.likes||0;
+      topNoteId = n.id;
+    }
+  });
+
   notes.forEach(n=>{
     const div = document.createElement('div');
     div.className='sticky-note';
     if(n.id===topNoteId) div.classList.add('top-note');
-    div.innerHTML=`<img src="${n.img}" alt="Note"><div class="text">${n.text}</div>`;
+    div.innerHTML = `<img src="${n.img}" alt="Note"><div class="text">${n.text}</div>`;
     div.onclick = ()=>openModal(n);
     wall.appendChild(div);
   });
