@@ -227,6 +227,30 @@
   </div>
 </div>
 
+
+
+<!-- Add this right before your main <script> at the end of body -->
+<script type="module">
+  // Firebase SDK
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+  import { getFirestore, collection, addDoc, getDocs, doc, onSnapshot, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCM69r2wUibBFIFpML07Y5RUTrxHgonlSc",
+    authDomain: "rii7e-sticky-notes-project.firebaseapp.com",
+    projectId: "rii7e-sticky-notes-project",
+    storageBucket: "rii7e-sticky-notes-project.firebasestorage.app",
+    messagingSenderId: "962319162792",
+    appId: "1:962319162792:web:8fad2b11c316766c8a119d"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+</script>
+
+
+
+  
 <script>
 const members = [
   {name:'shotaro', color:'#8B0000'},
@@ -272,10 +296,13 @@ function getMemberColor(name){
   return m ? m.color : '#ccc';
 }
 
+
 function renderSelectionWall(memberName){
   const wall = document.querySelector(`#${memberName}-selection .wall`);
   if(!wall) return;
   wall.innerHTML = '';
+
+  // Render default placeholders
   for(let i=1;i<=4;i++){
     const imgFile = `${memberName}${i}.png`;
     const note = document.createElement('div');
@@ -285,6 +312,36 @@ function renderSelectionWall(memberName){
     note.onclick=()=>openModalForMember(memberName,imgFile);
     wall.appendChild(note);
   }
+
+  // Render uploaded designs from localStorage (keep your existing design system)
+  const designs = JSON.parse(localStorage.getItem(memberName+'_designs')||'[]');
+  designs.forEach((src,idx)=>{
+    const note = document.createElement('div');
+    note.className='sticky-note';
+    note.style.border=`4px solid ${getMemberColor(memberName)}`;
+    note.innerHTML=`<img src="${src}" alt="Uploaded design">`;
+    note.onclick=()=>openModalForMember(memberName,src);
+    wall.appendChild(note);
+  });
+
+  // Real-time Firestore notes
+  const notesCol = collection(db, 'notes', memberName, 'memberNotes');
+  onSnapshot(notesCol, (snapshot)=>{
+    snapshot.docs.forEach(docSnap=>{
+      const data = docSnap.data();
+      const noteDiv = document.createElement('div');
+      noteDiv.className='sticky-note';
+      noteDiv.style.border=`4px solid ${getMemberColor(memberName)}`;
+      noteDiv.innerHTML=`<img src="${data.img}" alt="User note"><div class="label">${data.text}</div>`;
+      noteDiv.onclick=()=>openModalForMember(memberName,data.img);
+      wall.appendChild(noteDiv);
+    });
+  });
+}
+
+  
+
+  
   const designs = JSON.parse(localStorage.getItem(memberName+'_designs')||'[]');
   designs.forEach((src,idx)=>{
     const note = document.createElement('div');
@@ -351,21 +408,35 @@ modalCancel.onclick=closeModal;
 window.addEventListener('keydown',(e)=>{if(e.key==='Escape')closeModal()});
 modal.addEventListener('click',(e)=>{if(e.target===modal)closeModal()});
 
-modalSubmit.addEventListener('click',()=>{
-  const text=noteText.value.trim(); if(!text){alert('Write something!'); return;}
-  const color=colorPicker.value||'#000000';
-  const week=getCurrentWeek();
-  const member=currentMode==='simple'?memberSelect.value:currentMember;
-  const id=genID();
-  const notes=JSON.parse(localStorage.getItem(member)||'[]');
-  notes.push({id,img:currentImg,text,color,likes:0,week});
-  localStorage.setItem(member,JSON.stringify(notes));
-  const userNotesKey='userNotes_'+member;
-  const userNotes=JSON.parse(localStorage.getItem(userNotesKey)||'[]'); userNotes.push(id);
-  localStorage.setItem(userNotesKey,JSON.stringify(userNotes));
-  closeModal();
-  alert(`Your note has been submitted to ${member.toUpperCase()}'s wall!`);
+
+
+
+modalSubmit.addEventListener('click', async ()=>{
+  const text = noteText.value.trim();
+  if(!text){ alert('Write something!'); return; }
+
+  const color = colorPicker.value||'#000000';
+  const week = getCurrentWeek();
+  const member = currentMode==='simple'?memberSelect.value:currentMember;
+
+  const noteData = { img: currentImg, text, color, likes:0, week, timestamp:Date.now() };
+
+  try{
+    // Add to Firestore
+    await addDoc(collection(db, 'notes', member, 'memberNotes'), noteData);
+    closeModal();
+    alert(`Your note has been submitted to ${member.toUpperCase()}'s wall!`);
+  }catch(err){
+    console.error(err);
+    alert('Error submitting note.');
+  }
 });
+
+
+
+
+
+  
 
 function getCurrentWeek(){
   const startDate=new Date('2025-09-01');
@@ -413,3 +484,6 @@ renderAllSelectionWalls(); renderSimpleNotes(); renderDesigns();
 </script>
 </body>
 </html>  
+
+
+  
