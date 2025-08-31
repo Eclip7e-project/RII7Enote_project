@@ -61,6 +61,17 @@ p.description{
   object-fit:cover;
   border-radius:15px;
 }
+.note .text{
+  position:absolute;
+  top:10px;
+  left:10px;
+  right:10px;
+  bottom:30px;
+  color:black;
+  font-size:0.9em;
+  white-space:pre-wrap;
+  overflow-wrap:break-word;
+}
 .info-box{
   font-size:0.75rem;
   text-align:center;
@@ -152,6 +163,7 @@ members.forEach(member => {
     const notes = snapshot.docs.map(d=>({id:d.id,...d.data()}));
     const validNotes = notes.filter(n=>!n.deleted);
 
+    // get top-liked note per week
     const weekMap = {};
     validNotes.forEach(n=>{
       if(!weekMap[n.week] || (n.likes||0) > (weekMap[n.week].likes||0)){
@@ -167,10 +179,13 @@ members.forEach(member => {
       div.className='note';
       div.style.borderColor = (note.week===currentWeek)?'gold':member.color;
       if(note.week===currentWeek) div.classList.add('current-week');
+
       div.innerHTML = `
-        ${note.html || `<div style="color:${note.color||'black'}">${note.text}</div>`}
+        <img src="${note.img}">
+        <div class="text" style="color:${note.textColor || 'black'}">${note.text}</div>
         <div class="info-box">❤️ ${note.likes || 0} • Week ${note.week}</div>
       `;
+
       div.onclick = ()=>{
         const userId = localStorage.getItem('userId_'+member.name);
         if(note.creator === userId){
@@ -179,6 +194,7 @@ members.forEach(member => {
           window.location.href = member.wall;
         }
       };
+
       wallDiv.appendChild(div);
     });
   });
