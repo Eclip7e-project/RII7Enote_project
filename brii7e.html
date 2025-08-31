@@ -17,25 +17,26 @@ body {
 }
 
 /* HEADER */
-header { display:flex; flex-direction:column; align-items:center; background:black; border-bottom:2px solid gold; padding:20px; }
-header h1 { font-size:2.5rem; color:gold; margin:10px 0; text-shadow:2px 2px 5px rgba(0,0,0,0.7); }
-header p { font-size:1rem; color:white; text-shadow:1px 1px 3px rgba(0,0,0,0.7); }
-header a { color:gold; text-decoration:underline; margin-top:10px; }
+header { display:flex; flex-direction:column; align-items:center; background:black; border-bottom:2px solid gold; }
+header img.banner { width:100%; height:auto; object-fit:contain; border-bottom:2px solid gold; }
+.header-text { text-align:center; padding:20px; }
+.header-text h1 { font-size:2.5rem; color:gold; margin:10px 0; text-shadow:2px 2px 5px rgba(0,0,0,0.7); }
+.header-text p { max-width:700px; font-size:1rem; margin:0 auto; color:white; text-shadow:1px 1px 3px rgba(0,0,0,0.7); }
 
 /* WALL */
 section.wall { display:flex; flex-wrap:wrap; justify-content:flex-start; gap:20px; padding:40px; }
-.sticky-note { width:200px; height:150px; position:relative; cursor:pointer; border-radius:15px; box-shadow:3px 3px 10px rgba(0,0,0,0.5); }
+.sticky-note { width:200px; height:200px; position:relative; cursor:pointer; }
 .sticky-note img { width:100%; height:100%; object-fit:cover; border-radius:15px; }
-.sticky-note .text { position:absolute; top:10px; left:10px; right:10px; bottom:30px; color:black; font-size:0.9em; white-space:pre-wrap; overflow:hidden; text-overflow:ellipsis; }
+.sticky-note .text { position:absolute; top:10px; left:10px; right:10px; bottom:10px; color:black; font-size:0.75rem; white-space:pre-wrap; overflow:hidden; text-overflow:ellipsis; }
 
-/* Top note highlight */
+/* Highlight top note */
 .top-note { border:5px solid gold; box-shadow:0 0 15px gold; }
 
 /* MODAL */
 #modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); justify-content:center; align-items:center; z-index:1000; }
-#modal-content { position:relative; max-width:500px; width:90%; max-height:90%; background:transparent; border-radius:15px; overflow:auto; }
+#modal-content { position:relative; background:transparent; border-radius:15px; max-width:500px; width:90%; max-height:90%; overflow:auto; }
 #modal-img { width:100%; border-radius:15px; display:block; }
-#modal-text { position:absolute; top:10px; left:10px; right:10px; bottom:10px; color:black; font-size:1rem; white-space:pre-wrap; text-shadow:1px 1px 3px white; pointer-events:none; }
+#modal-text { position:absolute; top:10px; left:10px; right:10px; bottom:10px; color:black; font-size:1rem; white-space:pre-wrap; pointer-events:none; text-shadow:1px 1px 3px white; }
 #modal-buttons { margin-top:10px; display:flex; justify-content:center; gap:10px; }
 #modal-like { padding:5px 10px; cursor:pointer; background:gold; border:none; border-radius:5px; color:black; font-weight:bold; }
 #modal-delete { display:none; background:red; color:white; border:none; border-radius:5px; padding:5px 10px; cursor:pointer; }
@@ -50,12 +51,15 @@ footer a:hover { text-decoration:underline; }
 <body>
 
 <header>
-  <h1>BRII7E Wall</h1>
-  <p>All submitted sticky notes for BRII7E. Give love by clicking ❤!</p>
-  <a href="index.html">← Back to Homepage</a>
+  <img src="rii7ebanner.jpg" alt="RII7E Banner" class="banner">
+  <div class="header-text">
+    <h1>BRII7E Wall</h1>
+    <p>All submitted sticky notes for RII7E. Give love by clicking ❤!</p>
+    <a href="index.html" style="color:gold; text-decoration:underline; margin-top:10px; display:inline-block;">← Back to Homepage</a>
+  </div>
 </header>
 
-<section class="wall" id="brii7e-wall"></section>
+<section class="wall" id="rii7e-wall"></section>
 
 <!-- Modal -->
 <div id="modal">
@@ -81,7 +85,7 @@ footer a:hover { text-decoration:underline; }
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
 import { getFirestore, collection, onSnapshot, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
-// Firebase setup
+// Firebase
 const firebaseConfig = {
   apiKey:"AIzaSyCM69r2wUibBFIFpML07Y5RUTrxHgonlSc",
   authDomain:"rii7e-sticky-notes-project.firebaseapp.com",
@@ -93,14 +97,15 @@ const firebaseConfig = {
 initializeApp(firebaseConfig);
 const db = getFirestore();
 
-const memberName = "brii7e";
+// Variables
+const memberName = "rii7e";
 const wall = document.getElementById('brii7e-wall');
 const modal = document.getElementById('modal');
 const modalImg = document.getElementById('modal-img');
 const modalText = document.getElementById('modal-text');
 const modalLike = document.getElementById('modal-like');
-const modalDelete = document.getElementById('modal-delete');
 const modalClose = document.getElementById('modal-close');
+const modalDelete = document.getElementById('modal-delete');
 
 let currentModalNote = null;
 let userId = localStorage.getItem('userId') || (localStorage.setItem('userId', crypto.randomUUID()), localStorage.getItem('userId'));
@@ -115,9 +120,9 @@ function openModal(note){
 }
 
 // Close modal
-modalClose.onclick = e => { e.stopPropagation(); modal.style.display='none'; }
-modal.onclick = () => modal.style.display='none';
-document.getElementById('modal-content').onclick = e => e.stopPropagation();
+modalClose.onclick = (e)=>{ e.stopPropagation(); modal.style.display='none'; }
+modal.onclick = ()=> modal.style.display='none';
+document.getElementById('modal-content').onclick = (e)=> e.stopPropagation();
 
 // Like button
 modalLike.onclick = async () => {
@@ -145,6 +150,8 @@ function renderNotes(notes){
   let maxLikes = -1;
   let topNoteId = null;
   const currentWeek = Math.floor((new Date()-new Date('2025-09-01'))/(7*24*60*60*1000))+1;
+
+  notes = notes.filter(n => n.creator);
 
   notes.forEach(n=>{
     if(n.week === currentWeek && (n.likes||0) > maxLikes){
@@ -175,3 +182,4 @@ onSnapshot(notesCol, snapshot=>{
 </script>
 </body>
 </html>
+
