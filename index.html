@@ -436,43 +436,54 @@ if(bodyId) pageMember = bodyId;
     reader.readAsDataURL(file);
   });
 
-  function renderDesigns(){
-    designContainer.innerHTML='';
-    members.forEach(member=>{
-      const designs = JSON.parse(localStorage.getItem(member.name+'_designs')||'[]');
-      designs.forEach((src,idx)=>{
-        const wrapper = document.createElement('div');
-        wrapper.style.display='inline-block';
-        wrapper.style.margin='6px';
-        wrapper.style.position='relative';
-        const img = document.createElement('img');
-        img.src = src;
-        img.style.border = `2px solid ${member.color}`;
-        wrapper.appendChild(img);
 
-        const delBtn = document.createElement('button');
-        delBtn.textContent = 'Delete';
-        delBtn.style.position='absolute';
-        delBtn.style.top='6px';
-        delBtn.style.right='6px';
-        delBtn.style.background='red';
-        delBtn.style.color='#fff';
-        delBtn.style.border='none';
-        delBtn.style.padding='4px 6px';
-        delBtn.style.cursor='pointer';
-        delBtn.onclick = () => {
-          if(!confirm('Delete this design?')) return;
-          designs.splice(idx,1);
-          localStorage.setItem(member.name+'_designs', JSON.stringify(designs));
-          renderSelectionWall(member.name);
-          renderDesigns();
-        };
-        wrapper.appendChild(delBtn);
 
-        designContainer.appendChild(wrapper);
-      });
+
+function renderDesigns() {
+  designContainer.innerHTML = '';
+  members.forEach(member => {
+    const designs = JSON.parse(localStorage.getItem(member.name + '_designs') || '[]');
+    designs.forEach((src, idx) => {
+      const wrapper = document.createElement('div');
+      wrapper.style.display = 'inline-block';
+      wrapper.style.margin = '6px';
+      wrapper.style.position = 'relative';
+
+      const img = document.createElement('img');
+      img.src = src;
+      img.style.border = `2px solid ${member.color}`;
+      wrapper.appendChild(img);
+
+      const delBtn = document.createElement('button');
+      delBtn.textContent = 'Delete';
+      delBtn.style.position = 'absolute';
+      delBtn.style.top = '6px';
+      delBtn.style.right = '6px';
+      delBtn.style.background = 'red';
+      delBtn.style.color = '#fff';
+      delBtn.style.border = 'none';
+      delBtn.style.padding = '4px 6px';
+      delBtn.style.cursor = 'pointer';
+      
+      // Delete functionality
+      delBtn.onclick = () => {
+        if (!confirm('Delete this design?')) return;
+        designs.splice(idx, 1); // remove design from array
+        localStorage.setItem(member.name + '_designs', JSON.stringify(designs)); // update storage
+        renderSelectionWall(member.name); // update member wall
+        renderDesigns(); // update design manager
+      };
+
+      wrapper.appendChild(delBtn);
+      designContainer.appendChild(wrapper);
     });
-  }
+  });
+}
+
+
+
+
+  
 
   // ----------------- Modal Submit -----------------
   modalSubmit.addEventListener('click', async ()=>{
@@ -506,6 +517,7 @@ if(bodyId) pageMember = bodyId;
 
 
   
+
 
 
 
