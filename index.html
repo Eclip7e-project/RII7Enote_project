@@ -475,7 +475,27 @@ modalSubmit.addEventListener('click', async ()=>{
   const week = getCurrentWeek();
   const member = currentMode === 'simple' ? memberSelect.value : currentMember;
 
-  const noteData = { img: currentImg, text, color, likes:0, week, timestamp: Date.now() };
+
+
+
+const userId = localStorage.getItem('userId') || crypto.randomUUID();
+localStorage.setItem('userId', userId);
+
+const noteData = { 
+  img: currentImg, 
+  text, 
+  color, 
+  likes:0, 
+  week, 
+  timestamp: Date.now(),
+  creator: userId
+};
+
+
+
+
+
+  
 
   try {
     await addDoc(collection(db, 'notes', member, 'memberNotes'), noteData);
@@ -503,6 +523,7 @@ members.forEach(m => renderMemberWall(m.name));
 
 
   
+
 
 
 
