@@ -38,14 +38,16 @@ h1{
 }
 .note{
   flex:0 0 auto;
-  width:250px;
-  height:150px;
+  width:200px;
+  height:200px;
   border-radius:15px;
   padding:10px;
   box-shadow:3px 3px 10px rgba(0,0,0,0.5);
   display:flex;
   flex-direction:column;
+  justify-content:center;
   align-items:center;
+  text-align:center;
   color:black;
   position:relative;
   cursor:pointer;
@@ -58,16 +60,23 @@ h1{
 }
 .note img{
   width:100%;
-  height:70px;
+  height:100%;
   object-fit:cover;
-  border-radius:10px;
+  border-radius:15px;
+  position:absolute;
+  top:0; left:0;
+  z-index:0;
 }
 .note .text{
-  margin-top:5px;
+  position:relative;
+  z-index:1;
   font-size:0.9em;
-  overflow-wrap: break-word;
-  white-space:pre-wrap;
-  text-align:center;
+  color:black;
+  background: rgba(255,255,255,0.8);
+  border-radius:10px;
+  padding:5px;
+  max-height:85%;
+  overflow:auto;
 }
 .note.current-week{
   border:3px solid gold;
@@ -78,20 +87,12 @@ h1{
   box-shadow:0 0 10px rgba(0,0,0,0.7);
 }
 .likes{
-  margin-top:5px;
+  position:absolute;
+  bottom:5px;
   font-weight:bold;
-}
-footer{
-  padding:30px 0;
-  border-top:2px solid gold;
-  text-align:center;
-}
-footer a{
-  color:gold;
-  text-decoration:none;
-}
-footer a:hover{
-  text-decoration:underline;
+  background:rgba(255,255,255,0.8);
+  padding:2px 5px;
+  border-radius:5px;
 }
 </style>
 </head>
@@ -100,7 +101,6 @@ footer a:hover{
 <header>
 <h1>Weekly Favorites Archive</h1>
 <p>See the top-liked note for each member from every week. Current week is highlighted in gold! Click your own note to see a special message. Click any note to visit that member’s wall.</p>
-<a href="index.html">← Back to Homepage</a>
 </header>
 
 <div id="favorites-container"></div>
@@ -161,17 +161,22 @@ function renderFavorites() {
     const wallDiv = document.createElement('div');
     wallDiv.className='wall-container';
 
-    archive.sort((a,b)=>a.week-b.week); // ascending by week
+    archive.sort((a,b)=>a.week-b.week);
 
     archive.forEach(n => {
       const noteDiv = document.createElement('div');
       noteDiv.className='note';
       noteDiv.innerHTML = `
-        <h4>Week ${n.week}</h4>
-        <img src="${n.img}">
         <div class="text">${n.text}</div>
-        <div class="likes">❤️ ${n.likes}</div>
+        <div class="likes">Week ${n.week} ❤️ ${n.likes}</div>
       `;
+
+      // background image if exists
+      if(n.img) {
+        const img = document.createElement('img');
+        img.src = n.img;
+        noteDiv.appendChild(img);
+      }
 
       if(n.week === currentWeek){
         noteDiv.classList.add('current-week');
@@ -184,7 +189,7 @@ function renderFavorites() {
         const userId = localStorage.getItem('userId_'+m.name);
         if(userId && n.userId === userId){
           if(n.week === currentWeek){
-            alert(`🎉✨ Congrats, superstar! Your note is this week’s favorite! 🌟💖`);
+            alert(`🎉✨ Congrats! Your note is this week’s favorite! 🌟💖`);
           } else {
             alert(`💌 You were a star in week ${n.week}! Keep spreading love and creativity! 🌈❤️`);
           }
@@ -213,4 +218,3 @@ renderFavorites();
 
 </body>
 </html>
-
