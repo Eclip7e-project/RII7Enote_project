@@ -58,7 +58,7 @@ section.wall {
 }
 .sticky-note {
   width:200px; 
-  min-height:150px; 
+  height:150px; 
   background:white; 
   border-radius:15px;
   padding:10px; 
@@ -69,7 +69,7 @@ section.wall {
   align-items:center;
   cursor:pointer;
 }
-.sticky-note img {width:100%; border-radius:10px;}
+.sticky-note img {width:100%; height:100%; border-radius:10px; object-fit:cover;}
 .sticky-note .text {
   position:absolute;
   top:10px;
@@ -78,7 +78,7 @@ section.wall {
   bottom:30px;
   overflow-wrap: break-word;
   color:black; 
-  font-size:0.85em; 
+  font-size:0.8em; 
   white-space:pre-wrap;
 }
 .frame {border:5px solid #1E3A5F; border-radius:15px; background:white;}
@@ -110,6 +110,34 @@ section.wall {
   border: 5px solid gold;
   box-shadow: 0 0 15px gold;
 }
+/* Modal */
+.modal {
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.85);
+  z-index:60;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+}
+.modal-content {
+  background:#fff;
+  color:#000;
+  border-radius:12px;
+  max-width:600px;
+  width:100%;
+  padding:18px;
+  position:relative;
+  overflow:hidden;
+}
+.modal-content img {width:100%; border-radius:10px; margin-bottom:12px;}
+.modal-content .modal-text {text-align:left; margin-bottom:12px; word-break:break-word;}
+.modal-content .modal-actions {display:flex; justify-content:space-between;}
+.modal-content .btn {padding:6px 12px; border-radius:8px; border:none; cursor:pointer; font-weight:700;}
+.modal-content .btn-like{background:gold; color:black;}
+.modal-content .btn-delete{background:red; color:white;}
+.modal-content .close-modal{position:absolute; right:12px; top:6px; font-size:24px; cursor:pointer;}
 footer {
   padding:30px 0; 
   border-top:2px solid gold; 
@@ -117,36 +145,6 @@ footer {
 }
 footer a {color:gold; text-decoration:none;}
 footer a:hover{text-decoration:underline;}
-/* Modal */
-#note-modal {
-  display:none;
-  position:fixed;
-  inset:0;
-  background: rgba(0,0,0,0.85);
-  z-index: 100;
-  align-items:center;
-  justify-content:center;
-}
-#note-modal .modal-content {
-  background:#fff;
-  color:#000;
-  border-radius:12px;
-  max-width:500px;
-  width:90%;
-  padding:20px;
-  position:relative;
-}
-#note-modal .close-modal {
-  position:absolute;
-  right:12px;
-  top:10px;
-  font-size:24px;
-  font-weight:bold;
-  cursor:pointer;
-}
-#note-modal img {width:100%; border-radius:8px; margin-bottom:10px;}
-#note-modal .modal-text {font-size:1rem; color:#000; white-space:pre-wrap; margin-bottom:10px;}
-#note-modal .modal-like {font-weight:bold; background:gold; border:none; padding:6px 12px; border-radius:6px; cursor:pointer;}
 </style>
 </head>
 <body>
@@ -168,19 +166,21 @@ footer a:hover{text-decoration:underline;}
 </footer>
 
 <!-- Modal -->
-<div id="note-modal">
+<div id="note-modal" class="modal">
   <div class="modal-content">
     <span class="close-modal">&times;</span>
-    <img id="modal-img" src="" alt="Sticky Note">
+    <img id="modal-img" src="" alt="Note Image">
     <div class="modal-text" id="modal-text"></div>
-    <button class="modal-like" id="modal-like">❤ 0</button>
+    <div class="modal-actions">
+      <button id="modal-like" class="btn btn-like">❤ 0</button>
+      <button id="modal-delete" class="btn btn-delete">Delete</button>
+    </div>
   </div>
 </div>
 
 <script type="module">
-// Firebase SDK
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
+import { getFirestore, collection, query, orderBy, onSnapshot, updateDoc, doc, addDoc, serverTimestamp, deleteDoc } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCM69r2wUibBFIFpML07Y5RUTrxHgonlSc",
@@ -199,86 +199,77 @@ const modal = document.getElementById('note-modal');
 const modalImg = document.getElementById('modal-img');
 const modalText = document.getElementById('modal-text');
 const modalLike = document.getElementById('modal-like');
-const closeModal = document.querySelector('.close-modal');
+const modalDelete = document.getElementById('modal-delete');
+const closeModalBtn = document.querySelector('.close-modal');
 
-let notes = [];
-let currentNoteId = null;
+let currentNote = null;
+let userId = localStorage.getItem('userId') || (localStorage.setItem('userId', crypto.randomUUID()), localStorage.getItem('userId'));
 
-async function fetchNotes(){
-  const q = query(collection(db, "anton_notes"), orderBy("createdAt"));
-  const snapshot = await getDocs(q);
-  notes = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
-  renderNotes();
-}
+// Real-time listener
+const notesCol = collection(db,"anton_notes");
+const q = query(notesCol, orderBy("createdAt"));
+onSnapshot(q, snapshot=>{
+  const notes = snapshot.docs.map(doc=>({id: doc.id, ...doc.data()}));
+  renderNotes(notes);
+});
 
-function renderNotes(){
-  wall.innerHTML = '';
+function renderNotes(notes){
+  wall.innerHTML='';
   if(!notes.length) return;
-  
-  // Find top liked
   let maxLikes = Math.max(...notes.map(n=>n.likes||0));
-  
   notes.forEach(note=>{
     const div = document.createElement('div');
     div.className='sticky-note frame';
-    if(note.likes === maxLikes) div.classList.add('top-note');
+    if(note.likes===maxLikes && note.likes>0) div.classList.add('top-note');
     div.innerHTML = `<img src="${note.img}" alt="Sticky Note">
                      <div class="text">${note.text}</div>
                      <button class="like-btn">❤ ${note.likes||0}</button>`;
-    div.querySelector('button.like-btn').onclick = () => likeNote(note.id);
-    div.onclick = (e) => {
-      if(!e.target.classList.contains('like-btn')) openModal(note);
-    };
+    div.querySelector('.like-btn').onclick = e=>{ e.stopPropagation(); likeNote(note.id, note); };
+    div.onclick = ()=> openModal(note);
     wall.appendChild(div);
   });
 }
 
 function openModal(note){
-  currentNoteId = note.id;
+  currentNote = note;
   modalImg.src = note.img;
   modalText.textContent = note.text;
   modalLike.textContent = `❤ ${note.likes||0}`;
+  modalDelete.style.display = (note.userId===userId) ? 'inline-block':'none';
   modal.style.display='flex';
 }
 
-closeModal.onclick = () => modal.style.display='none';
-window.onclick = (e) => { if(e.target===modal) modal.style.display='none'; }
+closeModalBtn.onclick = ()=> modal.style.display='none';
+window.onclick = e=> { if(e.target===modal) modal.style.display='none'; }
 
-async function likeNote(id){
-  const noteDoc = doc(db,"anton_notes",id);
-  const note = notes.find(n=>n.id===id);
+async function likeNote(id, note){
   if(!note.likedBy) note.likedBy=[];
-  if(note.likedBy.includes('user')) { alert("Already liked!"); return; } // simple unique user placeholder
+  if(note.likedBy.includes(userId)){ alert("Already liked!"); return; }
   note.likes = (note.likes||0)+1;
-  note.likedBy = [...(note.likedBy||[]),'user'];
-  await updateDoc(noteDoc,{likes: note.likes, likedBy: note.likedBy});
-  fetchNotes();
+  note.likedBy = [...(note.likedBy||[]), userId];
+  await updateDoc(doc(db,"anton_notes",id), {likes: note.likes, likedBy: note.likedBy});
+  if(currentNote && currentNote.id===id) modalLike.textContent=`❤ ${note.likes}`;
 }
 
-async function deleteNote(id){
-  if(!confirm("Delete this note?")) return;
-  await deleteDoc(doc(db,"anton_notes",id));
-  fetchNotes();
+modalLike.onclick = ()=>{ if(currentNote) likeNote(currentNote.id, currentNote); }
+
+modalDelete.onclick = async ()=>{
+  if(currentNote && currentNote.userId===userId){
+    if(confirm("Delete your note?")){
+      await deleteDoc(doc(db,"anton_notes",currentNote.id));
+      modal.style.display='none';
+    }
+  }
 }
 
-// Example: Add note manually (in practice, add a form)
-async function addNoteExample(){
-  const newNote = {
-    img:"anton1.png",
-    text:"This is a test note!",
-    likes:0,
-    likedBy:[],
-    createdAt:new Date()
-  };
-  await addDoc(collection(db,"anton_notes"), newNote);
-  fetchNotes();
+// Optional: Add note submission prompt
+async function addSampleNote(){
+  const text = prompt("Enter your note (max 300 chars):");
+  if(!text) return;
+  const img = prompt("Enter image URL:");
+  await addDoc(notesCol,{img,text,likes:0,likedBy:[],userId,createdAt:serverTimestamp()});
 }
-
-fetchNotes();
 </script>
 
 </body>
 </html>
-
-
-
