@@ -44,17 +44,11 @@ header p {
   width:200px;
   height:200px;
   border-radius:15px;
-  padding:10px;
-  box-shadow:3px 3px 10px rgba(0,0,0,0.5);
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  align-items:center;
-  text-align:center;
-  color:black;
   position:relative;
   cursor:pointer;
   background:white;
+  overflow:hidden;
+  box-shadow:3px 3px 10px rgba(0,0,0,0.5);
   transition: transform 0.2s, box-shadow 0.2s;
 }
 .note:hover{
@@ -65,32 +59,33 @@ header p {
   width:100%;
   height:100%;
   object-fit:cover;
-  border-radius:15px;
   position:absolute;
   top:0; left:0;
-  z-index:0;
 }
 .note .text{
-  position:relative;
-  z-index:1;
-  font-size:0.9em;
-  color:black;
-  background: rgba(255,255,255,0.8);
-  border-radius:10px;
+  position:absolute;
+  bottom:35px;
+  left:5px;
+  right:5px;
+  background: rgba(255,255,255,0.85);
+  border-radius:8px;
   padding:5px;
-  max-height:70%;
+  font-size:0.85em;
   overflow:auto;
+  max-height:60%;
+  z-index:1;
 }
-.note .week-label{
+.note .label{
   position:absolute;
   bottom:5px;
   left:50%;
   transform:translateX(-50%);
-  z-index:1;
-  background:rgba(255,255,255,0.8);
+  background: rgba(255,255,255,0.85);
   padding:2px 6px;
   border-radius:5px;
   font-weight:bold;
+  font-size:0.8em;
+  z-index:1;
 }
 .note.current-week{
   border:3px solid gold;
@@ -145,13 +140,16 @@ function updateWeeklyFavorites() {
   members.forEach(m => {
     let notes = JSON.parse(localStorage.getItem(m.name) || '[]');
     notes = notes.filter(n => !n.deleted); // remove deleted notes
+
+    // Build map: week -> top-liked note
     const weekMap = {};
     notes.forEach(n => {
       if(!weekMap[n.week] || n.likes > weekMap[n.week].likes){
         weekMap[n.week] = n;
       }
     });
-    const favorites = Object.values(weekMap);
+
+    const favorites = Object.values(weekMap).sort((a,b)=>a.week-b.week);
     localStorage.setItem(m.name+'_favorites', JSON.stringify(favorites));
   });
 }
@@ -159,8 +157,8 @@ function updateWeeklyFavorites() {
 // -------------------- Render Favorites --------------------
 function renderFavorites() {
   updateWeeklyFavorites();
-  const favoritesContainer = document.getElementById('favorites-container');
-  favoritesContainer.innerHTML='';
+  const container = document.getElementById('favorites-container');
+  container.innerHTML='';
 
   members.forEach(m => {
     const archive = JSON.parse(localStorage.getItem(m.name+'_favorites') || '[]');
@@ -170,43 +168,45 @@ function renderFavorites() {
     section.className='member-section';
     const title = document.createElement('h2');
     title.textContent = m.name.toUpperCase();
+    title.style.color = 'gold';
+    title.style.textAlign = 'center';
+    title.style.marginBottom = '10px';
     section.appendChild(title);
 
     const wallDiv = document.createElement('div');
     wallDiv.className='wall-container';
 
-    // Sort by week ascending
-    archive.sort((a,b)=>a.week-b.week);
-
     archive.forEach(n => {
       const noteDiv = document.createElement('div');
       noteDiv.className='note';
 
-      // Background image
-      if(n.img) {
+      // Image
+      if(n.img){
         const img = document.createElement('img');
         img.src = n.img;
         noteDiv.appendChild(img);
       }
 
-      // Note text
+      // Text overlay
       const textDiv = document.createElement('div');
       textDiv.className='text';
       textDiv.textContent = n.text;
       noteDiv.appendChild(textDiv);
 
-      // Week label
-      const weekLabel = document.createElement('div');
-      weekLabel.className='week-label';
-      weekLabel.textContent = `Week ${n.week} ❤️ ${n.likes}`;
-      noteDiv.appendChild(weekLabel);
+      // Likes + Week label
+      const labelDiv = document.createElement('div');
+      labelDiv.className='label';
+      labelDiv.textContent = `❤️ ${n.likes}  |  Week ${n.week}`;
+      noteDiv.appendChild(labelDiv);
 
+      // Color & current week highlight
       if(n.week === currentWeek){
         noteDiv.classList.add('current-week');
       } else {
         noteDiv.style.borderColor = m.color;
       }
 
+      // Click behavior
       noteDiv.onclick = () => {
         const userId = localStorage.getItem('userId_'+m.name);
         if(userId && n.userId === userId){
@@ -224,7 +224,7 @@ function renderFavorites() {
     });
 
     section.appendChild(wallDiv);
-    favoritesContainer.appendChild(section);
+    container.appendChild(section);
   });
 }
 
