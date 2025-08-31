@@ -440,9 +440,11 @@ if(bodyId) pageMember = bodyId;
 
 
 function renderDesigns() {
-  designContainer.innerHTML = '';
+  designContainer.innerHTML = ''; // clear previous
+
   members.forEach(member => {
     const designs = JSON.parse(localStorage.getItem(member.name + '_designs') || '[]');
+    
     designs.forEach((src, idx) => {
       const wrapper = document.createElement('div');
       wrapper.style.display = 'inline-block';
@@ -451,7 +453,9 @@ function renderDesigns() {
 
       const img = document.createElement('img');
       img.src = src;
+      img.style.width = '100px';
       img.style.border = `2px solid ${member.color}`;
+      img.style.borderRadius = '10px';
       wrapper.appendChild(img);
 
       const delBtn = document.createElement('button');
@@ -464,14 +468,13 @@ function renderDesigns() {
       delBtn.style.border = 'none';
       delBtn.style.padding = '4px 6px';
       delBtn.style.cursor = 'pointer';
-      
-      // Delete functionality
+
       delBtn.onclick = () => {
         if (!confirm('Delete this design?')) return;
-        designs.splice(idx, 1); // remove design from array
-        localStorage.setItem(member.name + '_designs', JSON.stringify(designs)); // update storage
-        renderSelectionWall(member.name); // update member wall
-        renderDesigns(); // update design manager
+        designs.splice(idx, 1);
+        localStorage.setItem(member.name + '_designs', JSON.stringify(designs));
+        renderDesigns(); // refresh Manage Designs section
+        renderSelectionWall(member.name); // refresh member wall
       };
 
       wrapper.appendChild(delBtn);
@@ -479,6 +482,7 @@ function renderDesigns() {
     });
   });
 }
+
 
 
 
@@ -517,6 +521,7 @@ function renderDesigns() {
 
 
   
+
 
 
 
