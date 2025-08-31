@@ -352,24 +352,59 @@ if(bodyId) pageMember = bodyId;
 
   // ----------------- Render Functions -----------------
   function renderSelectionWall(memberName) {
-    const wall = document.querySelector(`#${memberName}-selection .wall`);
-    if(!wall) return;
+  const wall = document.querySelector(`#${memberName}-selection .wall`);
+  if (!wall) return;
 
-    // Clear previous Firestore notes
-    $all(`#${memberName}-selection .wall .sticky-note[data-firestore="true"]`).forEach(n => n.remove());
+  // Clear only Firestore notes
+  Array.from(wall.querySelectorAll('.sticky-note[data-firestore="true"]')).forEach(n => n.remove());
 
-    // Add placeholders & local designs only if not present
-    if(!wall.querySelector('.sticky-note[data-local]')){
-      for(let i=1;i<=4;i++){
-        const imgFile = `${memberName}${i}.png`;
-        const note = document.createElement('div');
-        note.className = 'sticky-note';
-        note.dataset.local = "true";
-        note.style.border = `4px solid ${getMemberColor(memberName)}`;
-        note.innerHTML = `<img src="${imgFile}" alt="${memberName} placeholder ${i}">`;
-        note.onclick = () => openModalForMember(memberName, imgFile);
-        wall.appendChild(note);
+  // Render default placeholders if they don't exist yet
+  if (!wall.querySelector('.sticky-note[data-local]')) {
+    for (let i = 1; i <= 4; i++) {
+      const imgFile = `${memberName}${i}.png`;
+      const note = document.createElement('div');
+      note.className = 'sticky-note';
+      note.dataset.local = "true";
+      note.style.border = `4px solid ${getMemberColor(memberName)}`;
+      note.innerHTML = `<img src="${imgFile}" alt="${memberName} placeholder ${i}">`;
+      note.onclick = () => openModalForMember(memberName, imgFile);
+      wall.appendChild(note);
+    }
+
+    // Add uploaded designs for this member
+    const designs = JSON.parse(localStorage.getItem(memberName + '_designs') || '[]');
+    designs.forEach(src => {
+      const note = document.createElement('div');
+      note.className = 'sticky-note';
+      note.dataset.local = "true";
+      note.style.border = `4px solid ${getMemberColor(memberName)}`;
+      note.innerHTML = `<img src="${src}" alt="Uploaded design">`;
+      note.onclick = () => openModalForMember(memberName, src);
+      wall.appendChild(note);
+    });
+  }
+
+  // Firestore real-time notes
+  const notesCol = collection(db, 'notes', memberName, 'memberNotes');
+  onSnapshot(notesCol, snapshot => {
+    snapshot.docs.forEach(docSnap => {
+      const data = docSnap.data();
+
+      // Avoid duplicating Firestore notes
+      if (!wall.querySelector(`.sticky-note[data-firestore-id="${docSnap.id}"]`)) {
+        const noteDiv = document.createElement('div');
+        noteDiv.className = 'sticky-note';
+        noteDiv.dataset.firestore = "true";
+        noteDiv.dataset.firestoreId = docSnap.id; // track ID
+        noteDiv.style.border = `4px solid ${getMemberColor(memberName)}`;
+        noteDiv.innerHTML = `<img src="${data.img}" alt="User note"><div class="label">${data.text}</div>`;
+        noteDiv.onclick = () => openModalForMember(memberName, data.img);
+        wall.appendChild(noteDiv);
       }
+    });
+  });
+}
+
 
       const designs = JSON.parse(localStorage.getItem(memberName+'_designs')||'[]');
       designs.forEach(src => {
@@ -521,6 +556,7 @@ function renderDesigns() {
 
 
   
+
 
 
 
