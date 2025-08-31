@@ -28,13 +28,10 @@ header {
 header img.banner {
   width: 100%;
   height: auto;
-  object-fit: contain;
   border-bottom: 2px solid gold;
-  background: black;
 }
 
 .header-text {
-  text-align: center;
   padding: 20px;
 }
 
@@ -53,14 +50,16 @@ header img.banner {
   text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
 }
 
-/* STICKY NOTES WALL */
+/* WALL */
 section.wall {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-start;
   gap: 20px;
+  overflow-x: auto;
   padding: 40px;
 }
+
 .sticky-note {
   width: 200px;
   height: 150px;
@@ -73,10 +72,12 @@ section.wall {
   flex-direction: column;
   align-items: center;
 }
+
 .sticky-note img {
   width: 100%;
   border-radius: 10px;
 }
+
 .sticky-note .text {
   position: absolute;
   top: 10px;
@@ -85,14 +86,16 @@ section.wall {
   bottom: 30px;
   overflow-wrap: break-word;
   color: black;
-  font-size: 0.8em; /* Smaller text to fit inside */
+  font-size: 0.85em;
   white-space: pre-wrap;
 }
+
 .frame {
   border: 5px solid #FF0000;
   border-radius: 15px;
   background: white;
 }
+
 .like-btn {
   position: absolute;
   bottom: 5px;
@@ -106,6 +109,7 @@ section.wall {
   color: black;
   font-weight: bold;
 }
+
 .delete-btn {
   position: absolute;
   top: 5px;
@@ -117,6 +121,7 @@ section.wall {
   padding: 3px 7px;
   cursor: pointer;
 }
+
 .top-note {
   border: 5px solid gold;
   box-shadow: 0 0 15px gold;
@@ -128,10 +133,12 @@ footer {
   border-top: 2px solid gold;
   margin-top: 50px;
 }
+
 footer a {
   color: gold;
   text-decoration: none;
 }
+
 footer a:hover {
   text-decoration: underline;
 }
@@ -153,8 +160,8 @@ footer a:hover {
 </section>
 
 <footer>
-  <p>Created by <a href="https://x.com/Eclip7e_project" target="_blank">@Eclip7e_project</a></p>
-  <img src="logo.png" alt="Logo" height="80">
+<p>Created by <a href="https://x.com/Eclip7e_project" target="_blank">@Eclip7e_project</a></p>
+<img src="logo.png" alt="Logo" height="80">
 </footer>
 
 <script>
@@ -162,15 +169,22 @@ footer a:hover {
 const memberName = "wonbin";
 const wall = document.getElementById('wonbin-wall');
 
-// Load notes
+// Load notes from localStorage
 let notes = JSON.parse(localStorage.getItem(memberName) || '[]');
-const currentWeek = Math.floor((new Date() - new Date('2025-09-01')) / (7*24*60*60*1000)) + 1;
+
+// Get current week
+const currentWeek = Math.floor((new Date() - new Date('2025-09-01')) / (7 * 24 * 60 * 60 * 1000)) + 1;
+
+// Get user's note ID
 let currentUserNoteId = localStorage.getItem('currentUserNoteId_' + memberName);
 
+// Render notes
 function renderNotes() {
   wall.innerHTML = '';
-  let maxLikes = -1, topNoteIndex = -1;
+  let maxLikes = -1;
+  let topNoteIndex = -1;
 
+  // Find top note for this week
   notes.forEach((note, i) => {
     if (!note.deleted && note.week === currentWeek && note.likes > maxLikes) {
       maxLikes = note.likes;
@@ -191,6 +205,7 @@ function renderNotes() {
       <button class="like-btn" data-id="${i}">❤ ${note.likes || 0}</button>
     `;
 
+    // Add delete button for creator
     if (note.id == currentUserNoteId) {
       const deleteBtn = document.createElement('button');
       deleteBtn.textContent = 'Delete';
@@ -208,8 +223,9 @@ function renderNotes() {
     wall.appendChild(div);
   });
 
+  // Like button functionality
   document.querySelectorAll('.like-btn').forEach(btn => {
-    btn.onclick = e => {
+    btn.onclick = (e) => {
       const id = e.target.dataset.id;
       let likedNotes = JSON.parse(localStorage.getItem('likedNotes') || '[]');
       if (likedNotes.includes(`${memberName}-${id}`)) {
@@ -230,3 +246,5 @@ renderNotes();
 
 </body>
 </html>
+
+     
