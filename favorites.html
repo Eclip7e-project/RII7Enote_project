@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Weekly Favorites Archive</title>
+<title>Weekly Favorites Archive - RII7E Project</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
 <style>
 body {
@@ -12,14 +12,12 @@ body {
   background-color:black;
   color:white;
   background-image:url('https://www.transparenttextures.com/patterns/stardust.png');
+  text-align:center;
 }
 header{
   padding:30px;
-  text-align:center;
 }
-h1{
-  color:gold;
-}
+h1{ color:gold; }
 .member-section{
   margin:40px 0;
 }
@@ -27,7 +25,6 @@ h1{
   text-align:center;
   color:gold;
   margin-bottom:20px;
-  text-transform:uppercase;
 }
 .wall-container{
   display:flex;
@@ -43,43 +40,48 @@ h1{
   border-radius:15px;
   position:relative;
   cursor:pointer;
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-end;
+  color:black;
+  overflow:hidden;
   transition: transform 0.2s, box-shadow 0.2s;
+}
+.note:hover{
+  transform:scale(1.05);
+  box-shadow:0 0 15px gold;
 }
 .note img{
   width:100%;
   height:100%;
   object-fit:cover;
   border-radius:15px;
+  position:absolute;
+  top:0;
+  left:0;
+  z-index:0;
 }
 .note .text{
-  position:absolute;
-  top:10px;
-  left:10px;
-  right:10px;
-  bottom:40px;
-  font-size:0.8em;
-  overflow-wrap: break-word;
-  white-space:pre-wrap;
+  position:relative;
+  z-index:1;
+  font-size:0.75rem;
   color:black;
+  padding:5px;
+  word-break:break-word;
 }
-.note .info-box{
-  position:absolute;
-  bottom:5px;
-  left:50%;
-  transform:translateX(-50%);
-  background:rgba(0,0,0,0.5);
-  padding:3px 7px;
+.note .info{
+  position:relative;
+  z-index:1;
+  background:rgba(255,255,255,0.85);
+  padding:3px 5px;
   border-radius:5px;
-  font-size:0.75em;
+  font-size:0.7rem;
+  margin-top:2px;
+  display:flex;
+  justify-content:space-between;
 }
-.note.current-week{
-  border:3px solid gold;
-  box-shadow:0 0 15px gold;
-}
-.note.other-week{
-  border:3px solid;
-  box-shadow:0 0 10px rgba(255,255,255,0.5);
-}
+.top-note{ border:3px solid gold; box-shadow:0 0 15px gold; }
+
 footer{
   padding:30px 0;
   border-top:2px solid gold;
@@ -99,6 +101,7 @@ footer a:hover{
 <header>
 <h1>Weekly Favorites Archive</h1>
 <p>See the top-liked note for each member from every week. Current week is highlighted in gold! Click your own note to see a special message. Click any note to visit that member’s wall.</p>
+<a href="index.html">← Back to Homepage</a>
 </header>
 
 <div id="favorites-container"></div>
@@ -108,8 +111,23 @@ footer a:hover{
 <img src="logo.png" alt="Logo" height="80">
 </footer>
 
-<script>
-// Config
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+
+// Firebase
+const firebaseConfig = {
+  apiKey:"AIzaSyCM69r2wUibBFIFpML07Y5RUTrxHgonlSc",
+  authDomain:"rii7e-sticky-notes-project.firebaseapp.com",
+  projectId:"rii7e-sticky-notes-project",
+  storageBucket:"rii7e-sticky-notes-project.firebasestorage.app",
+  messagingSenderId:"962319162792",
+  appId:"1:962319162792:web:8fad2b11c316766c8a119d"
+};
+initializeApp(firebaseConfig);
+const db = getFirestore();
+
+// Members list with colors and walls
 const members = [
   {name:'shotaro', color:'#8B0000', wall:'shotaro.html'},
   {name:'eunseok', color:'#D3D3D3', wall:'eunseok.html'},
@@ -122,28 +140,29 @@ const members = [
   {name:'brii7e', color:'#FFA500', wall:'brii7e.html'}
 ];
 
-const startDate = new Date('2025-09-01'); // week 1 starts today
-const currentWeek = Math.floor((new Date() - startDate)/(7*24*60*60*1000)) + 1;
+const startDate = new Date('2025-09-01'); // Week 1 starts
 
-// Generate userId if missing
-members.forEach(m => {
-  if(!localStorage.getItem('userId_'+m.name)){
-    localStorage.setItem('userId_'+m.name, Date.now() + Math.random());
-  }
-});
+function getWeek(dateStr){
+  return Math.floor((new Date(dateStr)-startDate)/(7*24*60*60*1000))+1;
+}
 
-function updateFavorites() {
-  members.forEach(m => {
-    let notes = JSON.parse(localStorage.getItem(m.name) || '[]')
-                  .filter(n => !n.deleted && n.img);
+async function loadFavorites(){
+  const container = document.getElementById('favorites-container');
+  container.innerHTML='';
+
+  const currentWeek = getWeek(new Date());
+
+  for(const member of members){
+    const notesCol = collection(db,'notes',member.name,'memberNotes');
+    const snapshot = await getDocs(notesCol);
+    const notes = snapshot.docs.map(d=>({id:d.id, ...d.data()}));
+
     // Compute week if missing
     notes.forEach(n=>{
-      if(!n.week && n.date){
-        n.week = Math.floor((new Date(n.date)-startDate)/(7*24*60*60*1000))+1;
-      }
+      if(!n.week && n.date) n.week = getWeek(n.date);
     });
-    notes = notes.filter(n=>n.week >= 1); // ignore week 0
-    // Group by week and pick most liked
+
+    // Group by week and find top-liked
     const weekMap = {};
     notes.forEach(n=>{
       if(!weekMap[n.week] || (n.likes||0) > (weekMap[n.week].likes||0)){
@@ -151,59 +170,50 @@ function updateFavorites() {
       }
     });
     const favorites = Object.values(weekMap).sort((a,b)=>a.week-b.week);
-    localStorage.setItem(m.name+'_favorites', JSON.stringify(favorites));
-  });
-}
 
-function renderFavorites(){
-  updateFavorites();
-  const container = document.getElementById('favorites-container');
-  container.innerHTML = '';
-
-  members.forEach(m=>{
-    const archive = JSON.parse(localStorage.getItem(m.name+'_favorites') || '[]');
-    if(archive.length===0) return;
+    if(favorites.length===0) continue;
 
     const section = document.createElement('div');
-    section.className = 'member-section';
+    section.className='member-section';
     const title = document.createElement('h2');
-    title.textContent = m.name;
+    title.textContent = member.name.toUpperCase();
     section.appendChild(title);
 
     const wallDiv = document.createElement('div');
     wallDiv.className='wall-container';
 
-    archive.forEach(n=>{
+    favorites.forEach(n=>{
       const noteDiv = document.createElement('div');
       noteDiv.className='note';
-      if(n.week === currentWeek){
-        noteDiv.classList.add('current-week');
-      } else {
-        noteDiv.classList.add('other-week');
-        noteDiv.style.borderColor = m.color;
-      }
+      if(n.week===currentWeek) noteDiv.classList.add('top-note');
+
       noteDiv.innerHTML = `
         <img src="${n.img}" alt="Note">
         <div class="text">${n.text}</div>
-        <div class="info-box">❤ ${n.likes||0} | Week ${n.week}</div>
+        <div class="info">
+          <span>❤ ${n.likes||0}</span>
+          <span>Week ${n.week}</span>
+        </div>
       `;
+
       noteDiv.onclick = ()=>{
-        const userId = localStorage.getItem('userId_'+m.name);
-        if(n.creator === userId){
-          alert(`🎉 Congrats! Your note was this week's favorite! 🌟`);
+        const userId = localStorage.getItem('userId_'+member.name);
+        if(userId && n.creator===userId){
+          alert(`🎉 Congrats ${member.name}! Your note was selected as this week's favorite! 🌟`);
         } else {
-          window.location.href = m.wall;
+          window.location.href = member.wall;
         }
       };
+
       wallDiv.appendChild(noteDiv);
     });
 
     section.appendChild(wallDiv);
     container.appendChild(section);
-  });
+  }
 }
 
-renderFavorites();
+loadFavorites();
 </script>
 
 </body>
