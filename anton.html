@@ -5,17 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Anton Wall - RII7E Project</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 <style>
 body {
   font-family: 'Playfair Display', serif;
-  background-color: black;
-  background-image: url('https://www.transparenttextures.com/patterns/stardust.png');
-  color: white;
-  margin: 0;
-  padding: 0;
-  text-align: center;
+  background-color:black;
+  background-image:url('https://www.transparenttextures.com/patterns/stardust.png');
+  color:white;
+  margin:0;
+  padding:0;
+  text-align:center;
 }
 
 /* HEADER */
@@ -28,6 +26,7 @@ header {
 }
 header img.banner {
   width: 100%;
+  height: auto;
   border-bottom: 2px solid gold;
 }
 .header-text { padding: 20px; }
@@ -35,57 +34,63 @@ header img.banner {
 
 /* WALL */
 section.wall {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-start;
-  gap: 20px;
-  padding: 40px;
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:flex-start;
+  gap:20px;
+  padding:40px;
 }
 .sticky-note {
-  width: 200px;
-  height: 180px;
-  background: white;
-  border-radius: 15px;
-  padding: 10px;
-  position: relative;
-  box-shadow: 3px 3px 10px rgba(0,0,0,0.5);
-  cursor: pointer;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
+  width:200px;
+  height:180px;
+  background:white;
+  border-radius:15px;
+  padding:10px;
+  position:relative;
+  box-shadow:3px 3px 10px rgba(0,0,0,0.5);
+  display:flex;
+  flex-direction:column;
+  cursor:pointer;
+  overflow:hidden;
 }
 .sticky-note img {
-  width: 100%;
-  border-radius: 10px;
+  width:100%;
+  border-radius:10px;
 }
 .sticky-note .text {
-  flex: 1;
-  margin-top: 5px;
-  font-size: 0.9em;
-  color: black;
-  overflow-y: auto;
-  word-wrap: break-word;
+  flex:1;
+  font-size:0.9em;
+  color:black;
+  overflow-y:auto;
+  white-space:pre-wrap;
+  word-wrap:break-word;
+  margin-top:5px;
+}
+.frame {
+  border:5px solid #1E3A5F;
+  border-radius:15px;
+  background:white;
 }
 .like-btn, .delete-btn {
-  position: absolute;
-  border: none;
-  border-radius: 5px;
-  padding: 5px 8px;
-  cursor: pointer;
-  font-size: 0.8em;
-  font-weight: bold;
+  position:absolute;
+  border:none;
+  border-radius:5px;
+  padding:5px 8px;
+  cursor:pointer;
+  font-size:0.8em;
+  font-weight:bold;
 }
 .like-btn {
-  bottom: 5px;
-  left: 5px;
-  background: gold;
-  color: black;
+  bottom:5px;
+  left:5px;
+  background:gold;
+  color:black;
 }
 .delete-btn {
-  top: 5px;
-  right: 5px;
-  background: red;
-  color: white;
+  top:5px;
+  right:5px;
+  background:red;
+  color:white;
 }
 .top-note {
   border: 5px solid gold;
@@ -94,34 +99,44 @@ section.wall {
 
 /* MODAL */
 #noteModal {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.8);
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.8);
+  justify-content:center;
+  align-items:center;
+  z-index:1000;
 }
 #noteModalContent {
-  background: white;
-  color: black;
-  padding: 20px;
-  border-radius: 15px;
-  max-width: 600px;
-  max-height: 80%;
-  overflow-y: auto;
+  background:white;
+  color:black;
+  padding:20px;
+  border-radius:15px;
+  max-width:600px;
+  max-height:80%;
+  overflow-y:auto;
+  white-space:pre-wrap;
 }
 #noteModalClose {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  background: red;
-  color: white;
-  border: none;
-  padding: 5px 10px;
-  cursor: pointer;
-  border-radius: 5px;
+  position:absolute;
+  top:20px;
+  right:20px;
+  background:red;
+  color:white;
+  border:none;
+  padding:5px 10px;
+  cursor:pointer;
+  border-radius:5px;
 }
+
+/* FOOTER */
+footer {
+  padding:30px 0;
+  border-top:2px solid gold;
+  margin-top:50px;
+}
+footer a {color:gold; text-decoration:none;}
+footer a:hover{text-decoration:underline;}
 </style>
 </head>
 <body>
@@ -135,7 +150,9 @@ section.wall {
   </div>
 </header>
 
-<section class="wall" id="anton-wall"></section>
+<section class="wall" id="anton-wall">
+  <!-- Notes load dynamically -->
+</section>
 
 <!-- MODAL -->
 <div id="noteModal">
@@ -149,68 +166,76 @@ section.wall {
 </footer>
 
 <script>
-/* 🔥 FIREBASE SETUP - REPLACE WITH YOUR PROJECT INFO */
-const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
-};
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-
-/* WALL CODE */
+// ====== CONFIG ======
 const memberName = "anton";
 const wall = document.getElementById('anton-wall');
 const modal = document.getElementById('noteModal');
 const modalContent = document.getElementById('noteModalContent');
 const modalClose = document.getElementById('noteModalClose');
 
+let notes = JSON.parse(localStorage.getItem(memberName) || '[]');
+let currentUserNoteId = localStorage.getItem('currentUserNoteId_' + memberName);
+
+// ====== MODAL ======
 modalClose.onclick = () => modal.style.display = 'none';
 modal.onclick = e => { if (e.target === modal) modal.style.display = 'none'; };
 
-/* Render Notes */
-function renderNotes(snapshot) {
+// ====== RENDER NOTES ======
+function renderNotes() {
   wall.innerHTML = '';
-  const notes = [];
-  snapshot.forEach(doc => notes.push({ id: doc.id, ...doc.data() }));
+  let maxLikes = -1;
+  let topNoteIndex = -1;
+  const currentWeek = Math.floor((new Date()-new Date('2025-09-01'))/(7*24*60*60*1000))+1;
 
-  let maxLikes = -1, topNoteId = null;
-  notes.forEach(note => {
-    if (!note.deleted && note.likes > maxLikes) {
+  notes.forEach((note, i) => {
+    if (!note.deleted && note.week === currentWeek && (note.likes || 0) > maxLikes) {
       maxLikes = note.likes;
-      topNoteId = note.id;
+      topNoteIndex = i;
     }
   });
 
-  notes.forEach(note => {
+  notes.forEach((note, i) => {
     if (note.deleted) return;
+
     const div = document.createElement('div');
-    div.className = 'sticky-note';
-    if (note.id === topNoteId) div.classList.add('top-note');
+    div.className = 'sticky-note frame';
+    if (i === topNoteIndex) div.classList.add('top-note');
 
     div.innerHTML = `
       <div class="text">${note.text}</div>
       <button class="like-btn">❤ ${note.likes || 0}</button>
-      <button class="delete-btn">🗑</button>
+      ${note.id === currentUserNoteId ? '<button class="delete-btn">🗑</button>' : ''}
     `;
 
+    // Like button
     div.querySelector('.like-btn').onclick = e => {
       e.stopPropagation();
-      db.collection(memberName).doc(note.id).update({
-        likes: (note.likes || 0) + 1
-      });
-    };
-
-    div.querySelector('.delete-btn').onclick = e => {
-      e.stopPropagation();
-      if (confirm("Delete this note?")) {
-        db.collection(memberName).doc(note.id).update({ deleted: true });
+      let likedNotes = JSON.parse(localStorage.getItem('likedNotes') || '[]');
+      if (likedNotes.includes(`${memberName}-${i}`)) {
+        alert("You've already liked this note!");
+        return;
       }
+      note.likes = (note.likes || 0) + 1;
+      likedNotes.push(`${memberName}-${i}`);
+      localStorage.setItem('likedNotes', JSON.stringify(likedNotes));
+      localStorage.setItem(memberName, JSON.stringify(notes));
+      renderNotes();
     };
 
+    // Delete button
+    if (note.id === currentUserNoteId) {
+      div.querySelector('.delete-btn').onclick = e => {
+        e.stopPropagation();
+        if (confirm("Delete your note?")) {
+          notes[i].deleted = true;
+          localStorage.setItem(memberName, JSON.stringify(notes));
+          localStorage.removeItem('currentUserNoteId_' + memberName);
+          renderNotes();
+        }
+      };
+    }
+
+    // Fullscreen modal
     div.onclick = () => {
       modalContent.innerHTML = `<p>${note.text}</p>`;
       modal.style.display = 'flex';
@@ -220,9 +245,10 @@ function renderNotes(snapshot) {
   });
 }
 
-/* Realtime Sync */
-db.collection(memberName).onSnapshot(renderNotes);
+renderNotes();
 </script>
 
 </body>
 </html>
+
+
