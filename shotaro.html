@@ -41,7 +41,7 @@ section.wall {
 #note-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); justify-content:center; align-items:center; z-index:1000; }
 #note-modal .modal-content { position:relative; background:white; padding:20px; border-radius:15px; max-width:400px; width:90%; text-align:left; }
 #note-modal img { width:100%; border-radius:10px; }
-#note-modal .modal-text { margin-top:10px; color:black; white-space:pre-wrap; }
+#note-modal .modal-text { margin-top:10px; color:black; white-space:pre-wrap; max-height:200px; overflow-y:auto; }
 #note-modal .modal-like, #note-modal .modal-close { margin-top:10px; padding:5px 10px; cursor:pointer; border:none; border-radius:5px; }
 #note-modal .modal-like { background:gold; color:black; font-weight:bold; }
 #note-modal .modal-close { background:red; color:white; float:right; }
@@ -77,7 +77,7 @@ section.wall {
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-import { getFirestore, collection, onSnapshot, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+import { getFirestore, collection, onSnapshot, doc, updateDoc, deleteDoc, addDoc } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
 // Firebase
 const firebaseConfig = {
@@ -100,17 +100,26 @@ const modalLike = document.getElementById('modal-like');
 const modalClose = modal.querySelector('.modal-close');
 
 let currentNoteId = null;
+const currentUserId = localStorage.getItem('userId') || crypto.randomUUID();
+localStorage.setItem('userId', currentUserId);
 
-// Listen to notes in Firestore
+// Calculate current week
+const currentWeek = Math.floor((new Date() - new Date('2025-09-01'))/(7*24*60*60*1000)) + 1;
+
+// Firestore collection
 const notesCol = collection(db, 'notes', memberName, 'memberNotes');
+
+// Render all notes in real-time
 onSnapshot(notesCol, snapshot => {
   wall.innerHTML = '';
   let maxLikes = -1;
   let topNoteId = null;
+
   snapshot.docs.forEach(docSnap => {
     const data = docSnap.data();
-    if(data.week === Math.floor((new Date()-new Date('2025-09-01'))/(7*24*60*60*1000))) {
-      if(data.likes > maxLikes){ maxLikes = data.likes; topNoteId = docSnap.id; }
+    if(data.week === currentWeek && data.likes > maxLikes){
+      maxLikes = data.likes;
+      topNoteId = docSnap.id;
     }
   });
 
@@ -121,32 +130,52 @@ onSnapshot(notesCol, snapshot => {
     if(docSnap.id === topNoteId) div.classList.add('top-note');
     div.innerHTML = `<img src="${data.img}" alt="Sticky Note"><div class="text">${data.text}</div>`;
 
-    // Open full view
-    div.onclick = () => {
+    // Delete button for creator
+    if(data.creatorId === currentUserId){
+      const delBtn = document.createElement('button');
+      delBtn.className='delete-btn';
+      delBtn.textContent='Delete';
+      delBtn.onclick = async (e)=>{
+        e.stopPropagation();
+        if(!confirm('Delete your note?')) return;
+        await deleteDoc(doc(db, 'notes', memberName, 'memberNotes', docSnap.id));
+      };
+      div.appendChild(delBtn);
+    }
+
+    // Click to open modal
+    div.onclick = ()=>{
+      currentNoteId = docSnap.id;
       modal.style.display='flex';
       modalImg.src = data.img;
       modalText.textContent = data.text;
-      modalLike.textContent = `❤ ${data.likes||0}`;
-      currentNoteId = docSnap.id;
+      modalLike.textContent = `❤ ${data.likes || 0}`;
     };
 
     wall.appendChild(div);
   });
 });
 
-// Modal like button
+// Modal like functionality
 modalLike.onclick = async () => {
   if(!currentNoteId) return;
-  const noteRef = doc(db, 'notes', memberName, 'memberNotes', currentNoteId);
+  const noteRef = doc(db,'notes',memberName,'memberNotes',currentNoteId);
   const docSnap = await noteRef.get();
-  await updateDoc(noteRef, { likes: (docSnap.data()?.likes||0)+1 });
-  modalLike.textContent = `❤ ${docSnap.data()?.likes+1||1}`;
+  const data = docSnap.data();
+  if(!data.likedBy) data.likedBy = [];
+  if(data.likedBy.includes(currentUserId)){
+    alert("You've already liked this note!");
+    return;
+  }
+  await updateDoc(noteRef, { likes:(data.likes||0)+1, likedBy:[...data.likedBy, currentUserId] });
+  modalLike.textContent = `❤ ${(data.likes||0)+1}`;
 };
 
 // Close modal
 modalClose.onclick = ()=>{ modal.style.display='none'; currentNoteId=null; };
 modal.onclick = (e)=>{ if(e.target===modal) modal.style.display='none'; currentNoteId=null; };
-
 </script>
 </body>
 </html>
+
+
