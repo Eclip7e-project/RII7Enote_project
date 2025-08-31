@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Weekly Favorites Archive - RII7E Project</title>
+<title>Weekly Favorites Archive</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
 <style>
 body {
@@ -27,6 +27,7 @@ h1{
   text-align:center;
   color:gold;
   margin-bottom:20px;
+  text-transform:uppercase;
 }
 .wall-container{
   display:flex;
@@ -40,13 +41,9 @@ h1{
   width:200px;
   height:200px;
   border-radius:15px;
-  box-shadow:3px 3px 10px rgba(0,0,0,0.5);
-  display:flex;
-  flex-direction:column;
-  align-items:center;
   position:relative;
   cursor:pointer;
-  overflow:hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 .note img{
   width:100%;
@@ -54,32 +51,34 @@ h1{
   object-fit:cover;
   border-radius:15px;
 }
-.note .text-overlay{
+.note .text{
   position:absolute;
   top:10px;
   left:10px;
   right:10px;
   bottom:40px;
-  color:black;
-  font-size:0.9em;
+  font-size:0.8em;
   overflow-wrap: break-word;
   white-space:pre-wrap;
-  overflow:hidden;
+  color:black;
 }
 .note .info-box{
   position:absolute;
   bottom:5px;
   left:50%;
   transform:translateX(-50%);
-  background:rgba(0,0,0,0.6);
-  color:white;
-  padding:2px 6px;
-  font-size:0.8em;
+  background:rgba(0,0,0,0.5);
+  padding:3px 7px;
   border-radius:5px;
-  text-align:center;
+  font-size:0.75em;
 }
 .note.current-week{
   border:3px solid gold;
+  box-shadow:0 0 15px gold;
+}
+.note.other-week{
+  border:3px solid;
+  box-shadow:0 0 10px rgba(255,255,255,0.5);
 }
 footer{
   padding:30px 0;
@@ -110,7 +109,7 @@ footer a:hover{
 </footer>
 
 <script>
-// -------------------- Members Config --------------------
+// Config
 const members = [
   {name:'shotaro', color:'#8B0000', wall:'shotaro.html'},
   {name:'eunseok', color:'#D3D3D3', wall:'eunseok.html'},
@@ -123,77 +122,86 @@ const members = [
   {name:'brii7e', color:'#FFA500', wall:'brii7e.html'}
 ];
 
-// -------------------- Current Week --------------------
-const startDate = new Date('2025-09-01'); // first week start
-const now = new Date();
-const currentWeek = Math.floor((now - startDate)/(7*24*60*60*1000)) + 1;
+const startDate = new Date('2025-09-01'); // week 1 starts today
+const currentWeek = Math.floor((new Date() - startDate)/(7*24*60*60*1000)) + 1;
 
-// -------------------- Render Favorites --------------------
-function renderFavorites() {
-  const container = document.getElementById('favorites-container');
-  container.innerHTML = '';
-
-  members.forEach(member => {
-    const notes = JSON.parse(localStorage.getItem(member.name) || '[]')
-                    .filter(n => !n.deleted && n.img); // only valid notes
-
-    if(notes.length===0) return;
-
-    // group by week, pick top liked per week
-    const weekMap = {};
-    notes.forEach(n=>{
-      let week = n.week || 1; // default week 1 if missing
-      if(!weekMap[week] || n.likes > weekMap[week].likes){
-        weekMap[week] = n;
-      }
-    });
-
-    const favorites = Object.values(weekMap).sort((a,b)=>a.week-b.week);
-
-    // section for member
-    const section = document.createElement('div');
-    section.className = 'member-section';
-    const title = document.createElement('h2');
-    title.textContent = member.name.toUpperCase();
-    section.appendChild(title);
-
-    const wall = document.createElement('div');
-    wall.className = 'wall-container';
-
-    favorites.forEach(note=>{
-      const noteDiv = document.createElement('div');
-      noteDiv.className = 'note';
-      if(note.week === currentWeek) noteDiv.classList.add('current-week');
-
-      noteDiv.innerHTML = `
-        <img src="${note.img}">
-        <div class="text-overlay">${note.text}</div>
-        <div class="info-box">❤️ ${note.likes || 0} | Week ${note.week}</div>
-      `;
-
-      noteDiv.onclick = () => {
-        const userId = localStorage.getItem('userId_' + member.name);
-        if(userId && note.creator === userId){
-          alert("🎉 Congrats! Your note was selected as this week's favorite! 🌟");
-        } else {
-          window.location.href = member.wall;
-        }
-      };
-
-      wall.appendChild(noteDiv);
-    });
-
-    section.appendChild(wall);
-    container.appendChild(section);
-  });
-}
-
-// -------------------- Generate userId if missing --------------------
-members.forEach(m=>{
+// Generate userId if missing
+members.forEach(m => {
   if(!localStorage.getItem('userId_'+m.name)){
     localStorage.setItem('userId_'+m.name, Date.now() + Math.random());
   }
 });
+
+function updateFavorites() {
+  members.forEach(m => {
+    let notes = JSON.parse(localStorage.getItem(m.name) || '[]')
+                  .filter(n => !n.deleted && n.img);
+    // Compute week if missing
+    notes.forEach(n=>{
+      if(!n.week && n.date){
+        n.week = Math.floor((new Date(n.date)-startDate)/(7*24*60*60*1000))+1;
+      }
+    });
+    notes = notes.filter(n=>n.week >= 1); // ignore week 0
+    // Group by week and pick most liked
+    const weekMap = {};
+    notes.forEach(n=>{
+      if(!weekMap[n.week] || (n.likes||0) > (weekMap[n.week].likes||0)){
+        weekMap[n.week] = n;
+      }
+    });
+    const favorites = Object.values(weekMap).sort((a,b)=>a.week-b.week);
+    localStorage.setItem(m.name+'_favorites', JSON.stringify(favorites));
+  });
+}
+
+function renderFavorites(){
+  updateFavorites();
+  const container = document.getElementById('favorites-container');
+  container.innerHTML = '';
+
+  members.forEach(m=>{
+    const archive = JSON.parse(localStorage.getItem(m.name+'_favorites') || '[]');
+    if(archive.length===0) return;
+
+    const section = document.createElement('div');
+    section.className = 'member-section';
+    const title = document.createElement('h2');
+    title.textContent = m.name;
+    section.appendChild(title);
+
+    const wallDiv = document.createElement('div');
+    wallDiv.className='wall-container';
+
+    archive.forEach(n=>{
+      const noteDiv = document.createElement('div');
+      noteDiv.className='note';
+      if(n.week === currentWeek){
+        noteDiv.classList.add('current-week');
+      } else {
+        noteDiv.classList.add('other-week');
+        noteDiv.style.borderColor = m.color;
+      }
+      noteDiv.innerHTML = `
+        <img src="${n.img}" alt="Note">
+        <div class="text">${n.text}</div>
+        <div class="info-box">❤ ${n.likes||0} | Week ${n.week}</div>
+      `;
+      noteDiv.onclick = ()=>{
+        const userId = localStorage.getItem('userId_'+m.name);
+        if(n.creator === userId){
+          alert(`🎉 Congrats! Your note was this week's favorite! 🌟`);
+        } else {
+          window.location.href = m.wall;
+        }
+      };
+      wallDiv.appendChild(noteDiv);
+    });
+
+    section.appendChild(wallDiv);
+    container.appendChild(section);
+  });
+}
 
 renderFavorites();
 </script>
