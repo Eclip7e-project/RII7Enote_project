@@ -277,29 +277,46 @@ function renderNotes(notes){
     if(n.week===currentWeek && (n.likes||0)>maxLikes){ maxLikes = n.likes||0; topNoteId = n.id; }
   });
 
-  notes.forEach(n=>{
-    const div = document.createElement('div');
-    div.className='sticky-note';
-    if(n.id===topNoteId) div.classList.add('top-note');
-    div.innerHTML = `<img src="${n.img}"><div class="text">${n.text}</div>`;
-    div.onclick = ()=>openModal(n);
 
-    // Delete button for creator
-    if(n.creator === userId){
-      const deleteBtn = document.createElement('button');
-      deleteBtn.textContent='Delete';
-      deleteBtn.className='delete-btn';
-      deleteBtn.onclick = async (e)=>{
-        e.stopPropagation();
-        if(!confirm("Delete your note?")) return;
-        await deleteDoc(doc(db,'notes',memberName,'memberNotes',n.id));
-      }
-      div.appendChild(deleteBtn);
-    }
 
-    wall.appendChild(div);
-  });
-}
+
+notes.forEach(n=>{
+  const div = document.createElement('div');
+  div.className='sticky-note';
+  if(n.id===topNoteId) div.classList.add('top-note');
+  div.innerHTML=`<img src="${n.img}" alt="Note"><div class="text">${n.text}</div>`;
+
+  // Open modal when clicking the note
+  div.onclick = ()=>openModal(n);
+
+  // Show delete button on wall if this user is the creator
+  if(n.creator === userId){
+    const delBtn = document.createElement('button');
+    delBtn.textContent = 'Delete';
+    delBtn.style.position = 'absolute';
+    delBtn.style.top = '6px';
+    delBtn.style.right = '6px';
+    delBtn.style.background = 'red';
+    delBtn.style.color = '#fff';
+    delBtn.style.border = 'none';
+    delBtn.style.borderRadius = '5px';
+    delBtn.style.padding = '3px 6px';
+    delBtn.style.cursor = 'pointer';
+    delBtn.onclick = async (e)=>{
+      e.stopPropagation();
+      if(!confirm('Delete your note?')) return;
+      await deleteDoc(doc(db,'notes',memberName,'memberNotes',n.id));
+    };
+    div.appendChild(delBtn);
+  }
+
+  wall.appendChild(div);
+});
+
+
+
+
+  
 
 // Real-time Firestore
 const notesCol = collection(db,'notes',memberName,'memberNotes');
@@ -310,3 +327,4 @@ onSnapshot(notesCol, snapshot=>{
 </script>
 </body>
 </html>
+
