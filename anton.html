@@ -1,143 +1,113 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Anton Wall - RII7E Project</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ANTON Wall - RII7E Sticky Notes</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
 <style>
-body {font-family:'Playfair Display', serif; background:black; color:white; margin:0; padding:0; text-align:center;}
-header {display:flex; flex-direction:column; align-items:center; background:black; border-bottom:2px solid gold;}
-header img.banner {width:100%; height:auto; object-fit:contain;}
-.header-text {padding:20px;}
-.header-text h1 {color:gold; font-size:2.5rem; text-shadow:2px 2px 5px rgba(0,0,0,0.7);}
-.header-text p {max-width:700px; margin:0 auto; text-shadow:1px 1px 3px rgba(0,0,0,0.7);}
-section.wall {display:flex; flex-wrap:wrap; justify-content:flex-start; gap:20px; padding:40px;}
-.sticky-note {width:200px; min-height:150px; background:white; border-radius:15px; padding:10px; position:relative; box-shadow:3px 3px 10px rgba(0,0,0,0.5); cursor:pointer; display:flex; flex-direction:column; align-items:center; overflow:hidden;}
-.sticky-note img {width:100%; border-radius:10px;}
-.sticky-note .text {position:absolute; top:10px; left:10px; right:10px; bottom:30px; color:black; font-size:0.9em; overflow-wrap:break-word; white-space:pre-wrap;}
-.like-btn {position:absolute; top:6px; right:6px; padding:4px 8px; cursor:pointer; background:gold; border:none; border-radius:5px; color:black; font-weight:bold;}
-.delete-btn {position:absolute; top:6px; left:6px; background:red; color:white; border:none; border-radius:5px; padding:3px 7px; cursor:pointer;}
-.top-note {border:5px solid gold; box-shadow:0 0 15px gold;}
-footer {padding:30px 0; border-top:2px solid gold; margin-top:50px;}
-footer a {color:gold; text-decoration:none;}
-footer a:hover{text-decoration:underline;}
-/* Modal */
-.modal {display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:60; align-items:center; justify-content:center; overflow:auto;}
-.modal-content {background:#fff; color:#000; border-radius:12px; max-width:90%; width:600px; padding:18px; position:relative;}
-.modal-content img {width:100%; max-height:70vh; object-fit:contain; border-radius:10px;}
-.modal-text {margin-top:12px; word-break:break-word; font-size:1.05rem;}
-.close {position:absolute; right:12px; top:10px; font-size:26px; cursor:pointer; color:black;}
+  :root{--gold:#d4af37;--bg:#000;--panel:#111;--muted:#ddd;}
+  html,body{margin:0;padding:0;background:var(--bg);color:#fff;font-family:'Playfair Display',serif;}
+  header{display:flex;flex-direction:column;align-items:center;background:#000;border-bottom:3px solid var(--gold);}
+  header img.banner{width:100%;height:auto;object-fit:contain;}
+  .wall{display:flex;flex-wrap:wrap;justify-content:center;gap:18px;margin:28px;}
+  .sticky-note{width:150px;min-height:150px;background:#fff;border-radius:12px;padding:8px;box-shadow:0 6px 18px rgba(0,0,0,.6);position:relative;cursor:pointer;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+  .sticky-note img{width:100%;height:100%;object-fit:cover;border-radius:8px;display:block;}
+  .sticky-note .label{position:absolute;bottom:6px;left:8px;right:8px;font-size:12px;color:#111;background:rgba(255,255,255,.85);padding:4px;border-radius:6px;text-align:center}
+  .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:60;align-items:center;justify-content:center;padding:24px}
+  .modal-content{background:#fff;color:#000;border-radius:12px;max-width:500px;width:100%;padding:18px;position:relative;display:flex;flex-direction:column;align-items:center;}
+  .close{position:absolute;right:14px;top:10px;font-size:26px;cursor:pointer}
+  #note-modal-img{width:100%;max-height:400px;object-fit:contain;border-radius:8px;}
+  #note-modal-text{margin:12px 0;font-weight:700;text-align:center;word-break:break-word;}
+  .like-btn{position:relative;padding:6px 12px;border:none;border-radius:8px;background:var(--gold);color:#000;font-weight:700;cursor:pointer;align-self:flex-end;}
+  .delete-btn{margin-top:10px;padding:6px 12px;border:none;border-radius:8px;background:red;color:#fff;cursor:pointer;}
 </style>
 </head>
 <body>
 
 <header>
-  <img src="antonbanner.jpg" alt="Anton Banner" class="banner">
-  <div class="header-text">
-    <h1>Anton Wall</h1>
-    <p>All submitted sticky notes for Anton. Click a note to view full size, give love with ❤, or delete your own note.</p>
-    <a href="index.html" style="color:gold; text-decoration:underline; margin-top:10px; display:inline-block;">← Back to Homepage</a>
-  </div>
+  <img class="banner" src="banner2.jpg" alt="RII7E banner">
+  <h1 style="color:var(--gold);margin:12px 0;">ANTON's Wall</h1>
 </header>
 
-<section class="wall" id="anton-wall"></section>
-
-<footer>
-  <p>Created by <a href="https://x.com/Eclip7e_project" target="_blank">@Eclip7e_project</a></p>
-  <img src="logo.png" alt="Logo" height="80">
-</footer>
+<main>
+  <div class="wall" id="anton-wall"></div>
+</main>
 
 <!-- Modal -->
-<div class="modal" id="modal">
+<div id="note-modal" class="modal">
   <div class="modal-content">
-    <span class="close" id="modal-close">&times;</span>
-    <img id="modal-img" src="" alt="Note preview">
-    <div class="modal-text" id="modal-text"></div>
+    <span class="close" id="note-modal-close">&times;</span>
+    <img id="note-modal-img" src="" alt="Note">
+    <p id="note-modal-text"></p>
+    <button id="like-btn" class="like-btn">❤️ <span id="like-count">0</span></button>
+    <button id="delete-btn" class="delete-btn" style="display:none;">Delete</button>
   </div>
 </div>
 
 <script>
-// === Config ===
-const memberName = "anton";
-const wall = document.getElementById('anton-wall');
-const modal = document.getElementById('modal');
-const modalImg = document.getElementById('modal-img');
-const modalText = document.getElementById('modal-text');
-const modalClose = document.getElementById('modal-close');
+const member = 'anton';
+const wall = document.getElementById(member+'-wall');
+const modal = document.getElementById('note-modal');
+const modalClose = document.getElementById('note-modal-close');
+const modalImg = document.getElementById('note-modal-img');
+const modalText = document.getElementById('note-modal-text');
+const likeBtn = document.getElementById('like-btn');
+const likeCount = document.getElementById('like-count');
+const deleteBtn = document.getElementById('delete-btn');
 
-// Load notes from localStorage
-let notes = JSON.parse(localStorage.getItem(memberName) || '[]');
-let userNotes = JSON.parse(localStorage.getItem('userNotes_' + memberName) || '[]');
-const currentWeek = Math.floor((new Date() - new Date('2025-09-01'))/(7*24*60*60*1000)) + 1;
+let notes = JSON.parse(localStorage.getItem(member) || '[]');
+let currentNote = null;
+const userNotes = JSON.parse(localStorage.getItem('userNotes_'+member)||'[]');
 
-// === Render Notes ===
 function renderNotes(){
-  wall.innerHTML = '';
-  let maxLikes = -1;
-  let topNoteIndex = -1;
-
-  notes.forEach((note,i)=>{
-    if(!note.deleted && note.week===currentWeek && note.likes>maxLikes){
-      maxLikes = note.likes;
-      topNoteIndex = i;
-    }
-  });
-
-  notes.forEach((note,i)=>{
+  wall.innerHTML='';
+  notes.forEach(note=>{
     if(note.deleted) return;
-
     const div = document.createElement('div');
-    div.className = 'sticky-note';
-    if(i===topNoteIndex) div.classList.add('top-note');
-
-    div.innerHTML = `<img src="${note.img}" alt="Note"><div class="text">${note.text}</div>
-      <button class="like-btn" data-id="${i}">❤ ${note.likes||0}</button>`;
-
-    div.querySelector('img').onclick = ()=>{
-      modalImg.src = note.img;
-      modalText.textContent = note.text;
-      modal.style.display = 'flex';
-    }
-
-    if(userNotes.includes(note.id)){
-      const delBtn = document.createElement('button');
-      delBtn.textContent='Delete';
-      delBtn.className='delete-btn';
-      delBtn.onclick=()=>{
-        if(!confirm('Delete your note?')) return;
-        notes[i].deleted=true;
-        localStorage.setItem(memberName,JSON.stringify(notes));
-        renderNotes();
-      };
-      div.appendChild(delBtn);
-    }
-
+    div.className='sticky-note';
+    div.innerHTML = `<img src="${note.img}" alt=""><div class="label">${note.text}</div>`;
+    div.onclick=()=>openModal(note);
     wall.appendChild(div);
-  });
-
-  document.querySelectorAll('.like-btn').forEach(btn=>{
-    btn.onclick = e=>{
-      const id = e.target.dataset.id;
-      let likedNotes = JSON.parse(localStorage.getItem('likedNotes') || '[]');
-      if(likedNotes.includes(memberName+'-'+id)){
-        alert("You've already liked this note!");
-        return;
-      }
-      notes[id].likes = notes[id].likes ? notes[id].likes+1 : 1;
-      localStorage.setItem(memberName, JSON.stringify(notes));
-      likedNotes.push(memberName+'-'+id);
-      localStorage.setItem('likedNotes', JSON.stringify(likedNotes));
-      renderNotes();
-    };
   });
 }
 
-// === Modal Close ===
-modalClose.onclick = ()=> modal.style.display='none';
-window.onclick = e=>{if(e.target===modal) modal.style.display='none';}
+function openModal(note){
+  currentNote = note;
+  modalImg.src = note.img;
+  modalText.textContent = note.text;
+  likeCount.textContent = note.likes;
+  modal.style.display='flex';
+  // Show delete button only for user notes
+  deleteBtn.style.display = userNotes.includes(note.id)?'block':'none';
+}
 
-// Initial render
+modalClose.onclick = ()=> modal.style.display='none';
+window.onclick = (e)=>{if(e.target===modal) modal.style.display='none'};
+
+likeBtn.onclick = ()=>{
+  if(!currentNote) return;
+  const liked = JSON.parse(localStorage.getItem('liked_'+currentNote.id)||'false');
+  if(liked) return alert('You already liked this note!');
+  currentNote.likes++;
+  localStorage.setItem(member, JSON.stringify(notes));
+  localStorage.setItem('liked_'+currentNote.id,true);
+  likeCount.textContent = currentNote.likes;
+  renderNotes();
+};
+
+deleteBtn.onclick = ()=>{
+  if(!currentNote) return;
+  if(!confirm('Delete this note?')) return;
+  currentNote.deleted = true;
+  localStorage.setItem(member, JSON.stringify(notes));
+  const index = userNotes.indexOf(currentNote.id);
+  if(index>-1) userNotes.splice(index,1);
+  localStorage.setItem('userNotes_'+member, JSON.stringify(userNotes));
+  modal.style.display='none';
+  renderNotes();
+}
+
 renderNotes();
 </script>
 
