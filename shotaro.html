@@ -15,165 +15,27 @@ body {
   padding:0;
   text-align:center;
 }
-
-header {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  background: black;
-  border-bottom: 2px solid gold;
-}
-
-header img.banner {
-  width: 100%;
-  height: auto;
-  max-height: none;
-  object-fit: contain;
-  border-bottom: 2px solid gold;
-  display: block;
-  margin: 0 auto;
-}
-
-.header-text {
-  text-align: center;
-  padding: 20px;
-}
-
-.header-text h1 {
-  font-size: 2.5rem;
-  color: gold;
-  margin: 10px 0;
-  text-shadow: 2px 2px 5px rgba(0,0,0,0.7);
-}
-
-.header-text p {
-  max-width: 700px;
-  font-size: 1rem;
-  margin: 0 auto;
-  color: white;
-  text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
-}
-
-section.wall {
-  display:flex;
-  flex-wrap:wrap;
-  justify-content:flex-start;
-  gap:20px;
-  padding:40px;
-}
-
-.sticky-note {
-  width:200px;
-  height:200px;
-  position:relative;
-  cursor:pointer;
-}
-
-.sticky-note img {
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  border-radius:15px;
-}
-
-.sticky-note .text {
-  position:absolute;
-  top:10px;
-  left:10px;
-  right:10px;
-  bottom:10px;
-  color:black;
-  font-size:0.9em;
-  white-space:pre-wrap;
-  word-wrap: break-word;
-  pointer-events:none;
-}
-
-.top-note {
-  border: 5px solid gold;
-  box-shadow: 0 0 15px gold;
-}
-
+header { display:flex; flex-direction:column; align-items:center; background:black; border-bottom:2px solid gold; }
+header img.banner { width:100%; height:auto; object-fit:contain; border-bottom:2px solid gold; }
+.header-text { text-align:center; padding:20px; }
+.header-text h1 { font-size:2.5rem; color:gold; margin:10px 0; text-shadow:2px 2px 5px rgba(0,0,0,0.7); }
+.header-text p { max-width:700px; font-size:1rem; margin:0 auto; color:white; text-shadow:1px 1px 3px rgba(0,0,0,0.7); }
+section.wall { display:flex; flex-wrap:wrap; justify-content:flex-start; gap:20px; padding:40px; }
+.sticky-note { width:200px; height:200px; position:relative; cursor:pointer; }
+.sticky-note img { width:100%; height:100%; object-fit:cover; border-radius:15px; }
+.sticky-note .text { position:absolute; top:10px; left:10px; right:10px; bottom:10px; color:black; font-size:0.9em; white-space:pre-wrap; pointer-events:none; }
+.top-note { border:5px solid gold; box-shadow:0 0 15px gold; }
 /* Modal */
-#modal {
-  display:none;
-  position:fixed;
-  top:0;
-  left:0;
-  width:100%;
-  height:100%;
-  background:rgba(0,0,0,0.8);
-  justify-content:center;
-  align-items:center;
-  z-index:1000;
-}
-#modal-content {
-  position:relative;
-  max-width:500px;
-  width:90%;
-  max-height:90%;
-}
-#modal-img {
-  width:100%;
-  border-radius:15px;
-}
-#modal-text {
-  position:absolute;
-  top:10px;
-  left:10px;
-  right:10px;
-  bottom:50px;
-  color:black;
-  font-size:0.9em;
-  white-space:pre-wrap;
-  word-wrap: break-word;
-}
-#modal-like {
-  position:absolute;
-  bottom:10px;
-  left:50%;
-  transform:translateX(-50%);
-  padding:5px 10px;
-  cursor:pointer;
-  background:gold;
-  border:none;
-  border-radius:5px;
-  color:black;
-  font-weight:bold;
-}
-#modal-close {
-  position:absolute;
-  top:10px;
-  right:10px;
-  cursor:pointer;
-  font-size:1.2rem;
-  font-weight:bold;
-  background:red;
-  color:white;
-  border:none;
-  border-radius:5px;
-  padding:3px 7px;
-}
-
-.delete-btn {
-  position:absolute;
-  top:5px;
-  right:5px;
-  background:red;
-  color:white;
-  border:none;
-  border-radius:5px;
-  padding:3px 7px;
-  cursor:pointer;
-}
-
-footer {
-  padding:30px 0; 
-  border-top:2px solid gold; 
-  margin-top:50px;
-}
-footer a {color:gold; text-decoration:none;}
-footer a:hover{text-decoration:underline;}
+#modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); justify-content:center; align-items:center; z-index:1000; }
+#modal-content { position:relative; background:transparent; border-radius:15px; max-width:500px; width:90%; max-height:90%; overflow:auto; }
+#modal-img { width:100%; border-radius:15px; }
+#modal-text { position:absolute; top:10px; left:10px; right:10px; bottom:50px; color:black; font-size:0.9em; white-space:pre-wrap; word-wrap: break-word; }
+#modal-like { position:absolute; bottom:10px; left:50%; transform:translateX(-50%); padding:5px 10px; cursor:pointer; background:gold; border:none; border-radius:5px; color:black; font-weight:bold; }
+#modal-close { position:absolute; top:10px; right:10px; cursor:pointer; font-size:1.2rem; font-weight:bold; background:red; color:white; border:none; border-radius:5px; padding:3px 7px; z-index:1001; }
+#modal-delete { display:none; background:red; color:white; border:none; border-radius:5px; padding:3px 7px; position:absolute; top:10px; right:60px; cursor:pointer; z-index:1001; }
+footer { padding:30px 0; border-top:2px solid gold; margin-top:50px; }
+footer a { color:gold; text-decoration:none; }
+footer a:hover { text-decoration:underline; }
 </style>
 </head>
 <body>
@@ -196,6 +58,7 @@ footer a:hover{text-decoration:underline;}
     <img id="modal-img" src="">
     <div id="modal-text"></div>
     <button id="modal-like">❤ 0</button>
+    <button id="modal-delete">Delete</button>
   </div>
 </div>
 
@@ -205,126 +68,88 @@ footer a:hover{text-decoration:underline;}
 </footer>
 
 <script type="module">
-// ----------------- Firebase SDK -----------------
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-import { getFirestore, collection, onSnapshot, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+import { getFirestore, collection, onSnapshot, doc, updateDoc, deleteDoc, addDoc } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
-// ----------------- Firebase Setup -----------------
-const firebaseConfig = {
-  apiKey: "AIzaSyCM69r2wUibBFIFpML07Y5RUTrxHgonlSc",
-  authDomain: "rii7e-sticky-notes-project.firebaseapp.com",
-  projectId: "rii7e-sticky-notes-project",
-  storageBucket: "rii7e-sticky-notes-project.firebasestorage.app",
-  messagingSenderId: "962319162792",
-  appId: "1:962319162792:web:8fad2b11c316766c8a119d"
-};
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+// Firebase
+const firebaseConfig = { apiKey:"AIzaSyCM69r2wUibBFIFpML07Y5RUTrxHgonlSc", authDomain:"rii7e-sticky-notes-project.firebaseapp.com", projectId:"rii7e-sticky-notes-project", storageBucket:"rii7e-sticky-notes-project.firebasestorage.app", messagingSenderId:"962319162792", appId:"1:962319162792:web:8fad2b11c316766c8a119d" };
+initializeApp(firebaseConfig);
+const db = getFirestore();
 
-// ----------------- Variables -----------------
+// Variables
 const memberName = "shotaro";
 const wall = document.getElementById('shotaro-wall');
 const modal = document.getElementById('modal');
-const modalContent = document.getElementById('modal-content');
 const modalImg = document.getElementById('modal-img');
 const modalText = document.getElementById('modal-text');
 const modalLike = document.getElementById('modal-like');
 const modalClose = document.getElementById('modal-close');
-
-// Ensure unique userId for creator field
-let userId = localStorage.getItem('userId');
-if(!userId){ userId = crypto.randomUUID(); localStorage.setItem('userId', userId); }
+const modalDelete = document.getElementById('modal-delete');
 
 let currentModalNote = null;
 
-// ----------------- Functions -----------------
+// User ID
+let userId = localStorage.getItem('userId');
+if(!userId){ userId = crypto.randomUUID(); localStorage.setItem('userId', userId); }
+
+// Open modal
 function openModal(note){
   currentModalNote = note;
   modalImg.src = note.img;
   modalText.textContent = note.text;
   modalLike.textContent = `❤ ${note.likes||0}`;
   modal.style.display = 'flex';
+  modalDelete.style.display = (note.creator===userId)?'block':'none';
 }
 
-// Modal close
+// Close modal
 modalClose.onclick = (e)=>{ e.stopPropagation(); modal.style.display='none'; }
-modal.onclick = e => { if(e.target===modal) modal.style.display='none'; }
+modal.onclick = ()=> modal.style.display='none';
+document.getElementById('modal-content').onclick = (e)=> e.stopPropagation();
 
-// Likes once per browser
-modalLike.onclick = async ()=>{
+// Like button
+modalLike.onclick = async () => {
   if(!currentModalNote) return;
-  let likedNotes = JSON.parse(localStorage.getItem('likedNotes')||'[]');
-  if(likedNotes.includes(currentModalNote.id)){
-    alert("You've already liked this note!");
-    return;
-  }
-  const noteRef = doc(db,'notes',memberName,'memberNotes',currentModalNote.id);
-  await updateDoc(noteRef,{ likes:(currentModalNote.likes||0)+1 });
+  let liked = JSON.parse(localStorage.getItem('likedNotes')||'[]');
+  if(liked.includes(currentModalNote.id)){ alert("Already liked!"); return; }
+  await updateDoc(doc(db,'notes',memberName,'memberNotes',currentModalNote.id),{ likes:(currentModalNote.likes||0)+1 });
   currentModalNote.likes = (currentModalNote.likes||0)+1;
   modalLike.textContent = `❤ ${currentModalNote.likes}`;
-  likedNotes.push(currentModalNote.id);
-  localStorage.setItem('likedNotes', JSON.stringify(likedNotes));
-}
+  liked.push(currentModalNote.id);
+  localStorage.setItem('likedNotes', JSON.stringify(liked));
+};
+
+// Delete button
+modalDelete.onclick = async () => {
+  if(!currentModalNote) return;
+  if(!confirm("Delete your note?")) return;
+  await deleteDoc(doc(db,'notes',memberName,'memberNotes',currentModalNote.id));
+  modal.style.display='none';
+};
 
 // Render notes
 function renderNotes(notes){
-  wall.innerHTML = '';
-  const currentWeek = Math.floor((new Date()-new Date('2025-09-01'))/(7*24*60*60*1000))+1;
+  wall.innerHTML='';
   let maxLikes = -1;
   let topNoteId = null;
-
+  const currentWeek = Math.floor((new Date()-new Date('2025-09-01'))/(7*24*60*60*1000))+1;
+  notes.forEach(n=>{ if(n.week===currentWeek && (n.likes||0)>maxLikes){ maxLikes=n.likes||0; topNoteId=n.id; } });
   notes.forEach(n=>{
-    if(n.week===currentWeek && (n.likes||0)>maxLikes){ maxLikes = n.likes||0; topNoteId = n.id; }
+    const div = document.createElement('div');
+    div.className='sticky-note';
+    if(n.id===topNoteId) div.classList.add('top-note');
+    div.innerHTML=`<img src="${n.img}" alt="Note"><div class="text">${n.text}</div>`;
+    div.onclick = ()=>openModal(n);
+    wall.appendChild(div);
   });
+}
 
-
-
-
-notes.forEach(n=>{
-  const div = document.createElement('div');
-  div.className='sticky-note';
-  if(n.id===topNoteId) div.classList.add('top-note');
-  div.innerHTML=`<img src="${n.img}" alt="Note"><div class="text">${n.text}</div>`;
-
-  // Open modal when clicking the note
-  div.onclick = ()=>openModal(n);
-
-  // Show delete button on wall if this user is the creator
-  if(n.creator === userId){
-    const delBtn = document.createElement('button');
-    delBtn.textContent = 'Delete';
-    delBtn.style.position = 'absolute';
-    delBtn.style.top = '6px';
-    delBtn.style.right = '6px';
-    delBtn.style.background = 'red';
-    delBtn.style.color = '#fff';
-    delBtn.style.border = 'none';
-    delBtn.style.borderRadius = '5px';
-    delBtn.style.padding = '3px 6px';
-    delBtn.style.cursor = 'pointer';
-    delBtn.onclick = async (e)=>{
-      e.stopPropagation();
-      if(!confirm('Delete your note?')) return;
-      await deleteDoc(doc(db,'notes',memberName,'memberNotes',n.id));
-    };
-    div.appendChild(delBtn);
-  }
-
-  wall.appendChild(div);
-});
-
-
-
-
-  
-
-// Real-time Firestore
+// Firestore realtime
 const notesCol = collection(db,'notes',memberName,'memberNotes');
 onSnapshot(notesCol, snapshot=>{
-  const notes = snapshot.docs.map(docSnap=>({id:docSnap.id,...docSnap.data()}));
+  const notes = snapshot.docs.map(d=>({id:d.id,...d.data()}));
   renderNotes(notes);
 });
 </script>
 </body>
 </html>
-
