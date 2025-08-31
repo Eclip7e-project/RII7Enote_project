@@ -250,8 +250,224 @@
 <script>
   // Entire JS logic as in your original code remains here (render walls, modal handling, submit, designs, etc.)
 </script>
+<script>
+const members = [
+  {name:'shotaro', color:'#8B0000'},
+  {name:'eunseok', color:'#D3D3D3'},
+  {name:'sungchan', color:'#008000'},
+  {name:'wonbin', color:'#FF0000'},
+  {name:'seunghan', color:'#0000FF'},
+  {name:'sohee', color:'#FFFF00'},
+  {name:'anton', color:'#1E3A5F'},
+  {name:'rii7e', color:'#FFA500'},
+  {name:'brii7e', color:'#FFA500'}
+];
+
+function $(s){return document.querySelector(s)}
+function $all(s){return Array.from(document.querySelectorAll(s))}
+
+const modal = $('#modal');
+const modalClose = $('#modal-close');
+const modalCancel = $('#modal-cancel');
+const modalImg = $('#modal-img');
+const modalMemberTitle = $('#modal-member');
+const previewText = $('#preview-text');
+const previewOverlay = $('#preview-overlay');
+const noteText = $('#note-text');
+const colorPicker = $('#color-picker');
+const memberSelect = $('#member-select');
+const memberSelectLabel = $('#member-select-label');
+const modalSubmit = $('#modal-submit');
+const designFileInput = $('#design-file');
+const designMember = $('#design-member');
+const submitDesignBtn = $('#submitDesign');
+const designMsg = $('#design-msg');
+const designContainer = $('#designContainer');
+
+let currentImg = '';
+let currentMember = '';
+let currentMode = 'member';
+
+function genID(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,6) }
+
+function getMemberColor(name){
+  const m = members.find(x=>x.name===name);
+  return m ? m.color : '#ccc';
+}
+
+// ----- Render Selection Walls -----
+function renderSelectionWall(memberName){
+  const wall = document.querySelector(`#${memberName}-selection .wall`);
+  if(!wall) return;
+  wall.innerHTML = '';
+
+  // 1️⃣ Default notes
+  for(let i=1;i<=4;i++){
+    const imgFile = `${memberName}${i}.png`;
+    const note = document.createElement('div');
+    note.className='sticky-note';
+    note.style.border=`4px solid ${getMemberColor(memberName)}`;
+    note.innerHTML=`<img src="${imgFile}" alt="${memberName} placeholder ${i}">`;
+    note.onclick=()=>openModalForMember(memberName,imgFile);
+    wall.appendChild(note);
+  }
+
+  // 2️⃣ Designs from localStorage
+  const designs = JSON.parse(localStorage.getItem(memberName+'_designs') || '[]');
+  designs.forEach((src, idx)=>{
+    const note = document.createElement('div');
+    note.className='sticky-note';
+    note.style.border=`4px solid ${getMemberColor(memberName)}`;
+    note.innerHTML=`<img src="${src}" alt="Uploaded design">`;
+    note.onclick=()=>openModalForMember(memberName, src);
+    wall.appendChild(note);
+  });
+
+  // 3️⃣ Notes from Firebase
+  const notesRef = firebase.database().ref('notes/' + memberName);
+  notesRef.on('value', snapshot => {
+    const data = snapshot.val();
+    if(!data) return;
+    Object.values(data).forEach(noteData => {
+      const note = document.createElement('div');
+      note.className = 'sticky-note';
+      note.style.border=`4px solid ${getMemberColor(memberName)}`;
+      note.innerHTML = `<img src="${noteData.img}" alt="User note"><div class="label" style="color:${noteData.color}">${noteData.text}</div>`;
+      wall.appendChild(note);
+    });
+  });
+}
+
+function renderAllSelectionWalls(){ members.forEach(m=>renderSelectionWall(m.name)) }
+
+// ----- Simple Notes -----
+function renderSimpleNotes(){
+  const wall = $('#simple-note-wall');
+  wall.innerHTML='';
+  const colors = ['red','orange','yellow','green','blue','indigo','violet'];
+  colors.forEach((color,i)=>{
+    const imgFile = color+'note.png';
+    const note = document.createElement('div');
+    note.className='sticky-note';
+    note.style.width='110px'; note.style.height='110px'; note.style.border=`3px solid #ccc`;
+    note.innerHTML=`<img src="${imgFile}" alt="Simple note ${i+1}" data-color="${color}">`;
+    note.onclick=()=>openModalForSimple(imgFile);
+    wall.appendChild(note);
+  });
+}
+
+// ----- Modal Handling -----
+function openModalForMember(memberName,imgSrc){
+  currentMember=memberName; currentImg=imgSrc; currentMode='member'; setupModal();
+}
+
+function openModalForSimple(imgSrc){
+  currentMember='simple'; currentImg=imgSrc; currentMode='simple'; setupModal();
+}
+
+function setupModal(){
+  modalImg.src=currentImg;
+  if(currentMode==='simple'){
+    modalMemberTitle.textContent='Plain Note';
+    memberSelect.style.display='block';
+    memberSelectLabel.style.display='block';
+    memberSelect.value='shotaro';
+  } else {
+    modalMemberTitle.textContent=currentMember.toUpperCase();
+    memberSelect.style.display='none';
+    memberSelectLabel.style.display='none';
+  }
+  previewText.textContent=''; previewText.style.color=colorPicker.value||'#000';
+  noteText.value='';
+  previewOverlay.style.display='flex';
+  const modalLeft=$('#modal-left');
+  modalLeft.style.width='150px'; modalLeft.style.height='150px';
+  modal.style.display='flex'; modal.setAttribute('aria-hidden','false'); document.body.style.overflow='hidden';
+}
+
+function closeModal(){ modal.style.display='none'; modal.setAttribute('aria-hidden','true'); document.body.style.overflow=''; }
+
+noteText.addEventListener('input',e=>{previewText.textContent=e.target.value});
+colorPicker.addEventListener('input',e=>{previewText.style.color=e.target.value});
+
+modalClose.onclick=closeModal;
+modalCancel.onclick=closeModal;
+window.addEventListener('keydown',(e)=>{if(e.key==='Escape')closeModal()});
+modal.addEventListener('click',(e)=>{if(e.target===modal)closeModal()});
+
+// ----- Submit Notes -----
+modalSubmit.addEventListener('click',()=>{
+  const text=noteText.value.trim(); if(!text){alert('Write something!'); return;}
+  const color=colorPicker.value||'#000000';
+  const week=getCurrentWeek();
+  const member=currentMode==='simple'?memberSelect.value:currentMember;
+  const id=genID();
+
+  const notesRef = firebase.database().ref('notes/' + member);
+  const newNoteRef = notesRef.push();
+  newNoteRef.set({
+    id: id,
+    img: currentImg,
+    text: text,
+    color: color,
+    likes: 0,
+    week: week
+  });
+
+  const userNotesRef = firebase.database().ref('userNotes/' + member);
+  userNotesRef.push(id);
+
+  closeModal();
+  alert(`Your note has been submitted to ${member.toUpperCase()}'s wall!`);
+});
+
+function getCurrentWeek(){
+  const startDate=new Date('2025-09-01');
+  const now=new Date();
+  return Math.floor((now-startDate)/(7*24*60*60*1000))+1;
+}
+
+// ----- Design Submission -----
+submitDesignBtn.addEventListener('click',()=>{
+  const file=designFileInput.files[0]; const member=designMember.value;
+  if(!file){designMsg.textContent='Select a file!'; return;}
+  const reader=new FileReader();
+  reader.onload=function(e){
+    let designs=JSON.parse(localStorage.getItem(member+'_designs')||'[]'); designs.push(e.target.result);
+    localStorage.setItem(member+'_designs',JSON.stringify(designs));
+    designMsg.textContent='Design submitted successfully!';
+    designFileInput.value='';
+    renderSelectionWall(member); renderDesigns();
+    setTimeout(()=>designMsg.textContent='',3000);
+  };
+  reader.readAsDataURL(file);
+});
+
+function renderDesigns(){
+  designContainer.innerHTML='';
+  members.forEach(member=>{
+    const designs=JSON.parse(localStorage.getItem(member.name+'_designs')||'[]');
+    designs.forEach((src,idx)=>{
+      const wrapper=document.createElement('div');
+      wrapper.style.display='inline-block'; wrapper.style.margin='6px'; wrapper.style.position='relative';
+      const img=document.createElement('img'); img.src=src; img.style.border=`2px solid ${member.color}`;
+      wrapper.appendChild(img);
+      const delBtn=document.createElement('button'); delBtn.textContent='Delete';
+      delBtn.style.position='absolute'; delBtn.style.top='6px'; delBtn.style.right='6px';
+      delBtn.style.background='red'; delBtn.style.color='#fff'; delBtn.style.border='none';
+      delBtn.style.padding='4px 6px'; delBtn.style.cursor='pointer';
+      delBtn.onclick=()=>{if(!confirm('Delete this design?'))return; designs.splice(idx,1);
+      localStorage.setItem(member.name+'_designs',JSON.stringify(designs)); renderSelectionWall(member.name); renderDesigns();};
+      wrapper.appendChild(delBtn);
+      designContainer.appendChild(wrapper);
+    });
+  });
+}
+
+// ----- Initialize -----
+renderAllSelectionWalls(); renderSimpleNotes(); renderDesigns();
+</script>
 
 </body>
 </html>
 
-  
