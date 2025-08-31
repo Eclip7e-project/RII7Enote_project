@@ -152,80 +152,100 @@ footer a:hover{text-decoration:underline;}
 
 
 
-<script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-database-compat.js"></script>
-<script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.24.0/firebase-app.js";
+import { getDatabase, ref, onValue, set, update, push, runTransaction } from "https://www.gstatic.com/firebasejs/9.24.0/firebase-database.js";
+
 const firebaseConfig = {
-  apiKey: "YOUR_FIREBASE_API_KEY",
-  authDomain: "YOUR_FIREBASE_PROJECT_ID.firebaseapp.com",
-  databaseURL: "https://YOUR_FIREBASE_PROJECT_ID.firebaseio.com",
-  projectId: "YOUR_FIREBASE_PROJECT_ID",
-  storageBucket: "YOUR_FIREBASE_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyCM69r2wUibBFIFpML07Y5RUTrxHgonlSc",
+  authDomain: "rii7e-sticky-notes-project.firebaseapp.com",
+  projectId: "rii7e-sticky-notes-project",
+  storageBucket: "rii7e-sticky-notes-project.firebasestorage.app",
+  messagingSenderId: "962319162792",
+  appId: "1:962319162792:web:8fad2b11c316766c8a119d"
 };
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
 
-const memberName = 'anton';
-const wall = document.getElementById('anton-wall');
-const currentUserNoteId = localStorage.getItem('myNoteId_' + memberName);
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+const memberName = "anton";
+const wall = document.getElementById("anton-wall");
 const currentWeek = Math.floor((new Date()-new Date('2025-09-01'))/(7*24*60*60*1000))+1;
+const currentUserNoteId = localStorage.getItem('myNoteId_' + memberName);
 
-// Listen for notes
-db.ref('notes/' + memberName).on('value', snapshot => {
-  const notesObj = snapshot.val() || {};
-  const notes = Object.values(notesObj);
-  renderNotes(notes);
+// Listen for notes in real-time
+const notesRef = ref(db, 'notes/' + memberName);
+onValue(notesRef, snapshot => {
+    const notesObj = snapshot.val() || {};
+    const notes = Object.values(notesObj);
+    renderNotes(notes);
 });
 
 function renderNotes(notes){
-  wall.innerHTML = '';
-  if(!notes.length) return;
-  // Find top note
-  let maxLikes=-1, topNoteId=null;
-  notes.forEach(n=>{if(!n.deleted && n.week===currentWeek && n.likes>maxLikes){maxLikes=n.likes; topNoteId=n.id}});
-  notes.forEach(note=>{
-    if(note.deleted) return;
-    const div=document.createElement('div');
-    div.className='sticky-note frame';
-    if(note.id===topNoteId) div.classList.add('top-note');
-    div.innerHTML=`
-      <img src="${note.img}" alt="Sticky Note">
-      <div class="text">${note.text}</div>
-      <button class="like-btn">❤ ${note.likes||0}</button>
-    `;
-    // Like button
-    const likeBtn=div.querySelector('.like-btn');
-    likeBtn.onclick=e=>{
-      e.stopPropagation();
-      const liked=JSON.parse(localStorage.getItem('likedNotes')||'[]');
-      if(liked.includes(note.id)){alert("Already liked!"); return;}
-      db.ref('notes/'+memberName+'/'+note.id+'/likes').transaction(l=>l?l+1:1);
-      liked.push(note.id);
-      localStorage.setItem('likedNotes', JSON.stringify(liked));
-    };
-    // Delete your own
-    if(note.id===currentUserNoteId){
-      const delBtn=document.createElement('button');
-      delBtn.textContent='Delete';
-      delBtn.className='delete-btn';
-      delBtn.onclick=e=>{
-        e.stopPropagation();
-        if(!confirm('Delete your note?')) return;
-        db.ref('notes/'+memberName+'/'+note.id+'/deleted').set(true);
-        localStorage.removeItem('myNoteId_' + memberName);
-      };
-      div.appendChild(delBtn);
-    }
-    // Click to view full
-    div.onclick=()=>alert(note.text);
-    wall.appendChild(div);
-  });
+    wall.innerHTML = '';
+    if(!notes.length) return;
+
+    let maxLikes = -1, topNoteId = null;
+    notes.forEach(n => {
+        if(!n.deleted && n.week === currentWeek && n.likes > maxLikes){
+            maxLikes = n.likes;
+            topNoteId = n.id;
+        }
+    });
+
+    notes.forEach(note => {
+        if(note.deleted) return;
+        const div = document.createElement('div');
+        div.className = 'sticky-note frame';
+        if(note.id === topNoteId) div.classList.add('top-note');
+        div.innerHTML = `
+            <img src="${note.img}" alt="Sticky Note">
+            <div class="text">${note.text}</div>
+            <button class="like-btn">❤ ${note.likes || 0}</button>
+        `;
+
+        const likeBtn = div.querySelector('.like-btn');
+        likeBtn.onclick = e => {
+            e.stopPropagation();
+            const liked = JSON.parse(localStorage.getItem('likedNotes')||'[]');
+            if(liked.includes(note.id)){ alert("Already liked!"); return; }
+            const noteRef = ref(db, 'notes/' + memberName + '/' + note.id + '/likes');
+            runTransaction(noteRef, current => current ? current + 1 : 1);
+            liked.push(note.id);
+            localStorage.setItem('likedNotes', JSON.stringify(liked));
+        };
+
+        if(note.id === currentUserNoteId){
+            const delBtn = document.createElement('button');
+            delBtn.textContent = 'Delete';
+            delBtn.className = 'delete-btn';
+            delBtn.onclick = e => {
+                e.stopPropagation();
+                if(!confirm('Delete your note?')) return;
+                const delRef = ref(db, 'notes/' + memberName + '/' + note.id + '/deleted');
+                set(delRef, true);
+                localStorage.removeItem('myNoteId_' + memberName);
+            };
+            div.appendChild(delBtn);
+        }
+
+        div.onclick = () => alert(note.text); // full preview on click
+        wall.appendChild(div);
+    });
+}
+
+// Example function to add a note (call this when submitting)
+function addNote(img, text) {
+    const id = Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+    const noteRef = ref(db, 'notes/' + memberName + '/' + id);
+    set(noteRef, { id, img, text, likes:0, week: currentWeek });
+    localStorage.setItem('myNoteId_' + memberName, id);
 }
 </script>
+
 
   
 
 </body>
 </html>
+
