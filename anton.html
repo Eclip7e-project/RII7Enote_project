@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Anton Wall - Firebase Version</title>
+<title>Anton Wall - RII7E Project</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
 <style>
 body {
@@ -15,8 +15,6 @@ body {
   padding:0;
   text-align:center;
 }
-
-/* HEADER */
 header {
   display: flex;
   flex-direction: column;
@@ -26,100 +24,129 @@ header {
 }
 header img.banner {
   width: 100%;
-  height: auto;
+  height: auto; 
+  object-fit: contain;
   border-bottom: 2px solid gold;
+  display: block;
+  margin: 0 auto;
+  background: black;
 }
-.header-text { padding: 20px; }
-.header-text h1 { font-size: 2.5rem; color: gold; }
-
-/* WALL */
+.header-text {
+  text-align: center;
+  padding: 20px;
+}
+.header-text h1 {
+  font-size: 2.5rem;
+  color: gold;
+  margin: 10px 0;
+  text-shadow: 2px 2px 5px rgba(0,0,0,0.7);
+}
+.header-text p {
+  max-width: 700px;
+  font-size: 1rem;
+  margin: 0 auto;
+  color: white;
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
+}
 section.wall {
   display:flex;
   flex-wrap:wrap;
   justify-content:flex-start;
   gap:20px;
+  overflow-x:auto;
   padding:40px;
 }
 .sticky-note {
-  width:200px;
-  height:180px;
-  position:relative;
+  width:200px; 
+  min-height:150px; 
+  background:white; 
   border-radius:15px;
-  overflow:hidden;
-  cursor:pointer;
+  padding:10px; 
+  position:relative; 
   box-shadow:3px 3px 10px rgba(0,0,0,0.5);
+  display:flex; 
+  flex-direction:column; 
+  align-items:center;
+  cursor:pointer;
 }
-.sticky-note img {
-  width:100%;
-  height:100%;
-  object-fit:cover;
-}
+.sticky-note img {width:100%; border-radius:10px;}
 .sticky-note .text {
   position:absolute;
-  bottom:10px;
+  top:10px;
   left:10px;
   right:10px;
-  background:rgba(0,0,0,0.5);
-  color:white;
-  font-size:0.8em;
-  padding:5px;
-  border-radius:5px;
-  max-height:60%;
-  overflow-y:auto;
-}
-.like-btn, .delete-btn {
-  position:absolute;
-  border:none;
-  border-radius:5px;
-  padding:5px 8px;
-  cursor:pointer;
-  font-size:0.8em;
-  font-weight:bold;
-}
-.like-btn { bottom:5px; left:5px; background:gold; color:black; }
-.delete-btn { top:5px; right:5px; background:red; color:white; }
-.top-note { border: 5px solid gold; box-shadow: 0 0 15px gold; }
-
-/* MODAL */
-#noteModal {
-  display:none;
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,0.8);
-  justify-content:center;
-  align-items:center;
-  z-index:1000;
-}
-#noteModalContent {
-  background:white;
-  color:black;
-  padding:20px;
-  border-radius:15px;
-  max-width:600px;
-  max-height:80%;
-  overflow-y:auto;
+  bottom:30px;
+  overflow-wrap: break-word;
+  color:black; 
+  font-size:0.85em; 
   white-space:pre-wrap;
 }
-#noteModalClose {
+.frame {border:5px solid #1E3A5F; border-radius:15px; background:white;}
+.like-btn {
   position:absolute;
-  top:20px;
-  right:20px;
+  bottom:5px;
+  left:50%;
+  transform:translateX(-50%);
+  padding:5px 10px; 
+  cursor:pointer;
+  background:gold; 
+  border:none; 
+  border-radius:5px; 
+  color:black; 
+  font-weight:bold;
+}
+.delete-btn {
+  position:absolute;
+  top:5px;
+  right:5px;
   background:red;
   color:white;
   border:none;
-  padding:5px 10px;
-  cursor:pointer;
   border-radius:5px;
+  padding:3px 7px;
+  cursor:pointer;
 }
-
-/* FOOTER */
+.top-note {
+  border: 5px solid gold;
+  box-shadow: 0 0 15px gold;
+}
 footer {
-  padding:30px 0;
-  border-top:2px solid gold;
+  padding:30px 0; 
+  border-top:2px solid gold; 
   margin-top:50px;
 }
 footer a {color:gold; text-decoration:none;}
 footer a:hover{text-decoration:underline;}
+/* Modal */
+#note-modal {
+  display:none;
+  position:fixed;
+  inset:0;
+  background: rgba(0,0,0,0.85);
+  z-index: 100;
+  align-items:center;
+  justify-content:center;
+}
+#note-modal .modal-content {
+  background:#fff;
+  color:#000;
+  border-radius:12px;
+  max-width:500px;
+  width:90%;
+  padding:20px;
+  position:relative;
+}
+#note-modal .close-modal {
+  position:absolute;
+  right:12px;
+  top:10px;
+  font-size:24px;
+  font-weight:bold;
+  cursor:pointer;
+}
+#note-modal img {width:100%; border-radius:8px; margin-bottom:10px;}
+#note-modal .modal-text {font-size:1rem; color:#000; white-space:pre-wrap; margin-bottom:10px;}
+#note-modal .modal-like {font-weight:bold; background:gold; border:none; padding:6px 12px; border-radius:6px; cursor:pointer;}
 </style>
 </head>
 <body>
@@ -129,121 +156,129 @@ footer a:hover{text-decoration:underline;}
   <div class="header-text">
     <h1>Anton Wall</h1>
     <p>All submitted sticky notes for Anton. Give love by clicking ❤!</p>
-    <a href="index.html" style="color:gold; text-decoration:underline;">← Back to Homepage</a>
+    <a href="index.html" style="color:gold; text-decoration:underline; margin-top:10px; display:inline-block;">← Back to Homepage</a>
   </div>
 </header>
 
 <section class="wall" id="anton-wall"></section>
 
-<!-- MODAL -->
-<div id="noteModal">
-  <button id="noteModalClose">Close</button>
-  <div id="noteModalContent"></div>
-</div>
-
 <footer>
-  <p>Created by <a href="https://x.com/Eclip7e_project" target="_blank">@Eclip7e_project</a></p>
-  <img src="logo.png" alt="Logo" height="80">
+<p>Created by <a href="https://x.com/Eclip7e_project" target="_blank">@Eclip7e_project</a></p>
+<img src="logo.png" alt="Logo" height="80">
 </footer>
 
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-firestore-compat.js"></script>
-<script>
+<!-- Modal -->
+<div id="note-modal">
+  <div class="modal-content">
+    <span class="close-modal">&times;</span>
+    <img id="modal-img" src="" alt="Sticky Note">
+    <div class="modal-text" id="modal-text"></div>
+    <button class="modal-like" id="modal-like">❤ 0</button>
+  </div>
+</div>
+
+<script type="module">
+// Firebase SDK
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
+
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "SENDER_ID",
-  appId: "APP_ID"
+  apiKey: "AIzaSyCM69r2wUibBFIFpML07Y5RUTrxHgonlSc",
+  authDomain: "rii7e-sticky-notes-project.firebaseapp.com",
+  projectId: "rii7e-sticky-notes-project",
+  storageBucket: "rii7e-sticky-notes-project.appspot.com",
+  messagingSenderId: "962319162792",
+  appId: "1:962319162792:web:8fad2b11c316766c8a119d"
 };
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
 
-// ====== CONFIG ======
-const memberName = "anton";
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
 const wall = document.getElementById('anton-wall');
-const modal = document.getElementById('noteModal');
-const modalContent = document.getElementById('noteModalContent');
-const modalClose = document.getElementById('noteModalClose');
+const modal = document.getElementById('note-modal');
+const modalImg = document.getElementById('modal-img');
+const modalText = document.getElementById('modal-text');
+const modalLike = document.getElementById('modal-like');
+const closeModal = document.querySelector('.close-modal');
 
-// ====== MODAL ======
-modalClose.onclick = () => modal.style.display = 'none';
-modal.onclick = e => { if(e.target === modal) modal.style.display = 'none'; };
+let notes = [];
+let currentNoteId = null;
 
-// ====== RENDER NOTES ======
-function renderNotes(notes) {
+async function fetchNotes(){
+  const q = query(collection(db, "anton_notes"), orderBy("createdAt"));
+  const snapshot = await getDocs(q);
+  notes = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
+  renderNotes();
+}
+
+function renderNotes(){
   wall.innerHTML = '';
-  let maxLikes = -1;
-  let topNoteId = null;
-
-  const currentWeek = Math.floor((new Date()-new Date('2025-09-01'))/(7*24*60*60*1000))+1;
-
-  notes.forEach(note => {
-    if(!note.deleted && note.week === currentWeek && (note.likes || 0) > maxLikes){
-      maxLikes = note.likes;
-      topNoteId = note.id;
-    }
-  });
-
-  notes.forEach(note => {
-    if(note.deleted) return;
-
+  if(!notes.length) return;
+  
+  // Find top liked
+  let maxLikes = Math.max(...notes.map(n=>n.likes||0));
+  
+  notes.forEach(note=>{
     const div = document.createElement('div');
-    div.className = 'sticky-note';
-    if(note.id === topNoteId) div.classList.add('top-note');
-
-    div.innerHTML = `
-      <img src="${note.img}" alt="Note Image">
-      <div class="text">${note.text}</div>
-      <button class="like-btn">❤ ${note.likes || 0}</button>
-      <button class="delete-btn">🗑</button>
-    `;
-
-    // Like button
-    div.querySelector('.like-btn').onclick = e => {
-      e.stopPropagation();
-      const likedNotes = JSON.parse(localStorage.getItem('likedNotes')||'[]');
-      if(likedNotes.includes(note.id)){
-        alert("You've already liked this note!");
-        return;
-      }
-      db.collection(memberName).doc(note.id).update({likes: (note.likes||0)+1});
-      likedNotes.push(note.id);
-      localStorage.setItem('likedNotes', JSON.stringify(likedNotes));
+    div.className='sticky-note frame';
+    if(note.likes === maxLikes) div.classList.add('top-note');
+    div.innerHTML = `<img src="${note.img}" alt="Sticky Note">
+                     <div class="text">${note.text}</div>
+                     <button class="like-btn">❤ ${note.likes||0}</button>`;
+    div.querySelector('button.like-btn').onclick = () => likeNote(note.id);
+    div.onclick = (e) => {
+      if(!e.target.classList.contains('like-btn')) openModal(note);
     };
-
-    // Delete button
-    div.querySelector('.delete-btn').onclick = e => {
-      e.stopPropagation();
-      if(confirm("Delete this note?")){
-        db.collection(memberName).doc(note.id).update({deleted:true});
-      }
-    };
-
-    // Fullscreen modal
-    div.onclick = () => {
-      modalContent.innerHTML = `
-        <img src="${note.img}" style="width:100%; border-radius:10px; margin-bottom:10px;">
-        <p>${note.text}</p>`;
-      modal.style.display = 'flex';
-    };
-
     wall.appendChild(div);
   });
 }
 
-// ====== FIRESTORE REALTIME ======
-db.collection(memberName).onSnapshot(snapshot=>{
-  const notes = [];
-  snapshot.forEach(doc=>{
-    notes.push({...doc.data(), id: doc.id});
-  });
-  renderNotes(notes);
-});
+function openModal(note){
+  currentNoteId = note.id;
+  modalImg.src = note.img;
+  modalText.textContent = note.text;
+  modalLike.textContent = `❤ ${note.likes||0}`;
+  modal.style.display='flex';
+}
+
+closeModal.onclick = () => modal.style.display='none';
+window.onclick = (e) => { if(e.target===modal) modal.style.display='none'; }
+
+async function likeNote(id){
+  const noteDoc = doc(db,"anton_notes",id);
+  const note = notes.find(n=>n.id===id);
+  if(!note.likedBy) note.likedBy=[];
+  if(note.likedBy.includes('user')) { alert("Already liked!"); return; } // simple unique user placeholder
+  note.likes = (note.likes||0)+1;
+  note.likedBy = [...(note.likedBy||[]),'user'];
+  await updateDoc(noteDoc,{likes: note.likes, likedBy: note.likedBy});
+  fetchNotes();
+}
+
+async function deleteNote(id){
+  if(!confirm("Delete this note?")) return;
+  await deleteDoc(doc(db,"anton_notes",id));
+  fetchNotes();
+}
+
+// Example: Add note manually (in practice, add a form)
+async function addNoteExample(){
+  const newNote = {
+    img:"anton1.png",
+    text:"This is a test note!",
+    likes:0,
+    likedBy:[],
+    createdAt:new Date()
+  };
+  await addDoc(collection(db,"anton_notes"), newNote);
+  fetchNotes();
+}
+
+fetchNotes();
 </script>
 
 </body>
 </html>
+
+
 
