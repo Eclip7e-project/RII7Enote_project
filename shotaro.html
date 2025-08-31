@@ -29,10 +29,10 @@ section.wall { display:flex; flex-wrap:wrap; justify-content:flex-start; gap:20p
 #modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); justify-content:center; align-items:center; z-index:1000; }
 #modal-content { position:relative; background:transparent; border-radius:15px; max-width:500px; width:90%; max-height:90%; overflow:auto; }
 #modal-img { width:100%; border-radius:15px; }
-#modal-text { position:absolute; top:10px; left:10px; right:10px; bottom:50px; color:black; font-size:0.9em; white-space:pre-wrap; word-wrap: break-word; }
-#modal-like { position:absolute; bottom:10px; left:50%; transform:translateX(-50%); padding:5px 10px; cursor:pointer; background:gold; border:none; border-radius:5px; color:black; font-weight:bold; }
+#modal-text { margin-top:10px; color:white; font-size:1rem; white-space:pre-wrap; word-wrap: break-word; text-align:left; }
+#modal-like { margin-top:10px; padding:5px 10px; cursor:pointer; background:gold; border:none; border-radius:5px; color:black; font-weight:bold; }
 #modal-close { position:absolute; top:10px; right:10px; cursor:pointer; font-size:1.2rem; font-weight:bold; background:red; color:white; border:none; border-radius:5px; padding:3px 7px; z-index:1001; }
-#modal-delete { display:none; background:red; color:white; border:none; border-radius:5px; padding:3px 7px; position:absolute; top:10px; right:60px; cursor:pointer; z-index:1001; }
+#modal-delete { display:none; background:red; color:white; border:none; border-radius:5px; padding:3px 7px; margin-left:10px; cursor:pointer; z-index:1001; }
 footer { padding:30px 0; border-top:2px solid gold; margin-top:50px; }
 footer a { color:gold; text-decoration:none; }
 footer a:hover { text-decoration:underline; }
@@ -57,8 +57,10 @@ footer a:hover { text-decoration:underline; }
     <button id="modal-close">X</button>
     <img id="modal-img" src="">
     <div id="modal-text"></div>
-    <button id="modal-like">❤ 0</button>
-    <button id="modal-delete">Delete</button>
+    <div>
+      <button id="modal-like">❤ 0</button>
+      <button id="modal-delete">Delete</button>
+    </div>
   </div>
 </div>
 
@@ -106,7 +108,7 @@ function openModal(note){
   modalText.textContent = note.text;
   modalLike.textContent = `❤ ${note.likes||0}`;
   modal.style.display = 'flex';
-  modalDelete.style.display = (note.creator===userId)?'block':'none';
+  modalDelete.style.display = (note.creator===userId)?'inline-block':'none';
 }
 
 // Close modal
@@ -170,13 +172,6 @@ onSnapshot(notesCol, snapshot=>{
   });
   renderNotes(notes);
 });
-
-// Optional: Function to submit a new note (ensures creator is set)
-async function submitNote(imgSrc, text){
-  const week = Math.floor((new Date()-new Date('2025-09-01'))/(7*24*60*60*1000))+1;
-  const noteData = { img: imgSrc, text, likes:0, week, creator: userId, timestamp: Date.now() };
-  await addDoc(collection(db,'notes',memberName,'memberNotes'), noteData);
-}
 </script>
 </body>
 </html>
