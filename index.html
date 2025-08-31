@@ -337,25 +337,34 @@ function setupModal(){
     memberSelectLabel.style.display = 'block';
     memberSelect.value = 'shotaro';
 
-    // Make modal preview square for simple notes
+    // Square preview for simple notes
     const modalLeft = $('#modal-left');
-    modalLeft.style.width = '150px';
-    modalLeft.style.height = '150px';
-    modalImg.style.objectFit = 'cover';
+    modalLeft.style.width = '110px';
+    modalLeft.style.height = '110px';
+    modalImg.style.objectFit = 'cover'; // ensures it fills the square
   } else {
     modalMemberTitle.textContent = currentMember.toUpperCase();
     memberSelect.style.display = 'none';
     memberSelectLabel.style.display = 'none';
+
+    // Reset to default for member notes
+    const modalLeft = $('#modal-left');
+    modalLeft.style.width = '';
+    modalLeft.style.height = '';
+    modalImg.style.objectFit = 'contain';
   }
 
+  // preview text setup
   previewText.textContent = '';
   previewText.style.color = colorPicker.value || '#000';
   noteText.value = '';
   previewOverlay.style.display = 'flex';
+
   modal.style.display = 'flex';
   modal.setAttribute('aria-hidden','false');
   document.body.style.overflow = 'hidden';
 }
+
 
 
 function closeModal(){ modal.style.display='none'; modal.setAttribute('aria-hidden','true'); document.body.style.overflow=''; }
@@ -430,6 +439,7 @@ renderAllSelectionWalls(); renderSimpleNotes(); renderDesigns();
 </script>
 </body>
 </html>
+
 
 
 
