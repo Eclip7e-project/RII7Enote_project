@@ -41,13 +41,7 @@
     .close{position:absolute;right:14px;top:10px;font-size:26px;cursor:pointer}
     .modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
     .modal-left{position:relative;border-radius:8px;overflow:hidden}
-    .modal-left img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover; /* change from contain to cover */
-  display: block;
-  border-radius: 8px;
-}
+    .modal-left img{width:100%;height:100%;object-fit:contain;display:block;border-radius:8px}
     .preview-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:12px;pointer-events:none;text-align:center}
     .preview-overlay .preview-text{font-size:1.1rem; font-weight:700; text-shadow: 1px 1px 3px rgba(0,0,0,.6); word-break:break-word}
     .modal-right label{display:block;margin-top:8px;font-weight:600}
@@ -201,7 +195,6 @@
     <span class="close" id="modal-close" title="Close">&times;</span>
     <div class="modal-grid">
       <div class="modal-left" id="modal-left">
-        
         <img id="modal-img" src="" alt="Selected note preview">
         <div class="preview-overlay" id="preview-overlay">
           <div class="preview-text" id="preview-text"></div>
@@ -348,26 +341,6 @@ function setupModal(){
   modal.style.display='flex'; modal.setAttribute('aria-hidden','false'); document.body.style.overflow='hidden';
 }
 
-    // Reset to default for member notes
-    const modalLeft = $('#modal-left');
-    modalLeft.style.width = '';
-    modalLeft.style.height = '';
-    modalImg.style.objectFit = 'contain';
-  }
-
-  // preview text setup
-  previewText.textContent = '';
-  previewText.style.color = colorPicker.value || '#000';
-  noteText.value = '';
-  previewOverlay.style.display = 'flex';
-
-  modal.style.display = 'flex';
-  modal.setAttribute('aria-hidden','false');
-  document.body.style.overflow = 'hidden';
-}
-
-
-
 function closeModal(){ modal.style.display='none'; modal.setAttribute('aria-hidden','true'); document.body.style.overflow=''; }
 
 noteText.addEventListener('input',e=>{previewText.textContent=e.target.value});
@@ -440,9 +413,6 @@ renderAllSelectionWalls(); renderSimpleNotes(); renderDesigns();
 </script>
 </body>
 </html>
-
-
-
 
 
 
