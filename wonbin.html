@@ -8,15 +8,15 @@
 <style>
 body {
   font-family: 'Playfair Display', serif;
-  background-color:black;
-  background-image:url('https://www.transparenttextures.com/patterns/stardust.png');
-  color:white;
-  margin:0;
-  padding:0;
-  text-align:center;
+  background-color: black;
+  background-image: url('https://www.transparenttextures.com/patterns/stardust.png');
+  color: white;
+  margin: 0;
+  padding: 0;
+  text-align: center;
 }
 
-/* HEADER WITH SMALLER BANNER */
+/* HEADER */
 header {
   display: flex;
   flex-direction: column;
@@ -27,16 +27,12 @@ header {
 
 header img.banner {
   width: 100%;
-  height: auto; 
-  max-height: none;
+  height: auto;
   object-fit: contain;
   border-bottom: 2px solid gold;
-  display: block;
-  margin: 0 auto;
   background: black;
 }
 
-/* HEADER TEXT BELOW BANNER */
 .header-text {
   text-align: center;
   padding: 20px;
@@ -59,61 +55,67 @@ header img.banner {
 
 /* STICKY NOTES WALL */
 section.wall {
-  display:flex;
-  flex-wrap:wrap;
-  justify-content:flex-start;
-  gap:20px;
-  overflow-x:auto;
-  padding:40px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 20px;
+  padding: 40px;
 }
 .sticky-note {
-  width:200px; 
-  height:150px; 
-  background:white; 
-  border-radius:15px;
-  padding:10px; 
-  position:relative; 
-  box-shadow:3px 3px 10px rgba(0,0,0,0.5);
-  display:flex; 
-  flex-direction:column; 
-  align-items:center;
+  width: 200px;
+  height: 150px;
+  background: white;
+  border-radius: 15px;
+  padding: 10px;
+  position: relative;
+  box-shadow: 3px 3px 10px rgba(0,0,0,0.5);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
-.sticky-note img {width:100%; border-radius:10px;}
+.sticky-note img {
+  width: 100%;
+  border-radius: 10px;
+}
 .sticky-note .text {
-  position:absolute;
-  top:10px;
-  left:10px;
-  right:10px;
-  bottom:30px;
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  bottom: 30px;
   overflow-wrap: break-word;
-  color:black; 
-  font-size:0.9em; 
-  white-space:pre-wrap;
+  color: black;
+  font-size: 0.8em; /* Smaller text to fit inside */
+  white-space: pre-wrap;
 }
-.frame {border:5px solid #FF0000; border-radius:15px; background:white;}
+.frame {
+  border: 5px solid #FF0000;
+  border-radius: 15px;
+  background: white;
+}
 .like-btn {
-  position:absolute;
-  bottom:5px;
-  left:50%;
-  transform:translateX(-50%);
-  padding:5px 10px; 
-  cursor:pointer;
-  background:gold; 
-  border:none; 
-  border-radius:5px; 
-  color:black; 
-  font-weight:bold;
+  position: absolute;
+  bottom: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 5px 10px;
+  cursor: pointer;
+  background: gold;
+  border: none;
+  border-radius: 5px;
+  color: black;
+  font-weight: bold;
 }
 .delete-btn {
-  position:absolute;
-  top:5px;
-  right:5px;
-  background:red;
-  color:white;
-  border:none;
-  border-radius:5px;
-  padding:3px 7px;
-  cursor:pointer;
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background: red;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 3px 7px;
+  cursor: pointer;
 }
 .top-note {
   border: 5px solid gold;
@@ -122,12 +124,17 @@ section.wall {
 
 /* FOOTER */
 footer {
-  padding:30px 0; 
-  border-top:2px solid gold; 
-  margin-top:50px;
+  padding: 30px 0;
+  border-top: 2px solid gold;
+  margin-top: 50px;
 }
-footer a {color:gold; text-decoration:none;}
-footer a:hover{text-decoration:underline;}
+footer a {
+  color: gold;
+  text-decoration: none;
+}
+footer a:hover {
+  text-decoration: underline;
+}
 </style>
 </head>
 <body>
@@ -146,8 +153,8 @@ footer a:hover{text-decoration:underline;}
 </section>
 
 <footer>
-<p>Created by <a href="https://x.com/Eclip7e_project" target="_blank">@Eclip7e_project</a></p>
-<img src="logo.png" alt="Logo" height="80">
+  <p>Created by <a href="https://x.com/Eclip7e_project" target="_blank">@Eclip7e_project</a></p>
+  <img src="logo.png" alt="Logo" height="80">
 </footer>
 
 <script>
@@ -155,34 +162,28 @@ footer a:hover{text-decoration:underline;}
 const memberName = "wonbin";
 const wall = document.getElementById('wonbin-wall');
 
-// Load notes from localStorage
+// Load notes
 let notes = JSON.parse(localStorage.getItem(memberName) || '[]');
-
-// Identify top note for current week
-const currentWeek = Math.floor((new Date()-new Date('2025-09-01'))/(7*24*60*60*1000))+1;
-
-// Get user's own note ID if exists
+const currentWeek = Math.floor((new Date() - new Date('2025-09-01')) / (7*24*60*60*1000)) + 1;
 let currentUserNoteId = localStorage.getItem('currentUserNoteId_' + memberName);
 
-// Render notes
 function renderNotes() {
   wall.innerHTML = '';
-  let maxLikes = -1;
-  let topNoteIndex = -1;
+  let maxLikes = -1, topNoteIndex = -1;
 
   notes.forEach((note, i) => {
-    if(!note.deleted && note.week === currentWeek && note.likes > maxLikes){
+    if (!note.deleted && note.week === currentWeek && note.likes > maxLikes) {
       maxLikes = note.likes;
       topNoteIndex = i;
     }
   });
 
   notes.forEach((note, i) => {
-    if(note.deleted) return;
+    if (note.deleted) return;
 
     const div = document.createElement('div');
     div.className = 'sticky-note frame';
-    if(i===topNoteIndex) div.classList.add('top-note');
+    if (i === topNoteIndex) div.classList.add('top-note');
 
     div.innerHTML = `
       <img src="${note.img}" alt="Sticky Note">
@@ -190,13 +191,13 @@ function renderNotes() {
       <button class="like-btn" data-id="${i}">❤ ${note.likes || 0}</button>
     `;
 
-    if(note.id == currentUserNoteId){
+    if (note.id == currentUserNoteId) {
       const deleteBtn = document.createElement('button');
-      deleteBtn.textContent='Delete';
-      deleteBtn.className='delete-btn';
+      deleteBtn.textContent = 'Delete';
+      deleteBtn.className = 'delete-btn';
       deleteBtn.onclick = () => {
-        if(!confirm("Delete your note?")) return;
-        notes = notes.map(n => n.id === note.id ? {...n, deleted:true} : n);
+        if (!confirm("Delete your note?")) return;
+        notes = notes.map(n => n.id === note.id ? { ...n, deleted: true } : n);
         localStorage.setItem(memberName, JSON.stringify(notes));
         localStorage.removeItem('currentUserNoteId_' + memberName);
         renderNotes();
@@ -207,15 +208,15 @@ function renderNotes() {
     wall.appendChild(div);
   });
 
-  document.querySelectorAll('.like-btn').forEach(btn=>{
-    btn.onclick = (e)=>{
+  document.querySelectorAll('.like-btn').forEach(btn => {
+    btn.onclick = e => {
       const id = e.target.dataset.id;
       let likedNotes = JSON.parse(localStorage.getItem('likedNotes') || '[]');
-      if(likedNotes.includes(`${memberName}-${id}`)){
+      if (likedNotes.includes(`${memberName}-${id}`)) {
         alert("You've already liked this note!");
         return;
       }
-      notes[id].likes = notes[id].likes ? notes[id].likes+1 : 1;
+      notes[id].likes = notes[id].likes ? notes[id].likes + 1 : 1;
       localStorage.setItem(memberName, JSON.stringify(notes));
       likedNotes.push(`${memberName}-${id}`);
       localStorage.setItem('likedNotes', JSON.stringify(likedNotes));
@@ -229,7 +230,3 @@ renderNotes();
 
 </body>
 </html>
-
-
-
-
