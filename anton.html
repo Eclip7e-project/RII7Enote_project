@@ -50,21 +50,26 @@ section.wall {
   box-shadow:3px 3px 10px rgba(0,0,0,0.5);
   display:flex;
   flex-direction:column;
-  cursor:pointer;
+  align-items:center;
+  justify-content:flex-start;
   overflow:hidden;
+  cursor:pointer;
 }
 .sticky-note img {
   width:100%;
   border-radius:10px;
+  max-height:90px;
+  object-fit:cover;
 }
 .sticky-note .text {
-  flex:1;
+  margin-top:5px;
   font-size:0.9em;
   color:black;
   overflow-y:auto;
   white-space:pre-wrap;
   word-wrap:break-word;
-  margin-top:5px;
+  flex:1;
+  width:100%;
 }
 .frame {
   border:5px solid #1E3A5F;
@@ -174,7 +179,6 @@ const modalContent = document.getElementById('noteModalContent');
 const modalClose = document.getElementById('noteModalClose');
 
 let notes = JSON.parse(localStorage.getItem(memberName) || '[]');
-let currentUserNoteId = localStorage.getItem('currentUserNoteId_' + memberName);
 
 // ====== MODAL ======
 modalClose.onclick = () => modal.style.display = 'none';
@@ -202,9 +206,10 @@ function renderNotes() {
     if (i === topNoteIndex) div.classList.add('top-note');
 
     div.innerHTML = `
+      <img src="${note.img}" alt="Note Image">
       <div class="text">${note.text}</div>
       <button class="like-btn">❤ ${note.likes || 0}</button>
-      ${note.id === currentUserNoteId ? '<button class="delete-btn">🗑</button>' : ''}
+      <button class="delete-btn">🗑</button>
     `;
 
     // Like button
@@ -223,21 +228,20 @@ function renderNotes() {
     };
 
     // Delete button
-    if (note.id === currentUserNoteId) {
-      div.querySelector('.delete-btn').onclick = e => {
-        e.stopPropagation();
-        if (confirm("Delete your note?")) {
-          notes[i].deleted = true;
-          localStorage.setItem(memberName, JSON.stringify(notes));
-          localStorage.removeItem('currentUserNoteId_' + memberName);
-          renderNotes();
-        }
-      };
-    }
+    div.querySelector('.delete-btn').onclick = e => {
+      e.stopPropagation();
+      if (confirm("Delete this note?")) {
+        notes[i].deleted = true;
+        localStorage.setItem(memberName, JSON.stringify(notes));
+        renderNotes();
+      }
+    };
 
     // Fullscreen modal
     div.onclick = () => {
-      modalContent.innerHTML = `<p>${note.text}</p>`;
+      modalContent.innerHTML = `
+        <img src="${note.img}" style="width:100%; border-radius:10px; margin-bottom:10px;">
+        <p>${note.text}</p>`;
       modal.style.display = 'flex';
     };
 
@@ -250,5 +254,7 @@ renderNotes();
 
 </body>
 </html>
+
+
 
 
