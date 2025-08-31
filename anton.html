@@ -3,89 +3,125 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Anton Wall - RII7E Project</title>
+<title>Weekly Favorites Archive</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
 <style>
 body {
-  font-family: 'Playfair Display', serif;
-  background-color:black;
-  background-image:url('https://www.transparenttextures.com/patterns/stardust.png');
-  color:white;
   margin:0;
-  padding:0;
+  font-family:'Playfair Display', serif;
+  background-color:black;
+  color:white;
+  background-image:url('https://www.transparenttextures.com/patterns/stardust.png');
+}
+header{
+  padding:30px;
   text-align:center;
 }
-
-/* HEADER */
-header { display:flex; flex-direction:column; align-items:center; background:black; border-bottom:2px solid gold; }
-header img.banner { width:100%; height:auto; object-fit:contain; border-bottom:2px solid gold; }
-.header-text { text-align:center; padding:20px; }
-.header-text h1 { font-size:2.5rem; color:gold; margin:10px 0; text-shadow:2px 2px 5px rgba(0,0,0,0.7); }
-.header-text p { max-width:700px; font-size:1rem; margin:0 auto; color:white; text-shadow:1px 1px 3px rgba(0,0,0,0.7); }
-
-/* WALL */
-section.wall { display:flex; flex-wrap:wrap; justify-content:flex-start; gap:20px; padding:40px; }
-.sticky-note { width:200px; height:200px; position:relative; cursor:pointer; }
-.sticky-note img { width:100%; height:100%; object-fit:cover; border-radius:15px; }
-.sticky-note .text { position:absolute; top:10px; left:10px; right:10px; bottom:10px; color:black; font-size:0.75rem; white-space:pre-wrap; overflow:hidden; text-overflow:ellipsis; }
-
-/* Highlight top note */
-.top-note { border:5px solid gold; box-shadow:0 0 15px gold; }
-
-/* MODAL */
-#modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); justify-content:center; align-items:center; z-index:1000; }
-#modal-content { position:relative; background:transparent; border-radius:15px; max-width:500px; width:90%; max-height:90%; overflow:auto; }
-#modal-img { width:100%; border-radius:15px; display:block; }
-#modal-text { position:absolute; top:10px; left:10px; right:10px; bottom:10px; color:black; font-size:1rem; white-space:pre-wrap; pointer-events:none; text-shadow:1px 1px 3px white; }
-#modal-buttons { margin-top:10px; display:flex; justify-content:center; gap:10px; }
-#modal-like { padding:5px 10px; cursor:pointer; background:gold; border:none; border-radius:5px; color:black; font-weight:bold; }
-#modal-delete { display:none; background:red; color:white; border:none; border-radius:5px; padding:5px 10px; cursor:pointer; }
-#modal-close { position:absolute; top:10px; right:10px; cursor:pointer; font-size:1.2rem; font-weight:bold; background:red; color:white; border:none; border-radius:5px; padding:3px 7px; z-index:1001; }
-
-/* FOOTER */
-footer { padding:30px 0; border-top:2px solid gold; margin-top:50px; }
-footer a { color:gold; text-decoration:none; }
-footer a:hover { text-decoration:underline; }
+h1{
+  color:gold;
+  margin-bottom:5px;
+}
+p.description{
+  max-width:700px;
+  margin:0 auto 20px auto;
+  color:white;
+}
+.member-section{
+  margin:40px 0;
+}
+.member-section h2{
+  text-align:center;
+  color:gold;
+  margin-bottom:20px;
+  text-transform:uppercase;
+}
+.wall-container{
+  display:flex;
+  flex-wrap:nowrap;
+  overflow-x:auto;
+  gap:20px;
+  padding:20px;
+}
+.note{
+  flex:0 0 auto;
+  width:200px;
+  height:200px;
+  border-radius:15px;
+  overflow:hidden;
+  cursor:pointer;
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-end;
+  background-color:#111;
+  box-shadow:3px 3px 10px rgba(0,0,0,0.5);
+}
+.note img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  position:absolute;
+  top:0; left:0;
+  z-index:1;
+}
+.text-box{
+  position:relative;
+  z-index:2;
+  padding:5px;
+  font-size:0.75rem;
+  color:white;
+  text-align:center;
+  word-wrap:break-word;
+  line-height:1.1em;
+  max-height:80px;
+  overflow:auto;
+  background:rgba(0,0,0,0.5);
+}
+.info-box{
+  position:relative;
+  z-index:2;
+  background:rgba(0,0,0,0.7);
+  color:white;
+  font-size:0.75rem;
+  text-align:center;
+  padding:2px 5px;
+  margin:2px 5px 5px 5px;
+  border-radius:5px;
+}
+.note.current-week{ border:3px solid gold; box-shadow:0 0 15px gold; }
+footer{
+  padding:30px 0;
+  border-top:2px solid gold;
+  text-align:center;
+}
+footer a{
+  color:gold;
+  text-decoration:none;
+}
+footer a:hover{
+  text-decoration:underline;
+}
 </style>
 </head>
 <body>
 
 <header>
-  <img src="antonbanner.jpg" alt="Anton Banner" class="banner">
-  <div class="header-text">
-    <h1>Anton Wall</h1>
-    <p>All submitted sticky notes for Anton. Give love by clicking ❤!</p>
-    <a href="index.html" style="color:gold; text-decoration:underline; margin-top:10px; display:inline-block;">← Back to Homepage</a>
-  </div>
+<h1>Weekly Favorites Archive</h1>
+<p class="description">See the top-liked note for each member from every week. Current week is highlighted in gold! Click your own note to see a lovely message 💖. Click any note to visit that member’s wall.</p>
+<a href="index.html" style="color:gold; text-decoration:underline;">← Back to Homepage</a>
 </header>
 
-<section class="wall" id="anton-wall"></section>
-
-<!-- Modal -->
-<div id="modal">
-  <div id="modal-content">
-    <button id="modal-close">X</button>
-    <div style="position:relative;">
-      <img id="modal-img" src="">
-      <div id="modal-text"></div>
-    </div>
-    <div id="modal-buttons">
-      <button id="modal-like">❤ 0</button>
-      <button id="modal-delete">Delete</button>
-    </div>
-  </div>
-</div>
+<div id="favorites-container"></div>
 
 <footer>
-<p>Created by <a href="https://x.com/Eclip7e_project" target="_blank">@Eclip7e_project</a></p>
+<p>Project organized by <a href="https://x.com/Eclip7e_project" target="_blank">@Eclip7e_project</a></p>
 <img src="logo.png" alt="Logo" height="80">
 </footer>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-import { getFirestore, collection, onSnapshot, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
-// Firebase
 const firebaseConfig = {
   apiKey:"AIzaSyCM69r2wUibBFIFpML07Y5RUTrxHgonlSc",
   authDomain:"rii7e-sticky-notes-project.firebaseapp.com",
@@ -97,88 +133,73 @@ const firebaseConfig = {
 initializeApp(firebaseConfig);
 const db = getFirestore();
 
-// Variables
-const memberName = "anton";
-const wall = document.getElementById('anton-wall');
-const modal = document.getElementById('modal');
-const modalImg = document.getElementById('modal-img');
-const modalText = document.getElementById('modal-text');
-const modalLike = document.getElementById('modal-like');
-const modalClose = document.getElementById('modal-close');
-const modalDelete = document.getElementById('modal-delete');
+const members = [
+  {name:'shotaro', color:'#8B0000', wall:'shotaro.html'},
+  {name:'eunseok', color:'#D3D3D3', wall:'eunseok.html'},
+  {name:'sungchan', color:'#008000', wall:'sungchan.html'},
+  {name:'wonbin', color:'#FF0000', wall:'wonbin.html'},
+  {name:'seunghan', color:'#0000FF', wall:'seunghan.html'},
+  {name:'sohee', color:'#FFFF00', wall:'sohee.html'},
+  {name:'anton', color:'#1E3A5F', wall:'anton.html'},
+  {name:'rii7e', color:'#FFA500', wall:'rii7e.html'},
+  {name:'brii7e', color:'#FFA500', wall:'brii7e.html'}
+];
 
-let currentModalNote = null;
-let userId = localStorage.getItem('userId') || (localStorage.setItem('userId', crypto.randomUUID()), localStorage.getItem('userId'));
+const currentWeek = Math.floor((new Date() - new Date('2025-09-01')) / (7*24*60*60*1000)) + 1;
+const favoritesContainer = document.getElementById('favorites-container');
 
-// Open modal
-function openModal(note){
-  currentModalNote = note;
-  modalImg.src = note.img;
-  modalText.textContent = note.text;
-  modal.style.display = 'flex';
-  modalDelete.style.display = (note.creator===userId)?'inline-block':'none';
-}
+members.forEach(m => {
+  if(!localStorage.getItem('userId_'+m.name)){
+    localStorage.setItem('userId_'+m.name, Date.now() + Math.random());
+  }
+});
 
-// Close modal
-modalClose.onclick = (e)=>{ e.stopPropagation(); modal.style.display='none'; }
-modal.onclick = ()=> modal.style.display='none';
-document.getElementById('modal-content').onclick = (e)=> e.stopPropagation();
+members.forEach(member => {
+  const memberSection = document.createElement('div');
+  memberSection.className='member-section';
+  const title = document.createElement('h2');
+  title.textContent = member.name;
+  memberSection.appendChild(title);
+  const wallDiv = document.createElement('div');
+  wallDiv.className='wall-container';
+  memberSection.appendChild(wallDiv);
+  favoritesContainer.appendChild(memberSection);
 
-// Like button
-modalLike.onclick = async () => {
-  if(!currentModalNote) return;
-  let liked = JSON.parse(localStorage.getItem('likedNotes')||'[]');
-  if(liked.includes(currentModalNote.id)){ alert("Already liked!"); return; }
-  await updateDoc(doc(db,'notes',memberName,'memberNotes',currentModalNote.id),{ likes:(currentModalNote.likes||0)+1 });
-  currentModalNote.likes = (currentModalNote.likes||0)+1;
-  modalLike.textContent = `❤ ${currentModalNote.likes}`;
-  liked.push(currentModalNote.id);
-  localStorage.setItem('likedNotes', JSON.stringify(liked));
-};
-
-// Delete button
-modalDelete.onclick = async () => {
-  if(!currentModalNote) return;
-  if(!confirm("Delete your note?")) return;
-  await deleteDoc(doc(db,'notes',memberName,'memberNotes',currentModalNote.id));
-  modal.style.display='none';
-};
-
-// Render notes
-function renderNotes(notes){
-  wall.innerHTML='';
-  let maxLikes = -1;
-  let topNoteId = null;
-  const currentWeek = Math.floor((new Date()-new Date('2025-09-01'))/(7*24*60*60*1000))+1;
-
-  notes = notes.filter(n => n.creator);
-
-  notes.forEach(n=>{
-    if(n.week === currentWeek && (n.likes||0) > maxLikes){
-      maxLikes = n.likes||0;
-      topNoteId = n.id;
-    }
+  const notesCol = collection(db,'notes',member.name,'memberNotes');
+  onSnapshot(notesCol, snapshot => {
+    const notes = snapshot.docs.map(d=>({id:d.id,...d.data()}));
+    const validNotes = notes.filter(n=>!n.deleted);
+    const weekMap = {};
+    validNotes.forEach(n=>{
+      if(!weekMap[n.week] || (n.likes||0) > (weekMap[n.week].likes||0)){
+        weekMap[n.week] = n;
+      }
+    });
+    const favorites = Object.values(weekMap).sort((a,b)=>a.week-b.week);
+    wallDiv.innerHTML='';
+    favorites.forEach(note=>{
+      const div = document.createElement('div');
+      div.className='note';
+      div.style.borderColor = (note.week===currentWeek)?'gold':member.color;
+      if(note.week===currentWeek) div.classList.add('current-week');
+      div.innerHTML = `
+        <img src="${note.img}">
+        <div class="text-box">${note.text}</div>
+        <div class="info-box">❤️ ${note.likes} • Week ${note.week}</div>
+      `;
+      div.onclick = ()=>{
+        const userId = localStorage.getItem('userId_'+member.name);
+        if(note.creator === userId){
+          alert(`🎉 Amazing! Your note is this week's favorite 💖🌟`);
+        } else {
+          window.location.href = member.wall;
+        }
+      };
+      wallDiv.appendChild(div);
+    });
   });
-
-  notes.forEach(n=>{
-    const div = document.createElement('div');
-    div.className='sticky-note';
-    if(n.id===topNoteId) div.classList.add('top-note');
-    div.innerHTML = `<img src="${n.img}" alt="Note"><div class="text">${n.text}</div>`;
-    div.onclick = ()=>openModal(n);
-    wall.appendChild(div);
-  });
-}
-
-// Firestore realtime
-const notesCol = collection(db,'notes',memberName,'memberNotes');
-onSnapshot(notesCol, snapshot=>{
-  const notes = snapshot.docs.map(d=>{
-    const data = d.data();
-    return {id:d.id, creator: data.creator, ...data};
-  });
-  renderNotes(notes);
 });
 </script>
+
 </body>
 </html>
