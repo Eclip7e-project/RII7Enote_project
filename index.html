@@ -41,7 +41,7 @@
     .close{position:absolute;right:14px;top:10px;font-size:26px;cursor:pointer}
     .modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
     .modal-left{position:relative;border-radius:8px;overflow:hidden}
-    .modal-left img{width:100%;height:auto;object-fit:contain;display:block;border-radius:8px}
+    .modal-left img{width:100%;height:100%;object-fit:contain;display:block;border-radius:8px}
     .preview-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:12px;pointer-events:none;text-align:center}
     .preview-overlay .preview-text{font-size:1.1rem; font-weight:700; text-shadow: 1px 1px 3px rgba(0,0,0,.6); word-break:break-word}
     .modal-right label{display:block;margin-top:8px;font-weight:600}
@@ -129,7 +129,67 @@
   </div>
 </section>
 
-<!-- Modal -->
+<section id="design-submission" style="margin-top:36px;">
+  <h2>Submit Your Sticky Note Design</h2>
+  <p style="max-width:720px;margin:0 auto 12px;color:#ddd;">Upload your design so other fans can use it (designs are reviewed and added every two weeks).</p>
+  <div style="max-width:720px;margin:0 auto;display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center;">
+    <input type="file" id="design-file" accept="image/*">
+    <select id="design-member">
+      <option value="shotaro">SHOTARO</option>
+      <option value="eunseok">EUNSEOK</option>
+      <option value="sungchan">SUNGCHAN</option>
+      <option value="wonbin">WONBIN</option>
+      <option value="seunghan">SEUNGHAN</option>
+      <option value="sohee">SOHEE</option>
+      <option value="anton">ANTON</option>
+      <option value="rii7e">RII7E</option>
+      <option value="brii7e">BRII7E</option>
+    </select>
+    <button id="submitDesign" class="btn btn-submit">Submit Design</button>
+  </div>
+  <p id="design-msg" style="color:var(--gold);text-align:center;margin-top:10px;"></p>
+</section>
+
+<section id="design-management" style="margin-top:28px;">
+  <h2>Manage Your Designs</h2>
+  <div id="designContainer" class="design-container" style="text-align:center;margin-top:12px"></div>
+</section>
+
+<section id="info-section">
+  <h2>Info & Guidelines</h2>
+  <p>Welcome to the RII7E Sticky Notes Project! Here’s how it works:</p>
+  <ul>
+    <li>Pick a sticky note for your favorite member and write your message (up to 300 characters).</li>
+    <li>Submitted notes will appear instantly on the member's wall.</li>
+    <li>You can only delete <strong>your own submissions</strong>.</li>
+    <li>Give love by clicking the ❤️ button! Each note can only be liked once per browser.</li>
+    <li>Weekly top-liked notes are highlighted with a gold border and also appear on the Favorites page.</li>
+    <li>If you are the creator of a top-liked note, click it to reveal a hidden message!</li>
+    <li>You can <strong>upload your own sticky note designs instantly</strong> to share with others.</li>
+    <li><strong>New official sticky note designs</strong> are uploaded every two weeks. (designed by project staff).</li>
+  </ul>
+
+  <h3>🖼 Fan Gallery</h3>
+  <ul>
+    <li>Upload <strong>images, fan art, and RII7E-related content</strong> to share with the community.</li>
+    <li>Click on any image to open it in full view, where you can leave comments and like it.</li>
+    <li>Get <strong>personalized suggestions</strong> under each photo to explore more content.</li>
+    <li>You can delete your own uploaded images anytime.</li>
+    <li>Gallery supports <strong>images, edits, and other creative content</strong>.</li>
+  </ul>
+
+  <h3>💡 Suggest Improvements</h3>
+  <p>We want your feedback! Please fill out this quick form:</p>
+  <a href="https://docs.google.com/forms/d/e/1FAIpQLSczEAgX9fo4cF7bvc7c5vvNe09SPumItiHnP8EtTOYwkD0xkQ/viewform?usp=header" target="_blank" class="btn-placeholder">📋 Submit Feedback</a>
+</section>
+
+</main>
+
+<footer style="padding:28px 10px;text-align:center;border-top:2px solid var(--gold);margin-top:24px;">
+  <p>Created by <a href="https://x.com/Eclip7e_project" target="_blank" style="color:var(--gold);text-decoration:none">@Eclip7e_project</a></p>
+  <img src="logo.png" alt="Logo" height="80" style="margin-top:6px;">
+</footer>
+
 <div id="modal" class="modal" aria-hidden="true">
   <div class="modal-content" role="dialog" aria-modal="true">
     <span class="close" id="modal-close" title="Close">&times;</span>
@@ -167,8 +227,7 @@
   </div>
 </div>
 
-
-  <script>
+<script>
 const members = [
   {name:'shotaro', color:'#8B0000'},
   {name:'eunseok', color:'#D3D3D3'},
@@ -213,13 +272,10 @@ function getMemberColor(name){
   return m ? m.color : '#ccc';
 }
 
-// Render each member's wall (default + uploaded)
 function renderSelectionWall(memberName){
   const wall = document.querySelector(`#${memberName}-selection .wall`);
   if(!wall) return;
   wall.innerHTML = '';
-
-  // Default notes
   for(let i=1;i<=4;i++){
     const imgFile = `${memberName}${i}.png`;
     const note = document.createElement('div');
@@ -229,8 +285,6 @@ function renderSelectionWall(memberName){
     note.onclick=()=>openModalForMember(memberName,imgFile);
     wall.appendChild(note);
   }
-
-  // Uploaded designs
   const designs = JSON.parse(localStorage.getItem(memberName+'_designs')||'[]');
   designs.forEach((src,idx)=>{
     const note = document.createElement('div');
@@ -242,10 +296,8 @@ function renderSelectionWall(memberName){
   });
 }
 
-// Render all walls
 function renderAllSelectionWalls(){ members.forEach(m=>renderSelectionWall(m.name)) }
 
-// Render plain sticky notes
 function renderSimpleNotes(){
   const wall = $('#simple-note-wall');
   wall.innerHTML='';
@@ -261,25 +313,16 @@ function renderSimpleNotes(){
   });
 }
 
-// Modal open
 function openModalForMember(memberName,imgSrc){
   currentMember=memberName; currentImg=imgSrc; currentMode='member'; setupModal();
 }
+
 function openModalForSimple(imgSrc){
   currentMember='simple'; currentImg=imgSrc; currentMode='simple'; setupModal();
 }
 
-// Modal setup
 function setupModal(){
   modalImg.src=currentImg;
-
-  // Make modal-left bigger for full preview
-  const modalLeft = $('#modal-left');
-  modalLeft.style.width='100%';
-  modalLeft.style.height='auto';
-  modalImg.style.width='100%';
-  modalImg.style.height='auto';
-
   if(currentMode==='simple'){
     modalMemberTitle.textContent='Plain Note';
     memberSelect.style.display='block';
@@ -290,21 +333,15 @@ function setupModal(){
     memberSelect.style.display='none';
     memberSelectLabel.style.display='none';
   }
-
   previewText.textContent=''; previewText.style.color=colorPicker.value||'#000';
   noteText.value='';
   previewOverlay.style.display='flex';
-
-  modal.style.display='flex'; modal.setAttribute('aria-hidden','false'); 
-  document.body.style.overflow='hidden';
+  const modalLeft=$('#modal-left');
+  modalLeft.style.width='150px'; modalLeft.style.height='150px';
+  modal.style.display='flex'; modal.setAttribute('aria-hidden','false'); document.body.style.overflow='hidden';
 }
 
-// Modal close
-function closeModal(){ 
-  modal.style.display='none'; 
-  modal.setAttribute('aria-hidden','true'); 
-  document.body.style.overflow=''; 
-}
+function closeModal(){ modal.style.display='none'; modal.setAttribute('aria-hidden','true'); document.body.style.overflow=''; }
 
 noteText.addEventListener('input',e=>{previewText.textContent=e.target.value});
 colorPicker.addEventListener('input',e=>{previewText.style.color=e.target.value});
@@ -314,45 +351,34 @@ modalCancel.onclick=closeModal;
 window.addEventListener('keydown',(e)=>{if(e.key==='Escape')closeModal()});
 modal.addEventListener('click',(e)=>{if(e.target===modal)closeModal()});
 
-// Submit note
 modalSubmit.addEventListener('click',()=>{
-  const text=noteText.value.trim(); 
-  if(!text){alert('Write something!'); return;}
+  const text=noteText.value.trim(); if(!text){alert('Write something!'); return;}
   const color=colorPicker.value||'#000000';
   const week=getCurrentWeek();
   const member=currentMode==='simple'?memberSelect.value:currentMember;
   const id=genID();
-
   const notes=JSON.parse(localStorage.getItem(member)||'[]');
   notes.push({id,img:currentImg,text,color,likes:0,week});
   localStorage.setItem(member,JSON.stringify(notes));
-
-  // Track user notes for deletion
   const userNotesKey='userNotes_'+member;
-  const userNotes=JSON.parse(localStorage.getItem(userNotesKey)||'[]'); 
-  userNotes.push(id);
+  const userNotes=JSON.parse(localStorage.getItem(userNotesKey)||'[]'); userNotes.push(id);
   localStorage.setItem(userNotesKey,JSON.stringify(userNotes));
-
   closeModal();
   alert(`Your note has been submitted to ${member.toUpperCase()}'s wall!`);
 });
 
-// Get current week for weekly top-liked logic
 function getCurrentWeek(){
   const startDate=new Date('2025-09-01');
   const now=new Date();
   return Math.floor((now-startDate)/(7*24*60*60*1000))+1;
 }
 
-// Design submission
 submitDesignBtn.addEventListener('click',()=>{
-  const file=designFileInput.files[0]; 
-  const member=designMember.value;
+  const file=designFileInput.files[0]; const member=designMember.value;
   if(!file){designMsg.textContent='Select a file!'; return;}
   const reader=new FileReader();
   reader.onload=function(e){
-    let designs=JSON.parse(localStorage.getItem(member+'_designs')||'[]'); 
-    designs.push(e.target.result);
+    let designs=JSON.parse(localStorage.getItem(member+'_designs')||'[]'); designs.push(e.target.result);
     localStorage.setItem(member+'_designs',JSON.stringify(designs));
     designMsg.textContent='Design submitted successfully!';
     designFileInput.value='';
@@ -362,7 +388,6 @@ submitDesignBtn.addEventListener('click',()=>{
   reader.readAsDataURL(file);
 });
 
-// Render designs with delete button
 function renderDesigns(){
   designContainer.innerHTML='';
   members.forEach(member=>{
@@ -372,28 +397,19 @@ function renderDesigns(){
       wrapper.style.display='inline-block'; wrapper.style.margin='6px'; wrapper.style.position='relative';
       const img=document.createElement('img'); img.src=src; img.style.border=`2px solid ${member.color}`;
       wrapper.appendChild(img);
-      const delBtn=document.createElement('button'); 
-      delBtn.textContent='Delete';
+      const delBtn=document.createElement('button'); delBtn.textContent='Delete';
       delBtn.style.position='absolute'; delBtn.style.top='6px'; delBtn.style.right='6px';
       delBtn.style.background='red'; delBtn.style.color='#fff'; delBtn.style.border='none';
       delBtn.style.padding='4px 6px'; delBtn.style.cursor='pointer';
-      delBtn.onclick=()=>{ 
-        if(!confirm('Delete this design?')) return; 
-        designs.splice(idx,1);
-        localStorage.setItem(member.name+'_designs',JSON.stringify(designs)); 
-        renderSelectionWall(member.name); 
-        renderDesigns();
-      };
+      delBtn.onclick=()=>{if(!confirm('Delete this design?'))return; designs.splice(idx,1);
+      localStorage.setItem(member.name+'_designs',JSON.stringify(designs)); renderSelectionWall(member.name); renderDesigns();};
       wrapper.appendChild(delBtn);
       designContainer.appendChild(wrapper);
     });
   });
 }
 
-// Initial render
-renderAllSelectionWalls(); 
-renderSimpleNotes(); 
-renderDesigns();
+renderAllSelectionWalls(); renderSimpleNotes(); renderDesigns();
 </script>
 </body>
-</html>
+</html>  
