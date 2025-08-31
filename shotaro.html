@@ -25,14 +25,17 @@ section.wall { display:flex; flex-wrap:wrap; justify-content:flex-start; gap:20p
 .sticky-note img { width:100%; height:100%; object-fit:cover; border-radius:15px; }
 .sticky-note .text { position:absolute; top:10px; left:10px; right:10px; bottom:10px; color:black; font-size:0.9em; white-space:pre-wrap; pointer-events:none; }
 .top-note { border:5px solid gold; box-shadow:0 0 15px gold; }
+
 /* Modal */
 #modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); justify-content:center; align-items:center; z-index:1000; }
 #modal-content { position:relative; background:transparent; border-radius:15px; max-width:500px; width:90%; max-height:90%; overflow:auto; }
-#modal-img { width:100%; border-radius:15px; }
-#modal-text { margin-top:10px; color:white; font-size:1rem; white-space:pre-wrap; word-wrap: break-word; text-align:left; }
-#modal-like { margin-top:10px; padding:5px 10px; cursor:pointer; background:gold; border:none; border-radius:5px; color:black; font-weight:bold; }
+#modal-img { width:100%; border-radius:15px; display:block; }
+#modal-text { position:absolute; top:10px; left:10px; right:10px; bottom:10px; color:black; font-size:1rem; white-space:pre-wrap; pointer-events:none; text-shadow: 1px 1px 3px white; }
+#modal-buttons { margin-top:10px; display:flex; justify-content:center; gap:10px; }
+#modal-like { padding:5px 10px; cursor:pointer; background:gold; border:none; border-radius:5px; color:black; font-weight:bold; }
+#modal-delete { display:none; background:red; color:white; border:none; border-radius:5px; padding:5px 10px; cursor:pointer; }
 #modal-close { position:absolute; top:10px; right:10px; cursor:pointer; font-size:1.2rem; font-weight:bold; background:red; color:white; border:none; border-radius:5px; padding:3px 7px; z-index:1001; }
-#modal-delete { display:none; background:red; color:white; border:none; border-radius:5px; padding:3px 7px; margin-left:10px; cursor:pointer; z-index:1001; }
+
 footer { padding:30px 0; border-top:2px solid gold; margin-top:50px; }
 footer a { color:gold; text-decoration:none; }
 footer a:hover { text-decoration:underline; }
@@ -55,9 +58,11 @@ footer a:hover { text-decoration:underline; }
 <div id="modal">
   <div id="modal-content">
     <button id="modal-close">X</button>
-    <img id="modal-img" src="">
-    <div id="modal-text"></div>
-    <div>
+    <div style="position:relative;">
+      <img id="modal-img" src="">
+      <div id="modal-text"></div>
+    </div>
+    <div id="modal-buttons">
       <button id="modal-like">❤ 0</button>
       <button id="modal-delete">Delete</button>
     </div>
@@ -71,7 +76,7 @@ footer a:hover { text-decoration:underline; }
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-import { getFirestore, collection, onSnapshot, doc, updateDoc, deleteDoc, addDoc } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+import { getFirestore, collection, onSnapshot, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
 // Firebase
 const firebaseConfig = {
@@ -106,7 +111,6 @@ function openModal(note){
   currentModalNote = note;
   modalImg.src = note.img;
   modalText.textContent = note.text;
-  modalLike.textContent = `❤ ${note.likes||0}`;
   modal.style.display = 'flex';
   modalDelete.style.display = (note.creator===userId)?'inline-block':'none';
 }
@@ -136,7 +140,7 @@ modalDelete.onclick = async () => {
   modal.style.display='none';
 };
 
-// Render notes (hide old notes without creator)
+// Render notes
 function renderNotes(notes){
   wall.innerHTML='';
   let maxLikes = -1;
