@@ -13,24 +13,27 @@ body {
   color:white;
   background-image:url('https://www.transparenttextures.com/patterns/stardust.png');
 }
-header {
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  border-bottom:2px solid gold;
-  background:black;
+header{
   padding:30px;
   text-align:center;
 }
-header h1 {
+h1{
   color:gold;
-  margin-bottom:10px;
+  margin-bottom:5px;
 }
-header p {
+p.description{
   max-width:700px;
-  margin:0 auto 10px;
+  margin:0 auto 20px auto;
   color:white;
-  text-shadow:1px 1px 3px rgba(0,0,0,0.7);
+}
+.member-section{
+  margin:40px 0;
+}
+.member-section h2{
+  text-align:center;
+  color:gold;
+  margin-bottom:20px;
+  text-transform:uppercase;
 }
 .wall-container{
   display:flex;
@@ -44,52 +47,30 @@ header p {
   width:200px;
   height:200px;
   border-radius:15px;
+  padding:0;
+  box-shadow:3px 3px 10px rgba(0,0,0,0.5);
   position:relative;
   cursor:pointer;
   overflow:hidden;
-  box-shadow:3px 3px 10px rgba(0,0,0,0.5);
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-.note:hover{
-  transform:scale(1.05);
-  box-shadow:0 0 15px gold;
 }
 .note img{
   width:100%;
   height:100%;
   object-fit:cover;
 }
-.note .text{
+.note .overlay{
   position:absolute;
-  bottom:5px;
-  left:5px;
-  right:5px;
-  color:white;
-  font-size:0.85em;
-  text-shadow:1px 1px 4px black;
-  overflow:auto;
-  max-height:80%;
+  bottom:0;
+  left:0;
+  width:100%;
   padding:5px;
-  word-break:break-word;
-}
-.note .label{
-  position:absolute;
-  top:5px;
-  left:50%;
-  transform:translateX(-50%);
-  background: rgba(0,0,0,0.5);
-  padding:2px 6px;
-  border-radius:5px;
-  font-weight:bold;
-  font-size:0.8em;
+  background:rgba(0,0,0,0.5);
   color:white;
-  z-index:1;
+  font-size:0.85rem;
+  text-align:center;
 }
-.note.current-week{
-  border:3px solid gold;
-  box-shadow:0 0 15px gold;
-}
-footer {
+.note.current-week{ border:3px solid gold; box-shadow:0 0 15px gold; }
+footer{
   padding:30px 0;
   border-top:2px solid gold;
   text-align:center;
@@ -107,17 +88,32 @@ footer a:hover{
 
 <header>
 <h1>Weekly Favorites Archive</h1>
-<p>See the top-liked note for each member from every week. Current week is highlighted in gold! Click your own note to see a special message. Click any note to visit that member’s wall.</p>
+<p class="description">See the top-liked note for each member from every week. Current week is highlighted in gold! Click your own note to see a lovely message 💖. Click any note to visit that member’s wall.</p>
+<a href="index.html" style="color:gold; text-decoration:underline;">← Back to Homepage</a>
 </header>
 
 <div id="favorites-container"></div>
 
 <footer>
-<p>Created by <a href="https://x.com/Eclip7e_project" target="_blank">@Eclip7e_project</a></p>
+<p>Project organized by <a href="https://x.com/Eclip7e_project" target="_blank">@Eclip7e_project</a></p>
 <img src="logo.png" alt="Logo" height="80">
 </footer>
 
-<script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey:"AIzaSyCM69r2wUibBFIFpML07Y5RUTrxHgonlSc",
+  authDomain:"rii7e-sticky-notes-project.firebaseapp.com",
+  projectId:"rii7e-sticky-notes-project",
+  storageBucket:"rii7e-sticky-notes-project.firebasestorage.app",
+  messagingSenderId:"962319162792",
+  appId:"1:962319162792:web:8fad2b11c316766c8a119d"
+};
+initializeApp(firebaseConfig);
+const db = getFirestore();
+
 const members = [
   {name:'shotaro', color:'#8B0000', wall:'shotaro.html'},
   {name:'eunseok', color:'#D3D3D3', wall:'eunseok.html'},
@@ -132,93 +128,61 @@ const members = [
 
 const currentWeek = Math.floor((new Date() - new Date('2025-09-01')) / (7*24*60*60*1000)) + 1;
 
-function getTopNotesPerWeek(notes) {
-  const weekMap = {};
-  notes.forEach(n => {
-    if(n.deleted) return; 
-    if(!weekMap[n.week] || n.likes > weekMap[n.week].likes){
-      weekMap[n.week] = n;
-    }
-  });
-  return Object.values(weekMap).sort((a,b)=>a.week-b.week);
-}
+const favoritesContainer = document.getElementById('favorites-container');
 
-function renderFavorites() {
-  const container = document.getElementById('favorites-container');
-  container.innerHTML='';
-
-  members.forEach(m => {
-    let notes = JSON.parse(localStorage.getItem(m.name) || '[]');
-    const topNotes = getTopNotesPerWeek(notes);
-    if(topNotes.length===0) return;
-
-    const section = document.createElement('div');
-    section.className='member-section';
-    const title = document.createElement('h2');
-    title.textContent = m.name.toUpperCase();
-    title.style.color='gold';
-    title.style.textAlign='center';
-    title.style.marginBottom='10px';
-    section.appendChild(title);
-
-    const wallDiv = document.createElement('div');
-    wallDiv.className='wall-container';
-
-    topNotes.forEach(n => {
-      const noteDiv = document.createElement('div');
-      noteDiv.className='note';
-
-      if(n.img){
-        const img = document.createElement('img');
-        img.src = n.img;
-        noteDiv.appendChild(img);
-      }
-
-      const textDiv = document.createElement('div');
-      textDiv.className='text';
-      textDiv.textContent = n.text;
-      noteDiv.appendChild(textDiv);
-
-      const labelDiv = document.createElement('div');
-      labelDiv.className='label';
-      labelDiv.textContent = `❤️ ${n.likes}  |  Week ${n.week}`;
-      noteDiv.appendChild(labelDiv);
-
-      if(n.week === currentWeek){
-        noteDiv.classList.add('current-week');
-      } else {
-        noteDiv.style.borderColor = m.color;
-      }
-
-      noteDiv.onclick = () => {
-        const userId = localStorage.getItem('userId_'+m.name);
-        if(userId && n.userId === userId){
-          if(n.week === currentWeek){
-            alert(`🎉✨ Congrats! Your note is this week’s favorite! 🌟💖`);
-          } else {
-            alert(`💌 You were a star in week ${n.week}! Keep spreading love and creativity! 🌈❤️`);
-          }
-        } else {
-          window.location.href = m.wall;
-        }
-      };
-
-      wallDiv.appendChild(noteDiv);
-    });
-
-    section.appendChild(wallDiv);
-    container.appendChild(section);
-  });
-}
-
-// generate userId if missing
+// generate userId for top note detection
 members.forEach(m => {
   if(!localStorage.getItem('userId_'+m.name)){
     localStorage.setItem('userId_'+m.name, Date.now() + Math.random());
   }
 });
 
-renderFavorites();
+members.forEach(member => {
+  const memberSection = document.createElement('div');
+  memberSection.className='member-section';
+  const title = document.createElement('h2');
+  title.textContent = member.name;
+  memberSection.appendChild(title);
+  const wallDiv = document.createElement('div');
+  wallDiv.className='wall-container';
+  memberSection.appendChild(wallDiv);
+  favoritesContainer.appendChild(memberSection);
+
+  const notesCol = collection(db,'notes',member.name,'memberNotes');
+  onSnapshot(notesCol, snapshot => {
+    const notes = snapshot.docs.map(d=>({id:d.id,...d.data()}));
+    // filter deleted
+    const validNotes = notes.filter(n=>!n.deleted);
+    // group by week, get top-liked per week
+    const weekMap = {};
+    validNotes.forEach(n=>{
+      if(!weekMap[n.week] || (n.likes||0) > (weekMap[n.week].likes||0)){
+        weekMap[n.week] = n;
+      }
+    });
+    const favorites = Object.values(weekMap).sort((a,b)=>a.week-b.week);
+    wallDiv.innerHTML='';
+    favorites.forEach(note=>{
+      const div = document.createElement('div');
+      div.className='note';
+      div.style.borderColor = (note.week===currentWeek)?'gold':member.color;
+      if(note.week===currentWeek) div.classList.add('current-week');
+      div.innerHTML = `
+        <img src="${note.img}">
+        <div class="overlay">❤️ ${note.likes} • Week ${note.week}<br>${note.text}</div>
+      `;
+      div.onclick = ()=>{
+        const userId = localStorage.getItem('userId_'+member.name);
+        if(note.creator === userId){
+          alert(`🎉 Amazing! Your note is this week's favorite 💖🌟`);
+        } else {
+          window.location.href = member.wall;
+        }
+      };
+      wallDiv.appendChild(div);
+    });
+  });
+});
 </script>
 
 </body>
