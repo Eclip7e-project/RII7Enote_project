@@ -132,13 +132,18 @@ members.forEach(m=>{
 
 function renderFavorites(member, notes){
   if(!notes || notes.length===0) return;
+
+  // filter week >= 1
+  notes = notes.filter(n=>!n.deleted && n.week >= 1);
+
   // top note per week
   const weekMap = {};
   notes.forEach(n=>{
-    if(n.deleted) return;
     if(!weekMap[n.week] || n.likes>weekMap[n.week].likes) weekMap[n.week]=n;
   });
   const topNotes = Object.values(weekMap).sort((a,b)=>a.week-b.week);
+
+  if(topNotes.length===0) return;
 
   const section = document.createElement('div');
   section.className='member-section';
@@ -189,7 +194,8 @@ members.forEach(member=>{
   onSnapshot(col,snap=>{
     const notes = snap.docs.map(d=>({...d.data(), id:d.id, ref:d.ref}));
     // clear old section
-    const oldSection = [...favoritesContainer.querySelectorAll('.member-section')].find(s=>s.querySelector('h2').textContent===member.name.toUpperCase());
+    const oldSection = [...favoritesContainer.querySelectorAll('.member-section')]
+      .find(s=>s.querySelector('h2').textContent===member.name.toUpperCase());
     if(oldSection) oldSection.remove();
     renderFavorites(member, notes);
   });
