@@ -5,6 +5,16 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>RII7E Sticky Notes Project</title>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+
+
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js"></script>
+
+
+
+  
   <style>
     :root{
       --gold:#d4af37;
@@ -231,17 +241,16 @@
 
 
 <script type="module">
-// ----------------- Firebase SDK -----------------
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-import { getFirestore, collection, addDoc, onSnapshot, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
-import { getStorage, ref, uploadString, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-storage.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
-// ----------------- Firebase Setup -----------------
+// ------------------ Firebase Config ------------------
 const firebaseConfig = {
   apiKey: "AIzaSyCM69r2wUibBFIFpML07Y5RUTrxHgonlSc",
   authDomain: "rii7e-sticky-notes-project.firebaseapp.com",
   projectId: "rii7e-sticky-notes-project",
-  storageBucket: "rii7e-sticky-notes-project.firebasestorage.app",
+  storageBucket: "rii7e-sticky-notes-project.appspot.com",
   messagingSenderId: "962319162792",
   appId: "1:962319162792:web:8fad2b11c316766c8a119d"
 };
@@ -250,142 +259,165 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
-// ----------------- DOM -----------------
-const submitDesignBtn = document.getElementById("submitDesign");
-const designFileInput = document.getElementById("design-file");
-const designMember = document.getElementById("design-member");
-const designMsg = document.getElementById("design-msg");
-const designContainer = document.getElementById("designContainer");
-
-// ----------------- User ID -----------------
+// ------------------ User ID ------------------
 let userId = localStorage.getItem("userId");
 if (!userId) {
   userId = crypto.randomUUID();
   localStorage.setItem("userId", userId);
 }
 
-// ----------------- Submit Design -----------------
-submitDesignBtn.addEventListener("click", async () => {
-  const file = designFileInput.files[0];
-  const member = designMember.value;
-  if (!file) {
-    designMsg.textContent = "Select a file!";
-    return;
+// ------------------ Members ------------------
+const members = [
+  {name:'shotaro', color:'#8B0000'},
+  {name:'eunseok', color:'#D3D3D3'},
+  {name:'sungchan', color:'#008000'},
+  {name:'wonbin', color:'#FF0000'},
+  {name:'seunghan', color:'#0000FF'},
+  {name:'sohee', color:'#FFFF00'},
+  {name:'anton', color:'#1E3A5F'},
+  {name:'brii7e', color:'#FFA500'}
+];
+
+// ------------------ Modal ------------------
+const modal = document.getElementById('modal');
+const modalClose = document.getElementById('modal-close');
+const modalMember = document.getElementById('modal-member');
+const modalImg = document.getElementById('modal-img');
+const noteText = document.getElementById('note-text');
+const submitBtn = document.getElementById('submitNote');
+let currentMember = '';
+let currentImg = '';
+
+function openModal(memberName, imgSrc) {
+  modal.style.display = 'block';
+  modalMember.textContent = memberName.toUpperCase();
+  modalImg.src = imgSrc;
+  currentMember = memberName;
+  currentImg = imgSrc;
+}
+
+modalClose.onclick = () => modal.style.display = 'none';
+window.onclick = e => { if (e.target === modal) modal.style.display = 'none'; };
+
+// ------------------ Render Wall ------------------
+async function renderSelectionWall(memberName) {
+  const wall = document.querySelector(`#${memberName}-selection .wall`);
+  if (!wall) return;
+  wall.innerHTML = '';
+
+  // Default placeholders
+  for (let i = 1; i <= 2; i++) {
+    const div = document.createElement('div');
+    div.className = 'sticky-note';
+    div.style.borderColor = members.find(m => m.name === memberName).color;
+    div.innerHTML = `<img src="PLACEHOLDER${i}.png">`;
+    div.onclick = () => openModal(memberName, `PLACEHOLDER${i}.png`);
+    wall.appendChild(div);
   }
 
-  const reader = new FileReader();
-  reader.onload = async e => {
-    const imgData = e.target.result;
-    try {
-      // Upload to Firebase Storage
-      const fileRef = ref(storage, `designs/${member}/${Date.now()}.png`);
-      await uploadString(fileRef, imgData, "data_url");
-      const url = await getDownloadURL(fileRef);
+  // Firestore designs
+  const q = query(collection(db, "designs"), where("member", "==", memberName));
+  const snapshot = await getDocs(q);
+  snapshot.forEach(docSnap => {
+    const data = docSnap.data();
+    const div = document.createElement('div');
+    div.className = 'sticky-note';
+    div.style.borderColor = members.find(m => m.name === memberName).color;
+    div.innerHTML = `<img src="${data.url}">`;
+    div.onclick = () => openModal(memberName, data.url);
+    wall.appendChild(div);
+  });
+}
 
-      // Save in Firestore
-      await addDoc(collection(db, "designs", member, "fanDesigns"), {
-        img: url,
-        member,
-        creator: userId,
-        timestamp: Date.now()
-      });
+// ------------------ Submit Design ------------------
+const submitDesignBtn = document.getElementById('submitDesign');
+const designFileInput = document.getElementById('design-file');
+const designMember = document.getElementById('design-member');
+const designMsg = document.getElementById('design-msg');
 
-      designMsg.textContent = "Design submitted!";
-      designFileInput.value = "";
-    } catch (err) {
-      console.error(err);
-      designMsg.textContent = "Error submitting design.";
+submitDesignBtn.onclick = async () => {
+  const file = designFileInput.files[0];
+  const member = designMember.value;
+  if (!file) { designMsg.textContent = 'Select a file!'; return; }
+
+  try {
+    // Upload to storage
+    const storageRef = ref(storage, `designs/${Date.now()}-${file.name}`);
+    await uploadBytes(storageRef, file);
+    const url = await getDownloadURL(storageRef);
+
+    // Save Firestore entry
+    await addDoc(collection(db, "designs"), {
+      url,
+      member,
+      creator: userId,
+      createdAt: Date.now()
+    });
+
+    designMsg.textContent = 'Design submitted!';
+    designFileInput.value = '';
+    setTimeout(() => designMsg.textContent = '', 2000);
+  } catch (e) {
+    console.error(e);
+    designMsg.textContent = 'Error submitting!';
+  }
+};
+
+// ------------------ Manage Designs ------------------
+async function renderDesigns() {
+  const container = document.getElementById('designContainer');
+  container.innerHTML = '';
+
+  const snapshot = await getDocs(collection(db, "designs"));
+  snapshot.forEach(docSnap => {
+    const data = docSnap.data();
+    const div = document.createElement('div');
+    div.style.position = 'relative';
+    div.style.display = 'inline-block';
+    div.style.margin = '6px';
+
+    const img = document.createElement('img');
+    img.src = data.url;
+    img.style.border = `2px solid ${members.find(m=>m.name===data.member)?.color || '#000'}`;
+    img.style.width = '100px';
+    img.style.borderRadius = '10px';
+    div.appendChild(img);
+
+    // Show delete button only for creator
+    if (data.creator === userId) {
+      const delBtn = document.createElement('button');
+      delBtn.textContent = '✕';
+      delBtn.style.position = 'absolute';
+      delBtn.style.top = '4px';
+      delBtn.style.right = '4px';
+      delBtn.style.background = 'red';
+      delBtn.style.color = '#fff';
+      delBtn.style.border = 'none';
+      delBtn.style.cursor = 'pointer';
+      delBtn.onclick = async () => {
+        if (!confirm('Delete this design?')) return;
+        await deleteDoc(doc(db, "designs", docSnap.id));
+        renderDesigns();
+        renderSelectionWall(data.member);
+      };
+      div.appendChild(delBtn);
     }
-    setTimeout(() => (designMsg.textContent = ""), 3000);
-  };
-  reader.readAsDataURL(file);
+
+    container.appendChild(div);
+  });
+}
+
+// ------------------ Real-Time Sync ------------------
+members.forEach(m => {
+  const q = query(collection(db, "designs"), where("member", "==", m.name));
+  onSnapshot(q, () => renderSelectionWall(m.name));
 });
 
-// ----------------- Render Designs in Picks -----------------
-function renderPickSection() {
-  members.forEach(member => {
-    const wall = document.querySelector(`#${member.name}-selection .wall`);
-    if (!wall) return;
-    wall.innerHTML = "";
+onSnapshot(collection(db, "designs"), () => renderDesigns());
 
-    // Placeholder slots
-    for (let i = 1; i <= 4; i++) {
-      const imgFile = `${member.name}${i}.png`;
-      const note = document.createElement("div");
-      note.className = "sticky-note";
-      note.style.border = `4px solid ${getMemberColor(member.name)}`;
-      note.innerHTML = `<img src="${imgFile}" alt="${member.name} placeholder ${i}">`;
-      note.onclick = () => openModalForMember(member.name, imgFile);
-      wall.appendChild(note);
-    }
-
-    // Listen for fan designs in Firestore
-    const designsCol = collection(db, "designs", member.name, "fanDesigns");
-    onSnapshot(designsCol, snapshot => {
-      snapshot.docChanges().forEach(change => {
-        if (change.type === "added") {
-          const data = change.doc.data();
-          const note = document.createElement("div");
-          note.className = "sticky-note";
-          note.style.border = `4px solid ${getMemberColor(member.name)}`;
-          note.innerHTML = `<img src="${data.img}" alt="Fan design">`;
-          note.onclick = () => openModalForMember(member.name, data.img);
-          wall.appendChild(note);
-        }
-      });
-    });
-  });
-}
-
-// ----------------- Render Manage Designs -----------------
-function renderAllDesigns() {
-  designContainer.innerHTML = "";
-  members.forEach(member => {
-    const designsCol = collection(db, "designs", member.name, "fanDesigns");
-    onSnapshot(designsCol, snapshot => {
-      snapshot.forEach(docSnap => {
-        const data = docSnap.data();
-
-        if (data.creator !== userId) return; // Only show creator's own designs
-
-        const wrapper = document.createElement("div");
-        wrapper.style.display = "inline-block";
-        wrapper.style.position = "relative";
-        wrapper.style.margin = "6px";
-
-        const img = document.createElement("img");
-        img.src = data.img;
-        img.style.width = "100px";
-        img.style.border = `2px solid ${getMemberColor(member.name)}`;
-        img.style.borderRadius = "10px";
-        wrapper.appendChild(img);
-
-        // Delete button
-        const delBtn = document.createElement("button");
-        delBtn.textContent = "✕";
-        delBtn.style.position = "absolute";
-        delBtn.style.top = "6px";
-        delBtn.style.right = "6px";
-        delBtn.style.background = "red";
-        delBtn.style.color = "#fff";
-        delBtn.style.border = "none";
-        delBtn.style.padding = "4px 6px";
-        delBtn.style.cursor = "pointer";
-        delBtn.onclick = async () => {
-          if (!confirm("Delete this design?")) return;
-          await deleteDoc(doc(db, "designs", member.name, "fanDesigns", docSnap.id));
-        };
-        wrapper.appendChild(delBtn);
-
-        designContainer.appendChild(wrapper);
-      });
-    });
-  });
-}
-
-// Initialize rendering
-renderPickSection();
-renderAllDesigns();
+// ------------------ INIT ------------------
+members.forEach(m => renderSelectionWall(m.name));
+renderDesigns();
 </script>
 
 
@@ -393,6 +425,7 @@ renderAllDesigns();
 
 </body>
 </html>  
+
 
 
 
