@@ -108,7 +108,7 @@ footer a:hover{
 
 <header>
 <h1>Weekly Favorites Archive</h1>
-<p>See the top-liked note for each member from every week. Current week is highlighted in gold! Click your own note to see a special message.</p>
+<p>Top-liked note per member per week. Current week highlighted in gold! Click your own note for a special message.</p>
 </header>
 
 <div id="favorites-container"></div>
@@ -119,6 +119,7 @@ footer a:hover{
 </footer>
 
 <script>
+// -------------------- CONFIG --------------------
 const members = [
   {name:'shotaro', color:'#8B0000'},
   {name:'eunseok', color:'#D3D3D3'},
@@ -131,23 +132,24 @@ const members = [
   {name:'brii7e', color:'#FFA500'}
 ];
 
-const currentWeek = Math.floor((new Date()-new Date('2025-09-01'))/(7*24*60*60*1000))+1;
+const startDate = new Date('2025-09-01'); // Week 1 start
+const today = new Date();
+const currentWeek = Math.floor((today - startDate)/(7*24*60*60*1000))+1;
 
-// Generate userId for tracking creator
-members.forEach(m => {
+// Ensure each member has a unique userId
+members.forEach(m=>{
   if(!localStorage.getItem('userId_'+m.name)){
     localStorage.setItem('userId_'+m.name, Date.now() + Math.random());
   }
 });
 
-// Render favorites
+// -------------------- RENDER --------------------
 function renderFavorites(){
   const container = document.getElementById('favorites-container');
   container.innerHTML='';
 
   members.forEach(m=>{
     let notes = JSON.parse(localStorage.getItem(m.name)||'[]');
-    // filter deleted and valid week notes only
     notes = notes.filter(n=>n.week && n.week>0 && !n.deleted);
 
     if(notes.length===0) return;
@@ -161,15 +163,27 @@ function renderFavorites(){
     const wallDiv = document.createElement('div');
     wallDiv.className='wall-container';
 
+    // Determine top note for current week
+    let maxLikes = -1;
+    let topNoteId = null;
+    notes.forEach(n=>{
+      if(n.week===currentWeek && (n.likes||0)>maxLikes){
+        maxLikes = n.likes||0;
+        topNoteId = n.id;
+      }
+    });
+
     notes.forEach(n=>{
       const div = document.createElement('div');
       div.className='note';
-      if(n.week===currentWeek) div.classList.add('top-note');
+      if(n.week===currentWeek && n.id===topNoteId) div.classList.add('top-note');
+      if(n.week!==currentWeek) div.style.border = `3px solid ${m.color}`;
       div.innerHTML=`
         <img src="${n.img}" alt="Note">
         <div class="text">${n.text}</div>
         <div class="info-box">❤️ ${n.likes||0} | Week ${n.week}</div>
       `;
+
       // Delete button for creator
       const userId = localStorage.getItem('userId_'+m.name);
       if(n.creator === userId){
@@ -186,10 +200,10 @@ function renderFavorites(){
         div.appendChild(del);
       }
 
-      // Clicking note
+      // Click behavior
       div.onclick = ()=>{
         const userId = localStorage.getItem('userId_'+m.name);
-        if(n.creator === userId){
+        if(n.creator === userId && n.week===currentWeek){
           alert(`🎉 Congrats! Your note was selected as week ${n.week} favorite! 🌟`);
         }
       }
@@ -202,6 +216,7 @@ function renderFavorites(){
   });
 }
 
+// -------------------- INIT --------------------
 renderFavorites();
 </script>
 
