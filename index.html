@@ -509,53 +509,56 @@ modalSubmit.addEventListener('click', async ()=>{
 });
 
 // ----------------- Manage User Designs -----------------
-function renderManageDesigns() {
+// ----------------- Manage User Designs -----------------
+async function renderManageDesigns() {
   const container = $('#designContainer');
   container.innerHTML = '';
   const userId = localStorage.getItem('userId');
   if(!userId) return;
 
-  members.forEach(member => {
+  // Collect all user designs from all members
+  const allPromises = members.map(async member => {
     const designsCol = collection(db, 'designs', member.name, 'fanDesigns');
-    const q = query(designsCol, orderBy('timestamp'));
-    onSnapshot(q, snapshot => {
-      const userDesigns = snapshot.docs.filter(docSnap => docSnap.data().creator === userId);
-      container.innerHTML = '';
+    const snapshot = await getDocs(designsCol); // one-time fetch
+    return snapshot.docs.filter(docSnap => docSnap.data().creator === userId)
+                        .map(docSnap => ({docSnap, member}));
+  });
 
-      userDesigns.forEach(docSnap => {
-        const data = docSnap.data();
-        const wrapper = document.createElement('div');
-        wrapper.style.position = 'relative';
-        wrapper.style.display = 'inline-block';
-        wrapper.style.margin = '6px';
+  const allUserDesigns = (await Promise.all(allPromises)).flat();
 
-        const img = document.createElement('img');
-        img.src = data.img;
-        img.alt = `${member.name} fan design`;
-        wrapper.appendChild(img);
+  allUserDesigns.forEach(({docSnap, member}) => {
+    const data = docSnap.data();
+    const wrapper = document.createElement('div');
+    wrapper.style.position = 'relative';
+    wrapper.style.display = 'inline-block';
+    wrapper.style.margin = '6px';
 
-        const delBtn = document.createElement('button');
-        delBtn.textContent = 'Delete';
-        delBtn.style.position = 'absolute';
-        delBtn.style.top = '2px';
-        delBtn.style.right = '2px';
-        delBtn.style.background = 'red';
-        delBtn.style.color = '#fff';
-        delBtn.style.border = 'none';
-        delBtn.style.padding = '2px 4px';
-        delBtn.style.cursor = 'pointer';
-        delBtn.onclick = async () => {
-          if(!confirm('Delete this design?')) return;
-          try { await docSnap.ref.delete(); renderManageDesigns(); } 
-          catch(err){ console.error(err); alert('Error deleting design.'); }
-        };
-        wrapper.appendChild(delBtn);
+    const img = document.createElement('img');
+    img.src = data.img;
+    img.alt = `${member.name} fan design`;
+    wrapper.appendChild(img);
 
-        container.appendChild(wrapper);
-      });
-    });
+    const delBtn = document.createElement('button');
+    delBtn.textContent = 'Delete';
+    delBtn.style.position = 'absolute';
+    delBtn.style.top = '2px';
+    delBtn.style.right = '2px';
+    delBtn.style.background = 'red';
+    delBtn.style.color = '#fff';
+    delBtn.style.border = 'none';
+    delBtn.style.padding = '2px 4px';
+    delBtn.style.cursor = 'pointer';
+    delBtn.onclick = async () => {
+      if(!confirm('Delete this design?')) return;
+      try { await docSnap.ref.delete(); renderManageDesigns(); } 
+      catch(err){ console.error(err); alert('Error deleting design.'); }
+    };
+    wrapper.appendChild(delBtn);
+
+    container.appendChild(wrapper);
   });
 }
+
 
 // ----------------- Initialize -----------------
 renderPickSection();
@@ -572,6 +575,7 @@ renderManageDesigns(); // Initialize Manage section
 
 </body>
 </html>  
+
 
 
 
