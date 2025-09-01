@@ -337,15 +337,20 @@ const openModalForSimple = (imgSrc, defaultMember='shotaro') => {
   setupModal();
 };
 
-// ----------------- Render Pick Section -----------------
-function renderPickSection(){
-  members.forEach(member => {
+
+
+
+
+
+// ----------------- Render Pick Section (with Firestore designs) -----------------
+async function renderPickSection() {
+  members.forEach(async member => {
     const wall = document.querySelector(`#${member.name}-selection .wall`);
-    if(!wall) return;
+    if (!wall) return;
     wall.innerHTML = '';
 
     // 1️⃣ Placeholders
-    for(let i=1;i<=4;i++){
+    for (let i = 1; i <= 4; i++) {
       const imgFile = `${member.name}${i}.png`;
       const note = document.createElement('div');
       note.className = 'sticky-note';
@@ -355,18 +360,26 @@ function renderPickSection(){
       wall.appendChild(note);
     }
 
-    // 2️⃣ Uploaded designs by fans (only in pick)
-    const designs = JSON.parse(localStorage.getItem(member.name+'_designs')||'[]');
-    designs.forEach(src => {
-      const note = document.createElement('div');
-      note.className = 'sticky-note';
-      note.style.border = `4px solid ${getMemberColor(member.name)}`;
-      note.innerHTML = `<img src="${src}" alt="Uploaded design">`;
-      note.onclick = () => openModalForMember(member.name, src);
-      wall.appendChild(note);
+    // 2️⃣ Fan-uploaded designs from Firestore
+    const designsCol = collection(db, 'designs', member.name, 'memberDesigns');
+    onSnapshot(designsCol, snapshot => {
+      snapshot.docs.forEach(docSnap => {
+        const data = docSnap.data();
+        const note = document.createElement('div');
+        note.className = 'sticky-note';
+        note.style.border = `4px solid ${getMemberColor(member.name)}`;
+        note.innerHTML = `<img src="${data.img}" alt="Uploaded design">`;
+        note.onclick = () => openModalForMember(member.name, data.img);
+        wall.appendChild(note);
+      });
     });
   });
 }
+
+
+
+
+  
 
 // ----------------- Render Member Walls -----------------
 function renderMemberWall(memberName){
@@ -586,4 +599,5 @@ members.forEach(m => renderMemberWall(m.name));
 
 </body>
 </html>  
+
 
