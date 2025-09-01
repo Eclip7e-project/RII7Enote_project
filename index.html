@@ -233,7 +233,7 @@
 <script type="module">
 // ----------------- Firebase SDK -----------------
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
 // ----------------- Firebase Setup -----------------
 const firebaseConfig = {
@@ -345,7 +345,7 @@ function renderPickSection() {
     if(!wall) return;
     wall.innerHTML = '';
 
-    // Placeholders
+    // 1️⃣ Placeholders
     for(let i=1;i<=4;i++){
       const imgFile = `${member.name}${i}.png`;
       const note = document.createElement('div');
@@ -356,11 +356,13 @@ function renderPickSection() {
       wall.appendChild(note);
     }
 
-    // Fan designs from Firestore
+    // 2️⃣ Fan designs from Firestore
     const designsCol = collection(db, 'designs', member.name, 'fanDesigns');
     const q = query(designsCol, orderBy('timestamp'));
     onSnapshot(q, snapshot => {
+      // Remove old fan designs (keep placeholders)
       Array.from(wall.querySelectorAll('.fan-design')).forEach(n => n.remove());
+
       snapshot.docs.forEach(docSnap => {
         const data = docSnap.data();
         const note = document.createElement('div');
@@ -373,6 +375,71 @@ function renderPickSection() {
     });
   });
 }
+
+
+
+
+
+
+// ----------------- Render All Designs (Manage Section) -----------------
+function renderAllDesigns() {
+  designContainer.innerHTML = '';
+  members.forEach(member => {
+    const designsCol = collection(db, 'designs', member.name, 'fanDesigns');
+    const q = query(designsCol, orderBy('timestamp'));
+    onSnapshot(q, snapshot => {
+      designContainer.innerHTML = '';
+      snapshot.docs.forEach(docSnap => {
+        const data = docSnap.data();
+        const wrapper = document.createElement('div');
+        wrapper.style.display = 'inline-block';
+        wrapper.style.position = 'relative';
+        wrapper.style.margin = '6px';
+
+        const img = document.createElement('img');
+        img.src = data.img;
+        img.style.width = '100px';
+        img.style.border = `2px solid ${member.color}`;
+        img.style.borderRadius = '10px';
+        wrapper.appendChild(img);
+
+        // Only show delete button if the current user is the creator
+        const userId = localStorage.getItem('userId');
+        if(userId && data.creator === userId){
+          const delBtn = document.createElement('button');
+          delBtn.textContent = 'Delete';
+          delBtn.style.position = 'absolute';
+          delBtn.style.top = '6px';
+          delBtn.style.right = '6px';
+          delBtn.style.background = 'red';
+          delBtn.style.color = '#fff';
+          delBtn.style.border = 'none';
+          delBtn.style.padding = '4px 6px';
+          delBtn.style.cursor = 'pointer';
+          delBtn.onclick = async () => {
+            if(!confirm('Delete this design?')) return;
+            try {
+              await deleteDoc(doc(db, 'designs', member.name, 'fanDesigns', docSnap.id));
+            } catch(err){
+              console.error(err);
+              alert('Error deleting design.');
+            }
+          };
+          wrapper.appendChild(delBtn);
+        }
+
+        designContainer.appendChild(wrapper);
+      });
+    });
+  });
+}
+
+// ----------------- Call to initialize designs -----------------
+renderAllDesigns();
+
+
+
+  
 
 // ----------------- Render Member Walls -----------------
 function renderMemberWall(memberName){
@@ -412,7 +479,7 @@ function renderSimpleNotes(){
   });
 }
 
-// ----------------- Submit Design -----------------
+// ----------------- Submit Design (Firestore) -----------------
 submitDesignBtn.addEventListener('click', async () => {
   const file = designFileInput.files[0];
   const member = designMember.value;
@@ -427,8 +494,6 @@ submitDesignBtn.addEventListener('click', async () => {
       });
       designMsg.textContent = 'Design submitted!';
       designFileInput.value = '';
-      renderAllDesigns();
-      renderPickSection();
       setTimeout(()=>designMsg.textContent='', 3000);
     } catch(err) {
       console.error(err);
@@ -438,56 +503,8 @@ submitDesignBtn.addEventListener('click', async () => {
   reader.readAsDataURL(file);
 });
 
-// ----------------- Render All Designs (Manage Section) -----------------
-function renderAllDesigns() {
-  designContainer.innerHTML = '';
-  members.forEach(member => {
-    const designsCol = collection(db, 'designs', member.name, 'fanDesigns');
-    const q = query(designsCol, orderBy('timestamp'));
-    onSnapshot(q, snapshot => {
-      designContainer.innerHTML = '';
-      snapshot.docs.forEach(docSnap => {
-        const data = docSnap.data();
-        const wrapper = document.createElement('div');
-        wrapper.style.display = 'inline-block';
-        wrapper.style.position = 'relative';
-        wrapper.style.margin = '6px';
-
-        const img = document.createElement('img');
-        img.src = data.img;
-        img.style.width = '100px';
-        img.style.border = `2px solid ${member.color}`;
-        img.style.borderRadius = '10px';
-        wrapper.appendChild(img);
-
-        const delBtn = document.createElement('button');
-        delBtn.textContent = 'Delete';
-        delBtn.style.position = 'absolute';
-        delBtn.style.top = '6px';
-        delBtn.style.right = '6px';
-        delBtn.style.background = 'red';
-        delBtn.style.color = '#fff';
-        delBtn.style.border = 'none';
-        delBtn.style.padding = '4px 6px';
-        delBtn.style.cursor = 'pointer';
-        delBtn.onclick = async () => {
-          if(!confirm('Delete this design?')) return;
-          try {
-            await deleteDoc(doc(db, 'designs', member.name, 'fanDesigns', docSnap.id));
-          } catch(err){
-            console.error(err);
-            alert('Error deleting design.');
-          }
-        };
-        wrapper.appendChild(delBtn);
-        designContainer.appendChild(wrapper);
-      });
-    });
-  });
-}
-
 // ----------------- Submit Modal Note -----------------
-modalSubmit.addEventListener('click', async () => {
+modalSubmit.addEventListener('click', async ()=>{
   const text = noteText.value.trim();
   if(!text){ alert('Write something!'); return; }
 
@@ -522,7 +539,6 @@ modalSubmit.addEventListener('click', async () => {
 // ----------------- Initialize -----------------
 renderPickSection();
 renderSimpleNotes();
-renderAllDesigns();
 members.forEach(m => renderMemberWall(m.name));
 
 </script>
@@ -533,6 +549,7 @@ members.forEach(m => renderMemberWall(m.name));
 
 </body>
 </html>  
+
 
 
 
