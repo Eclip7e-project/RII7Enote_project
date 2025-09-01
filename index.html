@@ -353,26 +353,43 @@ function renderPickSection(){
 }
 
 // ----- Submit Design -----
+import { getDownloadURL, getStorage, ref, uploadString } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-storage.js";
+import { doc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+
+const storage = getStorage(app);
+
 submitDesignBtn.addEventListener('click', async ()=>{
   const file = designFileInput.files[0];
   const member = designMember.value;
   if(!file){ designMsg.textContent='Select a file!'; return; }
 
   const reader = new FileReader();
-  reader.onload = async e=>{
-    try{
-      await addDoc(collection(db,'designs',member,'fanDesigns'),{
-        img: e.target.result,
+  reader.onload = async e => {
+    const imgData = e.target.result;
+    try {
+      // Upload to Firebase Storage
+      const fileRef = ref(storage, `designs/${member}/${Date.now()}.png`);
+      await uploadString(fileRef, imgData, 'data_url');
+      const url = await getDownloadURL(fileRef);
+
+      // Save to Firestore
+      await addDoc(collection(db, 'designs', member, 'fanDesigns'), {
+        img: url,
         timestamp: Date.now(),
-        creator: userId
+        creator: localStorage.getItem('userId')
       });
+
       designMsg.textContent='Design submitted!';
       designFileInput.value='';
-      setTimeout(()=>designMsg.textContent='',3000);
-    } catch(err){ console.error(err); designMsg.textContent='Error submitting design.'; }
+    } catch(err) {
+      console.error(err);
+      designMsg.textContent='Error submitting design.';
+    }
+    setTimeout(()=>designMsg.textContent='',3000);
   };
   reader.readAsDataURL(file);
 });
+
 
 // ----- Manage Designs -----
 function renderAllDesigns(){
@@ -420,20 +437,76 @@ function renderAllDesigns(){
   });
 }
 
+
+
+function renderAllDesigns(){
+  designContainer.innerHTML='';
+  members.forEach(member=>{
+    const designsCol = collection(db, 'designs', member.name, 'fanDesigns');
+    onSnapshot(designsCol, snapshot=>{
+      snapshot.docChanges().forEach(change=>{
+        // Clear all before re-rendering this member's section
+        if(change.type === 'added' || change.type === 'removed'){
+          designContainer.innerHTML='';
+          members.forEach(m=>{
+            const col = collection(db, 'designs', m.name, 'fanDesigns');
+            onSnapshot(col, snap=>{
+              snap.forEach(docSnap=>{
+                const data = docSnap.data();
+                const wrapper = document.createElement('div');
+                wrapper.style.display='inline-block';
+                wrapper.style.position='relative';
+                wrapper.style.margin='6px';
+
+                const img = document.createElement('img');
+                img.src = data.img;
+                img.style.width = '100px';
+                img.style.border = `2px solid ${m.color}`;
+                img.style.borderRadius = '10px';
+                wrapper.appendChild(img);
+
+                // Delete button (only creator)
+                if (data.creator === localStorage.getItem('userId')) {
+                  const delBtn = document.createElement('button');
+                  delBtn.textContent='✕';
+                  delBtn.style.position='absolute';
+                  delBtn.style.top='6px';
+                  delBtn.style.right='6px';
+                  delBtn.style.background='red';
+                  delBtn.style.color='#fff';
+                  delBtn.style.border='none';
+                  delBtn.style.padding='4px 6px';
+                  delBtn.style.cursor='pointer';
+                  delBtn.onclick=async()=>{
+                    if(!confirm('Delete this design?')) return;
+                    await deleteDoc(doc(db, 'designs', m.name, 'fanDesigns', docSnap.id));
+                  };
+                  wrapper.appendChild(delBtn);
+                }
+                designContainer.appendChild(wrapper);
+              });
+            });
+          });
+        }
+      });
+    });
+  });
+}
+
+
+
+
+  
 // ----- Initialize -----
 renderPickSection();
 renderAllDesigns();
 </script>
 
-
-
-
-
-
   </body>
 </html>  
 
   
+
 
 
 
