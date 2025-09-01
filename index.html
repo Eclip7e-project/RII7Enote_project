@@ -340,10 +340,6 @@ const openModalForSimple = (imgSrc, defaultMember='shotaro') => {
 };
 
 
-// ----------------- User ID -----------------
-const userId = localStorage.getItem('userId') || crypto.randomUUID();
-localStorage.setItem('userId', userId);
-
 
   
 // ----------------- Render Pick Section (with Manage) -----------------
@@ -518,6 +514,7 @@ members.forEach(m => renderMemberWall(m.name));
 
 </body>
 </html>  
+
 
 
 
