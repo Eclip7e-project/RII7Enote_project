@@ -52,29 +52,26 @@ h1{
 }
 .note .text{
   position:absolute;
-  top:10px;
-  left:10px;
-  right:10px;
-  bottom:40px;
+  top:0;
+  left:0;
+  right:0;
+  bottom:30px;
   font-size:0.8em;
   color:black;
   white-space:pre-wrap;
   overflow:auto;
+  padding:5px;
 }
 .note .info-box{
   position:absolute;
-  bottom:5px;
-  left:50%;
-  transform:translateX(-50%);
+  bottom:0;
+  left:0;
+  width:100%;
   background:rgba(0,0,0,0.5);
-  padding:3px 6px;
-  border-radius:5px;
+  text-align:center;
+  padding:3px 0;
   font-size:0.8em;
   color:white;
-  display:flex;
-  gap:10px;
-  justify-content:center;
-  align-items:center;
 }
 .delete-btn{
   position:absolute;
@@ -150,6 +147,7 @@ function renderFavorites(){
 
   members.forEach(m=>{
     let notes = JSON.parse(localStorage.getItem(m.name)||'[]');
+    // Only keep valid notes with week > 0
     notes = notes.filter(n=>n.week && n.week>0 && !n.deleted);
 
     if(notes.length===0) return;
