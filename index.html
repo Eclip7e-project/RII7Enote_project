@@ -272,28 +272,31 @@ const designContainer = $('#designContainer');
 // ----------------- Helpers -----------------
 const getMemberColor = name => members.find(m => m.name === name)?.color || '#ccc';
 
-// ----------------- Render Pick Section -----------------
-function renderPickSection() {
+// ----------------- Render Pick Sections -----------------
+function setupPickListeners() {
   members.forEach(member => {
     const wall = document.querySelector(`#${member.name}-selection .wall`);
     if (!wall) return;
-    wall.innerHTML = '';
 
-    // Placeholders
+    // Render placeholders
+    wall.innerHTML = '';
     for (let i = 1; i <= 4; i++) {
       const imgFile = `${member.name}${i}.png`;
-      const note = document.createElement('div');
-      note.className = 'sticky-note';
-      note.style.border = `4px solid ${getMemberColor(member.name)}`;
-      note.innerHTML = `<img src="${imgFile}" alt="${member.name} placeholder ${i}">`;
-      wall.appendChild(note);
+      const placeholder = document.createElement('div');
+      placeholder.className = 'sticky-note';
+      placeholder.style.border = `4px solid ${getMemberColor(member.name)}`;
+      placeholder.innerHTML = `<img src="${imgFile}" alt="${member.name} placeholder ${i}">`;
+      wall.appendChild(placeholder);
     }
 
-    // Real fan designs
+    // Listen for fan designs
     const designsCol = collection(db, 'designs', member.name, 'fanDesigns');
     const q = query(designsCol, orderBy('timestamp', 'desc'));
+
     onSnapshot(q, snapshot => {
-      Array.from(wall.querySelectorAll('.fan-design')).forEach(n => n.remove());
+      // Remove existing fan designs to refresh cleanly
+      wall.querySelectorAll('.fan-design').forEach(el => el.remove());
+
       snapshot.docs.forEach(docSnap => {
         const data = docSnap.data();
         const note = document.createElement('div');
@@ -317,7 +320,7 @@ submitDesignBtn.addEventListener('click', async () => {
     try {
       await addDoc(collection(db, 'designs', member, 'fanDesigns'), {
         img: e.target.result,
-        member: member, // for Manage list
+        member: member,
         timestamp: Date.now()
       });
       designMsg.textContent = 'Design submitted!';
@@ -331,9 +334,10 @@ submitDesignBtn.addEventListener('click', async () => {
   reader.readAsDataURL(file);
 });
 
-// ----------------- Manage Designs (Flat List) -----------------
-function renderManageDesigns() {
+// ----------------- Render Manage Designs -----------------
+function setupManageListener() {
   designContainer.innerHTML = '';
+
   members.forEach(member => {
     const designsCol = collection(db, 'designs', member.name, 'fanDesigns');
     const q = query(designsCol, orderBy('timestamp', 'desc'));
@@ -348,16 +352,30 @@ function renderManageDesigns() {
           div.className = 'manage-item';
           div.dataset.id = docSnap.id;
           div.dataset.member = member.name;
+          div.style.position = 'relative';
+          div.style.display = 'inline-block';
+          div.style.margin = '8px';
 
           const img = document.createElement('img');
           img.src = data.img;
-          img.style.border = `2px solid ${getMemberColor(member.name)}`;
-          img.style.width = '100px';
-          img.style.height = '100px';
+          img.style.border = `3px solid ${getMemberColor(member.name)}`;
+          img.style.width = '120px';
+          img.style.height = '120px';
+          img.style.borderRadius = '8px';
           div.appendChild(img);
 
+          // Delete button in top-right corner
           const delBtn = document.createElement('button');
-          delBtn.textContent = 'Delete';
+          delBtn.textContent = '✕';
+          delBtn.style.position = 'absolute';
+          delBtn.style.top = '5px';
+          delBtn.style.right = '5px';
+          delBtn.style.background = 'rgba(255,0,0,0.8)';
+          delBtn.style.color = '#fff';
+          delBtn.style.border = 'none';
+          delBtn.style.borderRadius = '50%';
+          delBtn.style.cursor = 'pointer';
+          delBtn.style.padding = '2px 6px';
           delBtn.onclick = async () => {
             if (confirm('Delete this design?')) {
               await deleteDoc(doc(db, 'designs', member.name, 'fanDesigns', docSnap.id));
@@ -379,9 +397,10 @@ function renderManageDesigns() {
 }
 
 // ----------------- Initialize -----------------
-renderPickSection();
-renderManageDesigns();
+setupPickListeners();
+setupManageListener();
 </script>
+
 
 
 
@@ -389,6 +408,7 @@ renderManageDesigns();
 </html>  
 
   
+
 
 
 
