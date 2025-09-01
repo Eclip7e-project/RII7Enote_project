@@ -488,10 +488,15 @@ submitDesignBtn.addEventListener('click', async () => {
   const reader = new FileReader();
   reader.onload = async e => {
     try {
+      const userId = localStorage.getItem('userId') || crypto.randomUUID();
+      localStorage.setItem('userId', userId);
+
       await addDoc(collection(db, 'designs', member, 'fanDesigns'), {
         img: e.target.result,
-        timestamp: Date.now()
+        timestamp: Date.now(),
+        creator: userId   // <-- Add creator here
       });
+
       designMsg.textContent = 'Design submitted!';
       designFileInput.value = '';
       setTimeout(()=>designMsg.textContent='', 3000);
@@ -502,6 +507,7 @@ submitDesignBtn.addEventListener('click', async () => {
   };
   reader.readAsDataURL(file);
 });
+
 
 // ----------------- Submit Modal Note -----------------
 modalSubmit.addEventListener('click', async ()=>{
@@ -549,6 +555,7 @@ members.forEach(m => renderMemberWall(m.name));
 
 </body>
 </html>  
+
 
 
 
