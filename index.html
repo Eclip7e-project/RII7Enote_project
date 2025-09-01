@@ -381,24 +381,42 @@ async function renderPickSection() {
 
   
 
-// ----------------- Render Member Walls -----------------
-function renderMemberWall(memberName){
+
+
+
+// ----------------- Render Member Walls (live with Firestore) -----------------
+function renderMemberWall(memberName) {
   const wall = document.querySelector(`#${memberName}-wall`);
-  if(!wall) return;
-  wall.innerHTML = '';
+  if (!wall) return;
 
   const notesCol = collection(db, 'notes', memberName, 'memberNotes');
+
+  // Live updates
   onSnapshot(notesCol, snapshot => {
-    snapshot.docs.forEach(docSnap => {
-      const data = docSnap.data();
-      const noteDiv = document.createElement('div');
-      noteDiv.className = 'sticky-note';
-      noteDiv.style.border = `4px solid ${getMemberColor(memberName)}`;
-      noteDiv.innerHTML = `<img src="${data.img}" alt="Note"><div class="label">${data.text}</div>`;
-      wall.appendChild(noteDiv);
-    });
+    wall.innerHTML = ''; // Clear first
+
+    snapshot.docs
+      .map(doc => ({ id: doc.id, ...doc.data() }))
+      .filter(note => note.week >= 1) // 🔥 Only show notes from week 1 and up
+      .sort((a, b) => b.timestamp - a.timestamp) // Optional: newest first
+      .forEach(data => {
+        const noteDiv = document.createElement('div');
+        noteDiv.className = 'sticky-note';
+        noteDiv.style.border = `4px solid ${getMemberColor(memberName)}`;
+        noteDiv.innerHTML = `
+          <img src="${data.img}" alt="Note">
+          <div class="label" style="white-space: pre-wrap; color:${data.color};">${data.text}</div>
+        `;
+        wall.appendChild(noteDiv);
+      });
   });
 }
+
+
+
+
+
+  
 
 // ----------------- Simple Notes -----------------
 function renderSimpleNotes(){
@@ -599,5 +617,6 @@ members.forEach(m => renderMemberWall(m.name));
 
 </body>
 </html>  
+
 
 
