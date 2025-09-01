@@ -473,9 +473,12 @@ submitDesignBtn.addEventListener('click', async () => {
 });
 
 // ----------------- Submit Modal Note -----------------
-modalSubmit.addEventListener('click', async()=>{
+modalSubmit.addEventListener('click', async () => {
   const text = noteText.value.trim();
-  if(!text){ alert('Write something!'); return; }
+  if (!text) { 
+    alert('Write something!'); 
+    return; 
+  }
   const color = colorPicker.value || '#000';
   const week = getCurrentWeek();
   const member = currentMode === 'simple' ? memberSelect.value : currentMember;
@@ -484,17 +487,37 @@ modalSubmit.addEventListener('click', async()=>{
     img: currentImg, 
     text, 
     color, 
-    likes:0, 
+    likes: 0, 
     week, 
     timestamp: Date.now(),
     creator: userId
   };
 
-  try{
-    await addDoc(collection(db,'notes',member,'memberNotes'),noteData);
+  try {
+    await addDoc(collection(db, 'notes', member, 'memberNotes'), noteData);
+
+    // Close modal
     closeModal();
+
+    // Re-render member wall to include the new note
+    const wall = document.querySelector(`#${member}-selection .wall`);
+    if (!wall) return;
+
+    const notesCol = collection(db, 'notes', member, 'memberNotes');
+    onSnapshot(notesCol, snapshot => {
+      wall.innerHTML = '';
+      snapshot.docs.forEach(docSnap => {
+        const data = docSnap.data();
+        const noteDiv = document.createElement('div');
+        noteDiv.className = 'sticky-note';
+        noteDiv.style.border = `4px solid ${getMemberColor(member)}`;
+        noteDiv.innerHTML = `<img src="${data.img}" alt="Note"><div class="label">${data.text}</div>`;
+        wall.appendChild(noteDiv);
+      });
+    });
+
     alert(`Your note has been submitted to ${member.toUpperCase()}'s wall!`);
-  }catch(err){
+  } catch (err) {
     console.error(err);
     alert('Error submitting note.');
   }
@@ -508,6 +531,7 @@ renderManageDesigns();
 
 </body>
 </html>
+
 
 
 
