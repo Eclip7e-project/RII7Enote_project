@@ -364,17 +364,53 @@ function renderPickSection() {
       Array.from(wall.querySelectorAll('.fan-design')).forEach(n => n.remove());
 
       snapshot.docs.forEach(docSnap => {
-        const data = docSnap.data();
-        const note = document.createElement('div');
-        note.className = 'sticky-note fan-design';
-        note.style.border = `4px solid ${getMemberColor(member.name)}`;
-        note.innerHTML = `<img src="${data.img}" alt="Fan design">`;
-        note.onclick = () => openModalForMember(member.name, data.img);
-        wall.appendChild(note);
-      });
-    });
-  });
-}
+  const data = docSnap.data();
+  const note = document.createElement('div');
+  note.className = 'sticky-note fan-design';
+  note.style.border = `4px solid ${getMemberColor(member.name)}`;
+
+  // Wrapper for image + delete button
+  const wrapper = document.createElement('div');
+  wrapper.style.position = 'relative';
+  wrapper.style.display = 'inline-block';
+
+  const img = document.createElement('img');
+  img.src = data.img;
+  img.alt = "Fan design";
+  img.style.cursor = 'pointer';
+  img.onclick = () => openModalForMember(member.name, data.img);
+  wrapper.appendChild(img);
+
+  // Only show delete button if current user is creator
+  const userId = localStorage.getItem('userId');
+  if(userId && data.creator === userId){
+    const delBtn = document.createElement('button');
+    delBtn.textContent = 'Delete';
+    delBtn.style.position = 'absolute';
+    delBtn.style.top = '2px';
+    delBtn.style.right = '2px';
+    delBtn.style.background = 'red';
+    delBtn.style.color = '#fff';
+    delBtn.style.border = 'none';
+    delBtn.style.padding = '2px 4px';
+    delBtn.style.cursor = 'pointer';
+    delBtn.onclick = async (ev) => {
+      ev.stopPropagation();
+      if(!confirm('Delete this design?')) return;
+      try {
+        await docSnap.ref.delete();
+      } catch(err) {
+        console.error(err);
+        alert('Error deleting design.');
+      }
+    };
+    wrapper.appendChild(delBtn);
+  }
+
+  note.appendChild(wrapper);
+  wall.appendChild(note);
+});
+
 
 
 
@@ -488,13 +524,14 @@ submitDesignBtn.addEventListener('click', async () => {
   const reader = new FileReader();
   reader.onload = async e => {
     try {
+      // Ensure a persistent userId for ownership
       const userId = localStorage.getItem('userId') || crypto.randomUUID();
       localStorage.setItem('userId', userId);
 
       await addDoc(collection(db, 'designs', member, 'fanDesigns'), {
         img: e.target.result,
         timestamp: Date.now(),
-        creator: userId   // <-- Add creator here
+        creator: userId   // <-- Add creator for delete permissions
       });
 
       designMsg.textContent = 'Design submitted!';
@@ -555,6 +592,7 @@ members.forEach(m => renderMemberWall(m.name));
 
 </body>
 </html>  
+
 
 
 
