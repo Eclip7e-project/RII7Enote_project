@@ -40,9 +40,8 @@ h1{
   width:200px;
   height:200px;
   border-radius:15px;
-  position:relative;
   cursor:pointer;
-  overflow:hidden;
+  position:relative;
 }
 .note img{
   width:100%;
@@ -52,26 +51,28 @@ h1{
 }
 .note .text{
   position:absolute;
-  top:0;
-  left:0;
-  right:0;
-  bottom:30px;
-  font-size:0.8em;
+  top:10px;
+  left:10px;
+  right:10px;
   color:black;
-  white-space:pre-wrap;
-  overflow:auto;
-  padding:5px;
-}
-.note .info-box{
-  position:absolute;
-  bottom:0;
-  left:0;
-  width:100%;
-  background:rgba(0,0,0,0.5);
-  text-align:center;
-  padding:3px 0;
   font-size:0.8em;
+  overflow-wrap: break-word;
+  white-space:pre-wrap;
+}
+.info-box{
+  position:absolute;
+  bottom:5px;
+  left:50%;
+  transform:translateX(-50%);
+  background:rgba(0,0,0,0.6);
   color:white;
+  font-size:0.75em;
+  padding:2px 5px;
+  border-radius:5px;
+}
+.top-note-current{
+  border:5px solid gold;
+  box-shadow:0 0 15px gold;
 }
 .delete-btn{
   position:absolute;
@@ -81,23 +82,9 @@ h1{
   color:white;
   border:none;
   border-radius:5px;
-  padding:3px 6px;
+  padding:3px 7px;
   cursor:pointer;
-}
-.top-note{
-  border:3px solid gold;
-}
-footer{
-  padding:30px 0;
-  border-top:2px solid gold;
-  text-align:center;
-}
-footer a{
-  color:gold;
-  text-decoration:none;
-}
-footer a:hover{
-  text-decoration:underline;
+  z-index:2;
 }
 </style>
 </head>
@@ -105,7 +92,7 @@ footer a:hover{
 
 <header>
 <h1>Weekly Favorites Archive</h1>
-<p>Top-liked note per member per week. Current week highlighted in gold! Click your own note for a special message.</p>
+<p>Top liked notes for each member. Click your own note to see a special message! Current week is highlighted in gold.</p>
 </header>
 
 <div id="favorites-container"></div>
@@ -115,8 +102,22 @@ footer a:hover{
 <img src="logo.png" alt="Logo" height="80">
 </footer>
 
-<script>
-// -------------------- CONFIG --------------------
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+
+// Firebase config
+const firebaseConfig = {
+  apiKey:"AIzaSyCM69r2wUibBFIFpML07Y5RUTrxHgonlSc",
+  authDomain:"rii7e-sticky-notes-project.firebaseapp.com",
+  projectId:"rii7e-sticky-notes-project",
+  storageBucket:"rii7e-sticky-notes-project.firebasestorage.app",
+  messagingSenderId:"962319162792",
+  appId:"1:962319162792:web:8fad2b11c316766c8a119d"
+};
+initializeApp(firebaseConfig);
+const db = getFirestore();
+
 const members = [
   {name:'shotaro', color:'#8B0000'},
   {name:'eunseok', color:'#D3D3D3'},
@@ -129,94 +130,86 @@ const members = [
   {name:'brii7e', color:'#FFA500'}
 ];
 
-const startDate = new Date('2025-09-01'); // Week 1 start
-const today = new Date();
-const currentWeek = Math.floor((today - startDate)/(7*24*60*60*1000))+1;
-
-// Ensure each member has a unique userId
-members.forEach(m=>{
+const favoritesContainer = document.getElementById('favorites-container');
+const currentWeek = Math.floor((new Date()-new Date('2025-09-01'))/(7*24*60*60*1000)) + 1;
+const userIds = {}; // store generated userIds per member
+members.forEach(m => {
   if(!localStorage.getItem('userId_'+m.name)){
     localStorage.setItem('userId_'+m.name, Date.now() + Math.random());
   }
+  userIds[m.name] = localStorage.getItem('userId_'+m.name);
 });
 
-// -------------------- RENDER --------------------
-function renderFavorites(){
-  const container = document.getElementById('favorites-container');
-  container.innerHTML='';
+function renderMemberFavorites(member, notes){
+  const section = document.createElement('div');
+  section.className='member-section';
+  const title = document.createElement('h2');
+  title.textContent = member.name.toUpperCase();
+  section.appendChild(title);
 
-  members.forEach(m=>{
-    let notes = JSON.parse(localStorage.getItem(m.name)||'[]');
-    // Only keep valid notes with week > 0
-    notes = notes.filter(n=>n.week && n.week>0 && !n.deleted);
+  const wallDiv = document.createElement('div');
+  wallDiv.className='wall-container';
 
-    if(notes.length===0) return;
-
-    const section = document.createElement('div');
-    section.className='member-section';
-    const title = document.createElement('h2');
-    title.textContent = m.name.toUpperCase();
-    section.appendChild(title);
-
-    const wallDiv = document.createElement('div');
-    wallDiv.className='wall-container';
-
-    // Determine top note for current week
-    let maxLikes = -1;
-    let topNoteId = null;
-    notes.forEach(n=>{
-      if(n.week===currentWeek && (n.likes||0)>maxLikes){
-        maxLikes = n.likes||0;
-        topNoteId = n.id;
-      }
-    });
-
-    notes.forEach(n=>{
-      const div = document.createElement('div');
-      div.className='note';
-      if(n.week===currentWeek && n.id===topNoteId) div.classList.add('top-note');
-      if(n.week!==currentWeek) div.style.border = `3px solid ${m.color}`;
-      div.innerHTML=`
-        <img src="${n.img}" alt="Note">
-        <div class="text">${n.text}</div>
-        <div class="info-box">❤️ ${n.likes||0} | Week ${n.week}</div>
-      `;
-
-      // Delete button for creator
-      const userId = localStorage.getItem('userId_'+m.name);
-      if(n.creator === userId){
-        const del = document.createElement('button');
-        del.className='delete-btn';
-        del.textContent='Delete';
-        del.onclick = (e)=>{
-          e.stopPropagation();
-          if(!confirm('Delete your note?')) return;
-          n.deleted = true;
-          localStorage.setItem(m.name, JSON.stringify(notes));
-          renderFavorites();
-        };
-        div.appendChild(del);
-      }
-
-      // Click behavior
-      div.onclick = ()=>{
-        const userId = localStorage.getItem('userId_'+m.name);
-        if(n.creator === userId && n.week===currentWeek){
-          alert(`🎉 Congrats! Your note was selected as week ${n.week} favorite! 🌟`);
-        }
-      }
-
-      wallDiv.appendChild(div);
-    });
-
-    section.appendChild(wallDiv);
-    container.appendChild(section);
+  // group by week and find top liked note per week
+  const weekMap = {};
+  notes.forEach(n => {
+    if(n.deleted) return;
+    if(!weekMap[n.week] || (n.likes||0) > (weekMap[n.week].likes||0)){
+      weekMap[n.week] = n;
+    }
   });
+
+  Object.values(weekMap).sort((a,b)=>a.week-b.week).forEach(note=>{
+    const div = document.createElement('div');
+    div.className='note';
+    if(note.week===currentWeek) div.classList.add('top-note-current');
+    else div.style.border = `3px solid ${member.color}`;
+
+    div.innerHTML = `<img src="${note.img}"><div class="text">${note.text}</div>
+                     <div class="info-box">❤ ${note.likes||0} | Week ${note.week}</div>`;
+
+    // Delete button if creator
+    if(note.creator === userIds[member.name]){
+      const delBtn = document.createElement('button');
+      delBtn.textContent='Delete';
+      delBtn.className='delete-btn';
+      delBtn.onclick = (e)=>{
+        e.stopPropagation();
+        if(confirm('Delete your note?')){
+          note.ref.delete();
+        }
+      };
+      div.appendChild(delBtn);
+    }
+
+    div.onclick = ()=>{
+      if(note.creator === userIds[member.name]){
+        alert("🎉 Congrats! Your note was selected as this week's favorite! 🌟");
+      } else {
+        window.location.href = `${member.name}.html`;
+      }
+    };
+
+    wallDiv.appendChild(div);
+  });
+
+  section.appendChild(wallDiv);
+  favoritesContainer.appendChild(section);
 }
 
-// -------------------- INIT --------------------
-renderFavorites();
+// Listen to each member’s Firestore notes
+members.forEach(member=>{
+  const col = collection(db,'notes',member.name,'memberNotes');
+  onSnapshot(col, snapshot=>{
+    const notes = snapshot.docs.map(d=>{
+      return {...d.data(), id:d.id, ref:d.ref};
+    });
+    // clear previous section for member
+    const oldSection = favoritesContainer.querySelector(`.member-section h2:contains('${member.name.toUpperCase()}')`);
+    if(oldSection) oldSection.parentNode.remove();
+    renderMemberFavorites(member, notes);
+  });
+});
 </script>
-
 </body>
 </html>
