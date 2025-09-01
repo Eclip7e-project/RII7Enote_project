@@ -1,70 +1,60 @@
-<!DOCTYPE html>
+    <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>RII7E Sticky Notes Project</title>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
-
-
-
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js"></script>
-
-
-
-  
-  <style>
-    :root{
-      --gold:#d4af37;
-      --bg:#000;
-      --panel:#111;
-      --muted:#ddd;
-    }
-    html,body{margin:0;padding:0;background:var(--bg); color:#fff;font-family:'Playfair Display',serif;}
-    header{display:flex;flex-direction:column;align-items:center;background:#000;border-bottom:3px solid var(--gold);}
-    header img.banner{width:100%;height:auto;object-fit:contain;background:#000;display:block;}
-    .header-text{padding:18px 20px;text-align:center;}
-    .header-text h1{color:var(--gold);font-size:2.4rem;margin:8px 0;text-shadow:2px 2px 6px rgba(0,0,0,.6)}
-    .header-text p{max-width:820px;margin:0 auto;color:#fff;font-size:1rem;line-height:1.45;text-shadow:1px 1px 3px rgba(0,0,0,.6)}
-    nav{background:var(--panel);border-bottom:2px solid var(--gold); display:flex; justify-content:center; flex-wrap:wrap; padding:12px 10px; position:sticky; top:0; z-index:40;}
-    nav a{color:var(--gold); text-decoration:none; margin:6px 12px; font-weight:600;}
-    nav a:hover{color:#fff;text-decoration:underline;}
-    main{padding:28px;}
-    h2{color:var(--gold); text-align:center; margin:8px 0 18px;}
-    .member-section{margin-top:34px; text-align:center;}
-    .member-section h3{margin-bottom:12px;color:var(--muted);letter-spacing:1px;}
-    .wall{display:flex;flex-wrap:wrap;justify-content:center;gap:18px;}
-    .sticky-note{width:150px;min-height:150px;background:#fff;border-radius:12px;padding:8px;box-shadow:0 6px 18px rgba(0,0,0,.6);position:relative;cursor:pointer;overflow:hidden;display:flex;align-items:center;justify-content:center;}
-    .sticky-note img{width:100%;height:100%;object-fit:cover;border-radius:8px;display:block;}
-    .sticky-note .label{position:absolute;bottom:6px;left:8px;right:8px;font-size:12px;color:#111;background:rgba(255,255,255,.85);padding:4px;border-radius:6px;text-align:center}
-    #simple-notes .sticky-note{width:110px;height:110px}
-    .design-container img{width:100px;border-radius:10px;border:2px solid; margin:6px;}
-    .design-container div{display:inline-block;position:relative;margin:6px;}
-    #info-section{padding:36px;background:var(--panel);border-radius:12px;margin:40px auto 0;max-width:980px;border-top:2px solid var(--gold);}
-    #info-section h2{color:var(--gold);margin-bottom:14px;}
-    #info-section ul{padding-left:22px;color:#fff;}
-    .btn-placeholder{display:inline-block;margin-top:14px;padding:10px 16px;background:var(--gold);color:#000;border-radius:8px;text-decoration:none;font-weight:700;}
-    .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:60;align-items:center;justify-content:center;padding:24px}
-    .modal-content{background:#fff;color:#000;border-radius:12px;max-width:820px;width:100%;padding:18px;position:relative;overflow:hidden}
-    .close{position:absolute;right:14px;top:10px;font-size:26px;cursor:pointer}
-    .modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    .modal-left{position:relative;border-radius:8px;overflow:hidden}
-    .modal-left img{width:100%;height:100%;object-fit:contain;display:block;border-radius:8px}
-    .preview-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:12px;pointer-events:none;text-align:center}
-    .preview-overlay .preview-text{font-size:1.1rem; font-weight:700; text-shadow: 1px 1px 3px rgba(0,0,0,.6); word-break:break-word}
-    .modal-right label{display:block;margin-top:8px;font-weight:600}
-    .modal-right textarea{width:100%;min-height:120px;padding:8px;border-radius:8px;border:1px solid #ccc;resize:none}
-    .modal-right input[type="color"]{height:40px;width:56px;border:none;padding:0;margin-top:6px}
-    .modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:10px}
-    .btn{padding:8px 12px;border-radius:8px;border:none;cursor:pointer}
-    .btn-submit{background:var(--gold);font-weight:700}
-    .btn-cancel{background:#eee;color:#111}
-    @media (max-width:800px){
-      .modal-grid{grid-template-columns:1fr; max-height:85vh; overflow:auto}
-    }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>RII7E Sticky Notes Project</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gold:#d4af37;
+  --bg:#000;
+  --panel:#111;
+  --muted:#ddd;
+}
+html,body{margin:0;padding:0;background:var(--bg); color:#fff;font-family:'Playfair Display',serif;}
+header{display:flex;flex-direction:column;align-items:center;background:#000;border-bottom:3px solid var(--gold);}
+header img.banner{width:100%;height:auto;object-fit:contain;background:#000;display:block;}
+.header-text{padding:18px 20px;text-align:center;}
+.header-text h1{color:var(--gold);font-size:2.4rem;margin:8px 0;text-shadow:2px 2px 6px rgba(0,0,0,.6)}
+.header-text p{max-width:820px;margin:0 auto;color:#fff;font-size:1rem;line-height:1.45;text-shadow:1px 1px 3px rgba(0,0,0,.6)}
+nav{background:var(--panel);border-bottom:2px solid var(--gold); display:flex; justify-content:center; flex-wrap:wrap; padding:12px 10px; position:sticky; top:0; z-index:40;}
+nav a{color:var(--gold); text-decoration:none; margin:6px 12px; font-weight:600;}
+nav a:hover{color:#fff;text-decoration:underline;}
+main{padding:28px;}
+h2{color:var(--gold); text-align:center; margin:8px 0 18px;}
+.member-section{margin-top:34px; text-align:center;}
+.member-section h3{margin-bottom:12px;color:var(--muted);letter-spacing:1px;}
+.wall{display:flex;flex-wrap:wrap;justify-content:center;gap:18px;}
+.sticky-note{width:150px;min-height:150px;background:#fff;border-radius:12px;padding:8px;box-shadow:0 6px 18px rgba(0,0,0,.6);position:relative;cursor:pointer;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+.sticky-note img{width:100%;height:100%;object-fit:cover;border-radius:8px;display:block;}
+.sticky-note .label{position:absolute;bottom:6px;left:8px;right:8px;font-size:12px;color:#111;background:rgba(255,255,255,.85);padding:4px;border-radius:6px;text-align:center}
+#simple-notes .sticky-note{width:110px;height:110px}
+.design-container img{width:100px;border-radius:10px;border:2px solid; margin:6px;}
+.design-container div{display:inline-block;position:relative;margin:6px;}
+#info-section{padding:36px;background:var(--panel);border-radius:12px;margin:40px auto 0;max-width:980px;border-top:2px solid var(--gold);}
+#info-section h2{color:var(--gold);margin-bottom:14px;}
+#info-section ul{padding-left:22px;color:#fff;}
+.btn-placeholder{display:inline-block;margin-top:14px;padding:10px 16px;background:var(--gold);color:#000;border-radius:8px;text-decoration:none;font-weight:700;}
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:60;align-items:center;justify-content:center;padding:24px}
+.modal-content{background:#fff;color:#000;border-radius:12px;max-width:820px;width:100%;padding:18px;position:relative;overflow:hidden}
+.close{position:absolute;right:14px;top:10px;font-size:26px;cursor:pointer}
+.modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.modal-left{position:relative;border-radius:8px;overflow:hidden}
+.modal-left img{width:100%;height:100%;object-fit:contain;display:block;border-radius:8px}
+.preview-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:12px;pointer-events:none;text-align:center}
+.preview-overlay .preview-text{font-size:1.1rem; font-weight:700; text-shadow: 1px 1px 3px rgba(0,0,0,.6); word-break:break-word}
+.modal-right label{display:block;margin-top:8px;font-weight:600}
+.modal-right textarea{width:100%;min-height:120px;padding:8px;border-radius:8px;border:1px solid #ccc;resize:none}
+.modal-right input[type="color"]{height:40px;width:56px;border:none;padding:0;margin-top:6px}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:10px}
+.btn{padding:8px 12px;border-radius:8px;border:none;cursor:pointer}
+.btn-submit{background:var(--gold);font-weight:700}
+.btn-cancel{background:#eee;color:#111}
+@media (max-width:800px){
+  .modal-grid{grid-template-columns:1fr; max-height:85vh; overflow:auto}
+}
+</style>
 </head>
 <body>
 
@@ -237,20 +227,18 @@
   </div>
 </div>
 
-
-
-
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+// ----------------- Firebase SDK -----------------
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+import { getFirestore, collection, addDoc, onSnapshot, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+import { getStorage, ref, uploadString, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-storage.js";
 
-// ------------------ Firebase Config ------------------
+// ----------------- Firebase Setup -----------------
 const firebaseConfig = {
   apiKey: "AIzaSyCM69r2wUibBFIFpML07Y5RUTrxHgonlSc",
   authDomain: "rii7e-sticky-notes-project.firebaseapp.com",
   projectId: "rii7e-sticky-notes-project",
-  storageBucket: "rii7e-sticky-notes-project.appspot.com",
+  storageBucket: "rii7e-sticky-notes-project.firebasestorage.app",
   messagingSenderId: "962319162792",
   appId: "1:962319162792:web:8fad2b11c316766c8a119d"
 };
@@ -259,14 +247,7 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
-// ------------------ User ID ------------------
-let userId = localStorage.getItem("userId");
-if (!userId) {
-  userId = crypto.randomUUID();
-  localStorage.setItem("userId", userId);
-}
-
-// ------------------ Members ------------------
+// ----------------- Members -----------------
 const members = [
   {name:'shotaro', color:'#8B0000'},
   {name:'eunseok', color:'#D3D3D3'},
@@ -275,156 +256,259 @@ const members = [
   {name:'seunghan', color:'#0000FF'},
   {name:'sohee', color:'#FFFF00'},
   {name:'anton', color:'#1E3A5F'},
+  {name:'rii7e', color:'#FFA500'},
   {name:'brii7e', color:'#FFA500'}
 ];
 
-// ------------------ Modal ------------------
-const modal = document.getElementById('modal');
-const modalClose = document.getElementById('modal-close');
-const modalMember = document.getElementById('modal-member');
-const modalImg = document.getElementById('modal-img');
-const noteText = document.getElementById('note-text');
-const submitBtn = document.getElementById('submitNote');
-let currentMember = '';
+// ----------------- DOM Helpers -----------------
+const $ = s => document.querySelector(s);
+
+// ----------------- Modal Elements -----------------
+const modal = $('#modal');
+const modalClose = $('#modal-close');
+const modalCancel = $('#modal-cancel');
+const modalImg = $('#modal-img');
+const modalMemberTitle = $('#modal-member');
+const previewText = $('#preview-text');
+const noteText = $('#note-text');
+const colorPicker = $('#color-picker');
+const memberSelect = $('#member-select');
+const memberSelectLabel = $('#member-select-label');
+const modalSubmit = $('#modal-submit');
+const designFileInput = $('#design-file');
+const designMember = $('#design-member');
+const submitDesignBtn = $('#submitDesign');
+const designMsg = $('#design-msg');
+const designContainer = $('#designContainer');
+
 let currentImg = '';
+let currentMember = '';
+let currentMode = 'member';
 
-function openModal(memberName, imgSrc) {
-  modal.style.display = 'block';
-  modalMember.textContent = memberName.toUpperCase();
-  modalImg.src = imgSrc;
-  currentMember = memberName;
-  currentImg = imgSrc;
-}
+// ----------------- Helpers -----------------
+const getMemberColor = name => members.find(m => m.name === name)?.color || '#ccc';
+const getCurrentWeek = () => Math.floor((new Date() - new Date('2025-09-01')) / (7*24*60*60*1000)) + 1;
+const userId = localStorage.getItem('userId') || crypto.randomUUID();
+localStorage.setItem('userId', userId);
 
-modalClose.onclick = () => modal.style.display = 'none';
-window.onclick = e => { if (e.target === modal) modal.style.display = 'none'; };
+// ----------------- Modal -----------------
+function setupModal() {
+  modalImg.src = currentImg;
+  previewText.textContent = '';
+  previewText.style.color = colorPicker.value || '#000';
+  noteText.value = '';
 
-// ------------------ Render Wall ------------------
-async function renderSelectionWall(memberName) {
-  const wall = document.querySelector(`#${memberName}-selection .wall`);
-  if (!wall) return;
-  wall.innerHTML = '';
-
-  // Default placeholders
-  for (let i = 1; i <= 2; i++) {
-    const div = document.createElement('div');
-    div.className = 'sticky-note';
-    div.style.borderColor = members.find(m => m.name === memberName).color;
-    div.innerHTML = `<img src="PLACEHOLDER${i}.png">`;
-    div.onclick = () => openModal(memberName, `PLACEHOLDER${i}.png`);
-    wall.appendChild(div);
+  if(currentMode === 'simple'){
+    modalMemberTitle.textContent = 'Plain Note';
+    memberSelect.style.display = 'block';
+    memberSelectLabel.style.display = 'block';
+    memberSelect.value = currentMember || 'shotaro';
+  } else {
+    modalMemberTitle.textContent = currentMember.toUpperCase();
+    memberSelect.style.display = 'none';
+    memberSelectLabel.style.display = 'none';
   }
 
-  // Firestore designs
-  const q = query(collection(db, "designs"), where("member", "==", memberName));
-  const snapshot = await getDocs(q);
-  snapshot.forEach(docSnap => {
-    const data = docSnap.data();
-    const div = document.createElement('div');
-    div.className = 'sticky-note';
-    div.style.borderColor = members.find(m => m.name === memberName).color;
-    div.innerHTML = `<img src="${data.url}">`;
-    div.onclick = () => openModal(memberName, data.url);
-    wall.appendChild(div);
-  });
+  modal.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
 }
 
-// ------------------ Submit Design ------------------
-const submitDesignBtn = document.getElementById('submitDesign');
-const designFileInput = document.getElementById('design-file');
-const designMember = document.getElementById('design-member');
-const designMsg = document.getElementById('design-msg');
-
-submitDesignBtn.onclick = async () => {
-  const file = designFileInput.files[0];
-  const member = designMember.value;
-  if (!file) { designMsg.textContent = 'Select a file!'; return; }
-
-  try {
-    // Upload to storage
-    const storageRef = ref(storage, `designs/${Date.now()}-${file.name}`);
-    await uploadBytes(storageRef, file);
-    const url = await getDownloadURL(storageRef);
-
-    // Save Firestore entry
-    await addDoc(collection(db, "designs"), {
-      url,
-      member,
-      creator: userId,
-      createdAt: Date.now()
-    });
-
-    designMsg.textContent = 'Design submitted!';
-    designFileInput.value = '';
-    setTimeout(() => designMsg.textContent = '', 2000);
-  } catch (e) {
-    console.error(e);
-    designMsg.textContent = 'Error submitting!';
-  }
+const closeModal = () => {
+  modal.style.display = 'none';
+  document.body.style.overflow = '';
 };
 
-// ------------------ Manage Designs ------------------
-async function renderDesigns() {
-  const container = document.getElementById('designContainer');
-  container.innerHTML = '';
+noteText.addEventListener('input', e => previewText.textContent = e.target.value);
+colorPicker.addEventListener('input', e => previewText.style.color = e.target.value);
+modalClose.onclick = closeModal;
+modalCancel.onclick = closeModal;
+window.addEventListener('keydown', e => { if(e.key === 'Escape') closeModal(); });
 
-  const snapshot = await getDocs(collection(db, "designs"));
-  snapshot.forEach(docSnap => {
-    const data = docSnap.data();
-    const div = document.createElement('div');
-    div.style.position = 'relative';
-    div.style.display = 'inline-block';
-    div.style.margin = '6px';
+const openModalForMember = (memberName, imgSrc) => {
+  currentMember = memberName;
+  currentImg = imgSrc;
+  currentMode = 'member';
+  setupModal();
+};
 
-    const img = document.createElement('img');
-    img.src = data.url;
-    img.style.border = `2px solid ${members.find(m=>m.name===data.member)?.color || '#000'}`;
-    img.style.width = '100px';
-    img.style.borderRadius = '10px';
-    div.appendChild(img);
+const openModalForSimple = (imgSrc, defaultMember='shotaro') => {
+  currentImg = imgSrc;
+  currentMode = 'simple';
+  currentMember = defaultMember;
+  setupModal();
+};
 
-    // Show delete button only for creator
-    if (data.creator === userId) {
-      const delBtn = document.createElement('button');
-      delBtn.textContent = '✕';
-      delBtn.style.position = 'absolute';
-      delBtn.style.top = '4px';
-      delBtn.style.right = '4px';
-      delBtn.style.background = 'red';
-      delBtn.style.color = '#fff';
-      delBtn.style.border = 'none';
-      delBtn.style.cursor = 'pointer';
-      delBtn.onclick = async () => {
-        if (!confirm('Delete this design?')) return;
-        await deleteDoc(doc(db, "designs", docSnap.id));
-        renderDesigns();
-        renderSelectionWall(data.member);
-      };
-      div.appendChild(delBtn);
+// ----------------- Render Pick Section -----------------
+function renderPickSection(){
+  members.forEach(member => {
+    const wall = document.querySelector(`#${member.name}-selection .wall`);
+    if(!wall) return;
+    wall.innerHTML = '';
+
+    // Placeholders
+    for(let i=1;i<=4;i++){
+      const imgFile = `${member.name}${i}.png`;
+      const note = document.createElement('div');
+      note.className = 'sticky-note';
+      note.style.border = `4px solid ${getMemberColor(member.name)}`;
+      note.innerHTML = `<img src="${imgFile}" alt="${member.name} placeholder ${i}">`;
+      note.onclick = () => openModalForMember(member.name, imgFile);
+      wall.appendChild(note);
     }
 
-    container.appendChild(div);
+    // Fan designs from Firestore
+    const designsCol = collection(db, 'designs', member.name, 'fanDesigns');
+    onSnapshot(designsCol, snapshot => {
+      snapshot.docChanges().forEach(change => {
+        if(change.type === 'added'){
+          const data = change.doc.data();
+          const note = document.createElement('div');
+          note.className = 'sticky-note';
+          note.style.border = `4px solid ${getMemberColor(member.name)}`;
+          note.innerHTML = `<img src="${data.img}" alt="Uploaded design">`;
+          note.onclick = () => openModalForMember(member.name, data.img);
+          wall.appendChild(note);
+        }
+      });
+    });
   });
 }
 
-// ------------------ Real-Time Sync ------------------
-members.forEach(m => {
-  const q = query(collection(db, "designs"), where("member", "==", m.name));
-  onSnapshot(q, () => renderSelectionWall(m.name));
+// ----------------- Render Simple Notes -----------------
+function renderSimpleNotes(){
+  const wall = $('#simple-note-wall');
+  if(!wall) return;
+  wall.innerHTML = '';
+
+  ['red','orange','yellow','green','blue','indigo','violet'].forEach(color => {
+    const imgFile = `${color}note.png`;
+    const note = document.createElement('div');
+    note.className = 'sticky-note';
+    note.style.width = '110px';
+    note.style.height = '110px';
+    note.style.border = '3px solid #ccc';
+    note.innerHTML = `<img src="${imgFile}" alt="Simple note">`;
+    note.onclick = () => openModalForSimple(imgFile);
+    wall.appendChild(note);
+  });
+}
+
+// ----------------- Render Manage Designs -----------------
+function renderManageDesigns(){
+  designContainer.innerHTML = '';
+  members.forEach(member => {
+    const col = collection(db, 'designs', member.name, 'fanDesigns');
+    onSnapshot(col, snapshot => {
+      snapshot.docChanges().forEach(change => {
+        if(change.type === 'added'){
+          const data = change.doc.data();
+          if(data.creator === userId){
+            const wrapper = document.createElement('div');
+            wrapper.style.display='inline-block';
+            wrapper.style.position='relative';
+            wrapper.style.margin='6px';
+
+            const img = document.createElement('img');
+            img.src = data.img;
+            img.style.width='100px';
+            img.style.border=`2px solid ${getMemberColor(member.name)}`;
+            img.style.borderRadius='10px';
+            wrapper.appendChild(img);
+
+            const delBtn = document.createElement('button');
+            delBtn.textContent='✕';
+            delBtn.style.position='absolute';
+            delBtn.style.top='6px';
+            delBtn.style.right='6px';
+            delBtn.style.background='red';
+            delBtn.style.color='#fff';
+            delBtn.style.border='none';
+            delBtn.style.padding='4px 6px';
+            delBtn.style.cursor='pointer';
+            delBtn.onclick = async()=>{
+              if(!confirm('Delete this design?')) return;
+              await deleteDoc(doc(db,'designs',member.name,'fanDesigns',change.doc.id));
+              wrapper.remove();
+            };
+            wrapper.appendChild(delBtn);
+
+            designContainer.appendChild(wrapper);
+          }
+        }
+      });
+    });
+  });
+}
+
+// ----------------- Submit Design -----------------
+submitDesignBtn.addEventListener('click', async () => {
+  const file = designFileInput.files[0];
+  const member = designMember.value;
+  if(!file){ designMsg.textContent='Select a file!'; return; }
+
+  const reader = new FileReader();
+  reader.onload = async e => {
+    const imgData = e.target.result;
+    try{
+      const fileRef = ref(storage, `designs/${member}/${Date.now()}.png`);
+      await uploadString(fileRef,imgData,'data_url');
+      const url = await getDownloadURL(fileRef);
+
+      await addDoc(collection(db,'designs',member,'fanDesigns'),{
+        img:url,
+        timestamp:Date.now(),
+        creator:userId
+      });
+
+      designMsg.textContent='Design submitted!';
+      designFileInput.value='';
+
+    }catch(err){
+      console.error(err);
+      designMsg.textContent='Error submitting design.';
+    }
+    setTimeout(()=>designMsg.textContent='',3000);
+  };
+  reader.readAsDataURL(file);
 });
 
-onSnapshot(collection(db, "designs"), () => renderDesigns());
+// ----------------- Submit Modal Note -----------------
+modalSubmit.addEventListener('click', async()=>{
+  const text = noteText.value.trim();
+  if(!text){ alert('Write something!'); return; }
+  const color = colorPicker.value || '#000';
+  const week = getCurrentWeek();
+  const member = currentMode === 'simple' ? memberSelect.value : currentMember;
 
-// ------------------ INIT ------------------
-members.forEach(m => renderSelectionWall(m.name));
-renderDesigns();
+  const noteData = { 
+    img: currentImg, 
+    text, 
+    color, 
+    likes:0, 
+    week, 
+    timestamp: Date.now(),
+    creator: userId
+  };
+
+  try{
+    await addDoc(collection(db,'notes',member,'memberNotes'),noteData);
+    closeModal();
+    alert(`Your note has been submitted to ${member.toUpperCase()}'s wall!`);
+  }catch(err){
+    console.error(err);
+    alert('Error submitting note.');
+  }
+});
+
+// ----------------- Render -----------------
+renderPickSection();
+renderSimpleNotes();
+renderManageDesigns();
 </script>
 
-
-
-
 </body>
-</html>  
+</html>
+
 
 
 
