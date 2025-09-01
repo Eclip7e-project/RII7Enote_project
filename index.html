@@ -233,7 +233,7 @@
 <script type="module">
 // ----------------- Firebase SDK -----------------
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-import { getFirestore, collection, addDoc, onSnapshot, orderBy, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, orderBy } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
 // ----------------- Firebase Setup -----------------
 const firebaseConfig = {
@@ -244,89 +244,70 @@ const firebaseConfig = {
   messagingSenderId: "962319162792",
   appId: "1:962319162792:web:8fad2b11c316766c8a119d"
 };
-
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 // ----------------- Members -----------------
 const members = [
-  {name:'shotaro', color:'#8B0000'},
-  {name:'eunseok', color:'#D3D3D3'},
-  {name:'sungchan', color:'#008000'},
-  {name:'wonbin', color:'#FF0000'},
-  {name:'seunghan', color:'#0000FF'},
-  {name:'sohee', color:'#FFFF00'},
-  {name:'anton', color:'#1E3A5F'},
-  {name:'rii7e', color:'#FFA500'},
-  {name:'brii7e', color:'#FFA500'}
+  {name:'shotaro', color:'#8B0000', container:'shotaro-selection'},
+  {name:'eunseok', color:'#D3D3D3', container:'eunseok-selection'},
+  {name:'sungchan', color:'#008000', container:'sungchan-selection'},
+  {name:'wonbin', color:'#FF0000', container:'wonbin-selection'},
+  {name:'seunghan', color:'#0000FF', container:'seunghan-selection'},
+  {name:'sohee', color:'#FFFF00', container:'sohee-selection'},
+  {name:'anton', color:'#1E3A5F', container:'anton-selection'},
+  {name:'brii7e', color:'#FFA500', container:'brii7e-selection'}
 ];
 
-// ----------------- DOM Helpers -----------------
-const $ = s => document.querySelector(s);
-const submitDesignBtn = $('#submitDesign');
-const designFileInput = $('#design-file');
-const designMember = $('#design-member');
-const designMsg = $('#design-msg');
-const designContainer = $('#designContainer');
+// ----------------- DOM Elements -----------------
+const modal = document.getElementById('modal');
+const modalClose = document.getElementById('modal-close');
+const modalMember = document.getElementById('modal-member');
+const modalImg = document.getElementById('modal-img');
+const noteText = document.getElementById('note-text');
+const submitBtn = document.getElementById('submitNote');
+let currentMember = '';
+let currentImg = '';
 
-// ----------------- Fan Design Submission -----------------
-submitDesignBtn.onclick = () => {
-  const file = designFileInput.files[0];
-  const member = designMember.value;
-  if (!file) { designMsg.textContent = 'Select a file!'; return; }
+// ----------------- Open Modal -----------------
+function openModal(memberName,imgSrc){
+  modal.style.display='block';
+  modalMember.textContent=memberName.toUpperCase();
+  modalImg.src=imgSrc;
+  currentMember = memberName;
+  currentImg = imgSrc;
+}
 
-  const reader = new FileReader();
-  reader.onload = async e => {
-    try {
-      await addDoc(collection(db,'designs',member,'fanDesigns'),{
-        img: e.target.result,
-        timestamp: Date.now(),
-        member
-      });
-      designMsg.textContent = 'Design submitted!';
-      designFileInput.value = '';
-      setTimeout(()=>designMsg.textContent='',3000);
-    } catch(err){
-      console.error(err);
-      designMsg.textContent = 'Error submitting design.';
-    }
-  };
-  reader.readAsDataURL(file);
-};
+// ----------------- Render Selection Wall -----------------
+function renderSelectionWall(memberName, designs=[]){
+  const containerDiv = document.querySelector(`#${memberName}-selection .wall`);
+  containerDiv.innerHTML='';
 
-// ----------------- Render Pick Section -----------------
-function renderPickSection(allDesigns){
-  members.forEach(member => {
-    const wall = document.querySelector(`#${member.name}-selection .wall`);
-    if (!wall) return;
-    wall.innerHTML = '';
+  // Placeholders
+  for(let i=1;i<=2;i++){
+    const div = document.createElement('div');
+    div.className='sticky-note';
+    div.style.borderColor = members.find(m=>m.name===memberName).color;
+    div.innerHTML = `<img src="PLACEHOLDER${i}.png">`;
+    div.onclick = ()=>openModal(memberName,`PLACEHOLDER${i}.png`);
+    containerDiv.appendChild(div);
+  }
 
-    // Placeholders
-    for(let i=1;i<=4;i++){
-      const imgFile = `${member.name}${i}.png`;
-      const note = document.createElement('div');
-      note.className = 'sticky-note';
-      note.style.border = `4px solid ${member.color}`;
-      note.innerHTML = `<img src="${imgFile}">`;
-      note.onclick = () => openModalForMember(member.name,imgFile);
-      wall.appendChild(note);
-    }
-
-    // Fan designs
-    allDesigns.filter(d=>d.member===member.name).forEach(d=>{
-      const note = document.createElement('div');
-      note.className = 'sticky-note fan-design';
-      note.style.border = `4px solid ${member.color}`;
-      note.innerHTML = `<img src="${d.img}">`;
-      note.onclick = () => openModalForMember(member.name,d.img);
-      wall.appendChild(note);
-    });
+  // Fan designs from Firestore
+  designs.forEach(d=>{
+    const div = document.createElement('div');
+    div.className='sticky-note';
+    div.style.borderColor = members.find(m=>m.name===memberName).color;
+    div.innerHTML = `<img src="${d.img}">`;
+    div.onclick = ()=>openModal(memberName,d.img);
+    containerDiv.appendChild(div);
   });
 }
 
 // ----------------- Render Manage Designs -----------------
 function renderManageDesigns(allDesigns){
-  designContainer.innerHTML='';
+  const container = document.getElementById('designContainer');
+  container.innerHTML='';
   allDesigns.forEach(d=>{
     const member = members.find(m=>m.name===d.member);
     const wrapper = document.createElement('div');
@@ -357,29 +338,77 @@ function renderManageDesigns(allDesigns){
       await deleteDoc(doc(db,'designs',d.member,'fanDesigns',d.id));
     };
     wrapper.appendChild(delBtn);
-    designContainer.appendChild(wrapper);
+    container.appendChild(wrapper);
   });
 }
+
+// ----------------- Fan Design Submission -----------------
+const submitDesignBtn = document.getElementById('submitDesign');
+const designFileInput = document.getElementById('design-file');
+const designMember = document.getElementById('design-member');
+const designMsg = document.getElementById('design-msg');
+
+submitDesignBtn.onclick = () => {
+  const file = designFileInput.files[0];
+  const member = designMember.value;
+  if(!file) { designMsg.textContent='Select a file!'; return; }
+
+  const reader = new FileReader();
+  reader.onload = async e => {
+    try{
+      await addDoc(collection(db,'designs',member,'fanDesigns'),{
+        img:e.target.result,
+        timestamp:Date.now(),
+        member
+      });
+      designMsg.textContent='Design submitted!';
+      designFileInput.value='';
+      setTimeout(()=>designMsg.textContent='',2000);
+    }catch(err){
+      console.error(err);
+      designMsg.textContent='Error submitting design.';
+    }
+  };
+  reader.readAsDataURL(file);
+};
 
 // ----------------- Listen for all Fan Designs -----------------
 const allDesignsFlat = [];
 members.forEach(member=>{
   const q = collection(db,'designs',member.name,'fanDesigns');
   onSnapshot(q,snap=>{
-    const designs = snap.docs.map(docSnap=>({id:docSnap.id, member: member.name, img: docSnap.data().img}));
     // Remove old designs for this member
     for(let i=allDesignsFlat.length-1;i>=0;i--){
       if(allDesignsFlat[i].member===member.name) allDesignsFlat.splice(i,1);
     }
+    const designs = snap.docs.map(docSnap=>({id:docSnap.id, member:member.name, img:docSnap.data().img}));
     allDesignsFlat.push(...designs);
-    renderPickSection(allDesignsFlat);
+    renderSelectionWall(member.name, designs);
     renderManageDesigns(allDesignsFlat);
   });
 });
 
-// ----------------- Initialize other stuff -----------------
-renderSimpleNotes();
-members.forEach(m=>renderMemberWall(m.name));
+// ----------------- Modal Note Submission -----------------
+submitBtn.onclick = () => {
+  const text = noteText.value.trim();
+  if(!text){ alert('Write something!'); return; }
+  const week = Math.floor((new Date() - new Date('2025-09-01'))/(7*24*60*60*1000))+1;
+  const notesCol = collection(db,'notes',currentMember,'memberNotes');
+  addDoc(notesCol,{
+    img: currentImg,
+    text,
+    likes:0,
+    week,
+    timestamp:Date.now()
+  }).then(()=>{
+    noteText.value='';
+    modal.style.display='none';
+    alert(`Your note has been submitted to ${currentMember.toUpperCase()}'s wall!`);
+  }).catch(err=>{
+    console.error(err);
+    alert('Error submitting note.');
+  });
+};
 </script>
 
 
@@ -389,6 +418,7 @@ members.forEach(m=>renderMemberWall(m.name));
 </html>  
 
   
+
 
 
 
