@@ -275,7 +275,7 @@ const designFileInput = $('#design-file');
 const designMember = $('#design-member');
 const submitDesignBtn = $('#submitDesign');
 const designMsg = $('#design-msg');
-const designContainer = $('#designContainer');
+const designContainer = $('#designContainer'); // For Manage Designs
 
 let currentImg = '';
 let currentMember = '';
@@ -343,7 +343,7 @@ function renderPickSection(){
     if(!wall) return;
     wall.innerHTML = '';
 
-    // 1️⃣ Placeholders
+    // Placeholders
     for(let i=1;i<=4;i++){
       const imgFile = `${member.name}${i}.png`;
       const note = document.createElement('div');
@@ -354,42 +354,17 @@ function renderPickSection(){
       wall.appendChild(note);
     }
 
-    // 2️⃣ Firestore fan designs (realtime)
+    // Fan designs from Firestore (read-only in pick)
     const designsCol = collection(db, 'designs', member.name, 'fanDesigns');
     onSnapshot(designsCol, snapshot => {
-      snapshot.docChanges().forEach(change => {
-        if(change.type === 'added'){
-          const data = change.doc.data();
-          const id = change.doc.id;
-
-          const note = document.createElement('div');
-          note.className = 'sticky-note';
-          note.style.border = `4px solid ${getMemberColor(member.name)}`;
-          note.innerHTML = `<img src="${data.img}" alt="Uploaded design">`;
-
-          note.onclick = () => openModalForMember(member.name, data.img);
-
-          if(data.creator === userId){
-            const delBtn = document.createElement('button');
-            delBtn.textContent = 'Delete';
-            delBtn.style.position='absolute';
-            delBtn.style.top='6px';
-            delBtn.style.right='6px';
-            delBtn.style.background='red';
-            delBtn.style.color='#fff';
-            delBtn.style.border='none';
-            delBtn.style.padding='4px 6px';
-            delBtn.style.cursor='pointer';
-            delBtn.onclick = async (e) => {
-              e.stopPropagation();
-              if(!confirm('Delete this design?')) return;
-              await deleteDoc(doc(db, 'designs', member.name, 'fanDesigns', id));
-            };
-            note.appendChild(delBtn);
-          }
-
-          wall.appendChild(note);
-        }
+      snapshot.docs.forEach(docSnap => {
+        const data = docSnap.data();
+        const note = document.createElement('div');
+        note.className = 'sticky-note';
+        note.style.border = `4px solid ${getMemberColor(member.name)}`;
+        note.innerHTML = `<img src="${data.img}" alt="Uploaded design">`;
+        note.onclick = () => openModalForMember(member.name, data.img);
+        wall.appendChild(note);
       });
     });
   });
@@ -441,13 +416,72 @@ submitDesignBtn.addEventListener('click', async ()=>{
   const reader = new FileReader();
   reader.onload = async e=>{
     const imgData = e.target.result;
-    await addDoc(collection(db,'designs',member,'fanDesigns'), { img: imgData, creator: userId });
-    designMsg.textContent='Design submitted!';
-    designFileInput.value='';
-    setTimeout(()=>designMsg.textContent='',3000);
+    try{
+      await addDoc(collection(db,'designs',member,'fanDesigns'), { img: imgData, creator: userId });
+      designMsg.textContent='Design submitted!';
+      designFileInput.value='';
+      setTimeout(()=>designMsg.textContent='',3000);
+      renderManageDesigns(); // Update manage section
+    }catch(err){
+      console.error(err);
+      designMsg.textContent='Error submitting design.';
+      setTimeout(()=>designMsg.textContent='',3000);
+    }
   };
   reader.readAsDataURL(file);
 });
+// ----------------- Manage Designs (Realtime) -----------------
+function setupManageDesignsRealtime() {
+  designContainer.innerHTML = '';
+  
+  members.forEach(member => {
+    const designsCol = collection(db,'designs',member.name,'fanDesigns');
+    onSnapshot(designsCol, snapshot => {
+      // Clear only the designs of this member first
+      const memberDivs = Array.from(designContainer.children).filter(div => div.dataset.member === member.name);
+      memberDivs.forEach(div => div.remove());
+
+      snapshot.docs.forEach(docSnap => {
+        const data = docSnap.data();
+        if(data.creator !== userId) return; // Only show your own designs
+
+        const wrapper = document.createElement('div');
+        wrapper.dataset.member = member.name;
+        wrapper.style.display='inline-block';
+        wrapper.style.position='relative';
+        wrapper.style.margin='6px';
+
+        const img = document.createElement('img');
+        img.src = data.img;
+        img.style.width='100px';
+        img.style.border = `2px solid ${member.color}`;
+        img.style.borderRadius='10px';
+        wrapper.appendChild(img);
+
+        const delBtn = document.createElement('button');
+        delBtn.textContent='Delete';
+        delBtn.style.position='absolute';
+        delBtn.style.top='6px';
+        delBtn.style.right='6px';
+        delBtn.style.background='red';
+        delBtn.style.color='#fff';
+        delBtn.style.border='none';
+        delBtn.style.padding='4px 6px';
+        delBtn.style.cursor='pointer';
+        delBtn.onclick = async () => {
+          if(!confirm('Delete this design?')) return;
+          await deleteDoc(doc(db,'designs',member.name,'fanDesigns',docSnap.id));
+        };
+        wrapper.appendChild(delBtn);
+
+        designContainer.appendChild(wrapper);
+      });
+    });
+  });
+}
+
+// Call this instead of the old renderManageDesigns
+setupManageDesignsRealtime();
 
 // ----------------- Submit Modal Note -----------------
 modalSubmit.addEventListener('click', async ()=>{
@@ -483,13 +517,14 @@ modalSubmit.addEventListener('click', async ()=>{
 renderPickSection();
 renderSimpleNotes();
 members.forEach(m => renderMemberWall(m.name));
+renderManageDesigns();
 </script>
-
 
 
 
 </body>
 </html> 
+
 
 
 
