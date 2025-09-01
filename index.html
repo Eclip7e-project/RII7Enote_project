@@ -227,7 +227,10 @@ h2{color:var(--gold); text-align:center; margin:8px 0 18px;}
   </div>
 </div>
 
-<script type="module">
+
+
+
+    <script type="module">
 // ----------------- Firebase SDK -----------------
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
 import { getFirestore, collection, addDoc, onSnapshot, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
@@ -242,7 +245,6 @@ const firebaseConfig = {
   messagingSenderId: "962319162792",
   appId: "1:962319162792:web:8fad2b11c316766c8a119d"
 };
-
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const storage = getStorage(app);
@@ -284,12 +286,12 @@ const designContainer = $('#designContainer');
 let currentImg = '';
 let currentMember = '';
 let currentMode = 'member';
+const userId = localStorage.getItem('userId') || crypto.randomUUID();
+localStorage.setItem('userId', userId);
 
 // ----------------- Helpers -----------------
 const getMemberColor = name => members.find(m => m.name === name)?.color || '#ccc';
 const getCurrentWeek = () => Math.floor((new Date() - new Date('2025-09-01')) / (7*24*60*60*1000)) + 1;
-const userId = localStorage.getItem('userId') || crypto.randomUUID();
-localStorage.setItem('userId', userId);
 
 // ----------------- Modal -----------------
 function setupModal() {
@@ -359,16 +361,14 @@ function renderPickSection(){
     // Fan designs from Firestore
     const designsCol = collection(db, 'designs', member.name, 'fanDesigns');
     onSnapshot(designsCol, snapshot => {
-      snapshot.docChanges().forEach(change => {
-        if(change.type === 'added'){
-          const data = change.doc.data();
-          const note = document.createElement('div');
-          note.className = 'sticky-note';
-          note.style.border = `4px solid ${getMemberColor(member.name)}`;
-          note.innerHTML = `<img src="${data.img}" alt="Uploaded design">`;
-          note.onclick = () => openModalForMember(member.name, data.img);
-          wall.appendChild(note);
-        }
+      snapshot.docs.forEach(docSnap => {
+        const data = docSnap.data();
+        const note = document.createElement('div');
+        note.className = 'sticky-note';
+        note.style.border = `4px solid ${getMemberColor(member.name)}`;
+        note.innerHTML = `<img src="${data.img}" alt="Uploaded design">`;
+        note.onclick = () => openModalForMember(member.name, data.img);
+        wall.appendChild(note);
       });
     });
   });
@@ -379,7 +379,6 @@ function renderSimpleNotes(){
   const wall = $('#simple-note-wall');
   if(!wall) return;
   wall.innerHTML = '';
-
   ['red','orange','yellow','green','blue','indigo','violet'].forEach(color => {
     const imgFile = `${color}note.png`;
     const note = document.createElement('div');
@@ -399,41 +398,38 @@ function renderManageDesigns(){
   members.forEach(member => {
     const col = collection(db, 'designs', member.name, 'fanDesigns');
     onSnapshot(col, snapshot => {
-      snapshot.docChanges().forEach(change => {
-        if(change.type === 'added'){
-          const data = change.doc.data();
-          if(data.creator === userId){
-            const wrapper = document.createElement('div');
-            wrapper.style.display='inline-block';
-            wrapper.style.position='relative';
-            wrapper.style.margin='6px';
+      snapshot.docs.forEach(docSnap => {
+        const data = docSnap.data();
+        if(data.creator === userId){
+          const wrapper = document.createElement('div');
+          wrapper.style.display='inline-block';
+          wrapper.style.position='relative';
+          wrapper.style.margin='6px';
 
-            const img = document.createElement('img');
-            img.src = data.img;
-            img.style.width='100px';
-            img.style.border=`2px solid ${getMemberColor(member.name)}`;
-            img.style.borderRadius='10px';
-            wrapper.appendChild(img);
+          const img = document.createElement('img');
+          img.src = data.img;
+          img.style.width='100px';
+          img.style.border=`2px solid ${getMemberColor(member.name)}`;
+          img.style.borderRadius='10px';
+          wrapper.appendChild(img);
 
-            const delBtn = document.createElement('button');
-            delBtn.textContent='✕';
-            delBtn.style.position='absolute';
-            delBtn.style.top='6px';
-            delBtn.style.right='6px';
-            delBtn.style.background='red';
-            delBtn.style.color='#fff';
-            delBtn.style.border='none';
-            delBtn.style.padding='4px 6px';
-            delBtn.style.cursor='pointer';
-            delBtn.onclick = async()=>{
-              if(!confirm('Delete this design?')) return;
-              await deleteDoc(doc(db,'designs',member.name,'fanDesigns',change.doc.id));
-              wrapper.remove();
-            };
-            wrapper.appendChild(delBtn);
-
-            designContainer.appendChild(wrapper);
-          }
+          const delBtn = document.createElement('button');
+          delBtn.textContent='✕';
+          delBtn.style.position='absolute';
+          delBtn.style.top='6px';
+          delBtn.style.right='6px';
+          delBtn.style.background='red';
+          delBtn.style.color='#fff';
+          delBtn.style.border='none';
+          delBtn.style.padding='4px 6px';
+          delBtn.style.cursor='pointer';
+          delBtn.onclick = async()=>{
+            if(!confirm('Delete this design?')) return;
+            await deleteDoc(doc(db,'designs',member.name,'fanDesigns',docSnap.id));
+            wrapper.remove();
+          };
+          wrapper.appendChild(delBtn);
+          designContainer.appendChild(wrapper);
         }
       });
     });
@@ -444,26 +440,28 @@ function renderManageDesigns(){
 submitDesignBtn.addEventListener('click', async () => {
   const file = designFileInput.files[0];
   const member = designMember.value;
-  if(!file){ designMsg.textContent='Select a file!'; return; }
+  if (!file){ designMsg.textContent='Select a file!'; return; }
 
   const reader = new FileReader();
   reader.onload = async e => {
     const imgData = e.target.result;
-    try{
-      const fileRef = ref(storage, `designs/${member}/${Date.now()}.png`);
-      await uploadString(fileRef,imgData,'data_url');
+    try {
+      const timestamp = Date.now();
+      const fileRef = ref(storage, `designs/${member}/${timestamp}.png`);
+      await uploadString(fileRef, imgData, 'data_url');
       const url = await getDownloadURL(fileRef);
 
       await addDoc(collection(db,'designs',member,'fanDesigns'),{
-        img:url,
-        timestamp:Date.now(),
-        creator:userId
+        img: url,
+        timestamp,
+        creator: userId
       });
 
       designMsg.textContent='Design submitted!';
       designFileInput.value='';
-
-    }catch(err){
+      renderPickSection();
+      renderManageDesigns();
+    } catch(err) {
       console.error(err);
       designMsg.textContent='Error submitting design.';
     }
@@ -475,10 +473,7 @@ submitDesignBtn.addEventListener('click', async () => {
 // ----------------- Submit Modal Note -----------------
 modalSubmit.addEventListener('click', async () => {
   const text = noteText.value.trim();
-  if (!text) { 
-    alert('Write something!'); 
-    return; 
-  }
+  if (!text) { alert('Write something!'); return; }
   const color = colorPicker.value || '#000';
   const week = getCurrentWeek();
   const member = currentMode === 'simple' ? memberSelect.value : currentMember;
@@ -494,22 +489,19 @@ modalSubmit.addEventListener('click', async () => {
   };
 
   try {
-    await addDoc(collection(db, 'notes', member, 'memberNotes'), noteData);
-
-    // Close modal
+    await addDoc(collection(db,'notes',member,'memberNotes'),noteData);
     closeModal();
 
-    // Re-render member wall to include the new note
+    // Re-render wall
     const wall = document.querySelector(`#${member}-selection .wall`);
-    if (!wall) return;
-
-    const notesCol = collection(db, 'notes', member, 'memberNotes');
+    if(!wall) return;
+    const notesCol = collection(db,'notes',member,'memberNotes');
     onSnapshot(notesCol, snapshot => {
       wall.innerHTML = '';
       snapshot.docs.forEach(docSnap => {
         const data = docSnap.data();
         const noteDiv = document.createElement('div');
-        noteDiv.className = 'sticky-note';
+        noteDiv.className='sticky-note';
         noteDiv.style.border = `4px solid ${getMemberColor(member)}`;
         noteDiv.innerHTML = `<img src="${data.img}" alt="Note"><div class="label">${data.text}</div>`;
         wall.appendChild(noteDiv);
@@ -517,20 +509,22 @@ modalSubmit.addEventListener('click', async () => {
     });
 
     alert(`Your note has been submitted to ${member.toUpperCase()}'s wall!`);
-  } catch (err) {
+  } catch(err){
     console.error(err);
     alert('Error submitting note.');
   }
 });
 
-// ----------------- Render -----------------
+// ----------------- Initialize -----------------
 renderPickSection();
 renderSimpleNotes();
 renderManageDesigns();
 </script>
 
+
 </body>
 </html>
+
 
 
 
