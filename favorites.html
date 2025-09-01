@@ -17,97 +17,26 @@ header{
   padding:30px;
   text-align:center;
 }
-h1{
-  color:gold;
-}
-.member-section{
-  margin:40px 0;
-}
-.member-section h2{
-  text-align:center;
-  color:gold;
-  margin-bottom:20px;
-}
-.wall-container{
-  display:flex;
-  flex-wrap:nowrap;
-  overflow-x:auto;
-  gap:20px;
-  padding:20px;
-}
-.note{
-  flex:0 0 auto;
-  width:250px;
-  min-height:200px;
-  border-radius:15px;
-  position:relative;
-  cursor:pointer;
-}
-.note img{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  border-radius:15px;
-}
-.note .text{
-  position:absolute;
-  top:10px;
-  left:10px;
-  right:10px;
-  bottom:30px;
-  color:black;
-  white-space:pre-wrap;
-  overflow-wrap:break-word;
-  font-size:0.9em;
-}
-.info-box{
-  position:absolute;
-  bottom:5px;
-  left:10px;
-  right:10px;
-  background:rgba(0,0,0,0.6);
-  color:white;
-  font-size:0.8em;
-  padding:2px 5px;
-  border-radius:5px;
-  display:flex;
-  justify-content:space-between;
-}
-.top-note{
-  border:3px solid gold;
-  box-shadow:0 0 15px gold;
-}
-footer{
-  padding:30px 0;
-  border-top:2px solid gold;
-  text-align:center;
-}
-footer a{
-  color:gold;
-  text-decoration:none;
-}
-footer a:hover{
-  text-decoration:underline;
-}
-.delete-btn{
-  position:absolute;
-  top:5px;
-  right:5px;
-  background:red;
-  color:white;
-  border:none;
-  border-radius:5px;
-  padding:3px 7px;
-  cursor:pointer;
-}
+h1{ color:gold; }
+.member-section{ margin:40px 0; }
+.member-section h2{ text-align:center; color:gold; margin-bottom:20px; }
+.wall-container{ display:flex; flex-wrap:nowrap; overflow-x:auto; gap:20px; padding:20px; }
+.note{ flex:0 0 auto; width:250px; height:250px; border-radius:15px; cursor:pointer; position:relative; transition: transform 0.2s, box-shadow 0.2s; }
+.note img{ width:100%; height:100%; object-fit:cover; border-radius:15px; }
+.note-text{ position:absolute; top:0; left:0; right:0; bottom:40px; padding:10px; color:black; font-size:0.9em; white-space:pre-wrap; overflow:auto; }
+.note-footer{ position:absolute; bottom:0; left:0; right:0; height:40px; background:rgba(0,0,0,0.6); color:white; display:flex; justify-content:space-between; align-items:center; padding:0 10px; border-bottom-left-radius:15px; border-bottom-right-radius:15px; font-weight:bold; font-size:0.9em; }
+.note.current-week{ border:3px solid gold; box-shadow:0 0 15px gold; }
+.note:hover{ transform:scale(1.05); box-shadow:0 0 15px gold; }
+footer{ padding:30px 0; border-top:2px solid gold; text-align:center; }
+footer a{ color:gold; text-decoration:none; }
+footer a:hover{ text-decoration:underline; }
 </style>
 </head>
 <body>
 
 <header>
 <h1>Weekly Favorites Archive</h1>
-<p>See the top-liked note for each member from week 1 onwards. Current week is highlighted in gold! Click your own note to see a special message. Click any other note to visit that member’s wall.</p>
-<a href="index.html">← Back to Homepage</a>
+<p>See the top-liked note for each member from every week. Current week is highlighted in gold! Past winners remain visible. Click a note to visit that member’s wall.</p>
 </header>
 
 <div id="favorites-container"></div>
@@ -117,21 +46,7 @@ footer a:hover{
 <img src="logo.png" alt="Logo" height="80">
 </footer>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-import { getFirestore, collection, onSnapshot, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
-
-const firebaseConfig = {
-  apiKey:"AIzaSyCM69r2wUibBFIFpML07Y5RUTrxHgonlSc",
-  authDomain:"rii7e-sticky-notes-project.firebaseapp.com",
-  projectId:"rii7e-sticky-notes-project",
-  storageBucket:"rii7e-sticky-notes-project.firebasestorage.app",
-  messagingSenderId:"962319162792",
-  appId:"1:962319162792:web:8fad2b11c316766c8a119d"
-};
-initializeApp(firebaseConfig);
-const db = getFirestore();
-
+<script>
 const members = [
   {name:'shotaro', color:'#8B0000', wall:'shotaro.html'},
   {name:'eunseok', color:'#D3D3D3', wall:'eunseok.html'},
@@ -140,89 +55,77 @@ const members = [
   {name:'seunghan', color:'#0000FF', wall:'seunghan.html'},
   {name:'sohee', color:'#FFFF00', wall:'sohee.html'},
   {name:'anton', color:'#1E3A5F', wall:'anton.html'},
-  {name:'rii7e', color:'#FFA500', wall:'rii7e.html'},
   {name:'brii7e', color:'#FFA500', wall:'brii7e.html'}
 ];
 
-const currentWeek = Math.floor((new Date()-new Date('2025-09-01'))/(7*24*60*60*1000)) + 1;
-const favoritesContainer = document.getElementById('favorites-container');
+const weekStartDate = new Date('2025-09-01');
+const msPerWeek = 7*24*60*60*1000;
+const currentWeek = Math.floor((new Date() - weekStartDate)/msPerWeek)+1;
+
+function updateFavorites(){
+  members.forEach(m=>{
+    let notes = JSON.parse(localStorage.getItem(m.name)||'[]');
+    notes = notes.filter(n=>n.week>0 && !n.deleted);
+    const weekMap = {};
+    notes.forEach(n=>{
+      if(!weekMap[n.week] || n.likes > weekMap[n.week].likes){
+        weekMap[n.week]=n;
+      }
+    });
+    localStorage.setItem(m.name+'_favorites', JSON.stringify(Object.values(weekMap)));
+  });
+}
+
+function renderFavorites(){
+  updateFavorites();
+  const container = document.getElementById('favorites-container');
+  container.innerHTML='';
+  members.forEach(m=>{
+    const archive = JSON.parse(localStorage.getItem(m.name+'_favorites')||'[]');
+    if(archive.length===0) return;
+    const section = document.createElement('div');
+    section.className='member-section';
+    const title = document.createElement('h2');
+    title.textContent = m.name.toUpperCase();
+    section.appendChild(title);
+    const wallDiv = document.createElement('div');
+    wallDiv.className='wall-container';
+
+    archive.forEach(n=>{
+      const noteDiv = document.createElement('div');
+      noteDiv.className='note';
+      if(n.week===currentWeek) noteDiv.classList.add('current-week');
+      noteDiv.style.border=`3px solid ${n.week===currentWeek ? 'gold':m.color}`;
+      noteDiv.innerHTML=`
+        <img src="${n.img}">
+        <div class="note-text">${n.text}</div>
+        <div class="note-footer">❤️ ${n.likes} | Week ${n.week}</div>
+      `;
+
+      noteDiv.onclick=()=>{
+        const userId = localStorage.getItem('userId_'+m.name);
+        if(n.week<currentWeek && n.userId===userId){
+          alert(`🎉 Congrats! Your note from week ${n.week} was the winner! 🌟`);
+        } else {
+          window.location.href=m.wall;
+        }
+      };
+
+      wallDiv.appendChild(noteDiv);
+    });
+
+    section.appendChild(wallDiv);
+    container.appendChild(section);
+  });
+}
 
 members.forEach(m=>{
   if(!localStorage.getItem('userId_'+m.name)){
-    localStorage.setItem('userId_'+m.name, Date.now() + Math.random());
+    localStorage.setItem('userId_'+m.name, Date.now()+Math.random());
   }
 });
 
-function renderMemberNotes(member, notes){
-  const section = document.createElement('div');
-  section.className = 'member-section';
-  const title = document.createElement('h2');
-  title.textContent = member.name.toUpperCase();
-  section.appendChild(title);
-
-  const wallDiv = document.createElement('div');
-  wallDiv.className = 'wall-container';
-
-  notes = notes.filter(n=>n.week>=1 && !n.deleted);
-
-  // Top note per week
-  const weekMap = {};
-  notes.forEach(n=>{
-    if(!weekMap[n.week] || (n.likes||0) > (weekMap[n.week].likes||0)){
-      weekMap[n.week] = n;
-    }
-  });
-
-  Object.values(weekMap).forEach(n=>{
-    const div = document.createElement('div');
-    div.className = 'note';
-    if(n.week === currentWeek) div.classList.add('top-note');
-    div.innerHTML = `
-      <img src="${n.img}">
-      <div class="text">${n.text}</div>
-      <div class="info-box"><span>❤️ ${n.likes||0}</span><span>Week ${n.week}</span></div>
-    `;
-
-    const userId = localStorage.getItem('userId_'+member.name);
-
-    if(n.creator === userId){
-      div.onclick = ()=>{ alert("🎉 Congrats! Your note was selected as this week's favorite! 🌟"); }
-      const btn = document.createElement('button');
-      btn.textContent='Delete';
-      btn.className='delete-btn';
-      btn.onclick = async (e)=>{
-        e.stopPropagation();
-        if(confirm("Delete your note?")){
-          const noteDoc = doc(db,'notes',member.name,'memberNotes',n.id);
-          await deleteDoc(noteDoc);
-        }
-      }
-      div.appendChild(btn);
-    } else {
-      div.onclick = ()=>{ window.location.href = member.wall; }
-    }
-
-    wallDiv.appendChild(div);
-  });
-
-  section.appendChild(wallDiv);
-  favoritesContainer.appendChild(section);
-}
-
-members.forEach(member=>{
-  const col = collection(db,'notes',member.name,'memberNotes');
-  onSnapshot(col, snapshot=>{
-    const notes = snapshot.docs.map(d=>{
-      const data = d.data();
-      return {id:d.id, creator:data.creator, ...data};
-    });
-    const oldSection = [...favoritesContainer.getElementsByClassName('member-section')]
-        .find(s=>s.querySelector('h2').textContent===member.name.toUpperCase());
-    if(oldSection) oldSection.remove();
-    renderMemberNotes(member, notes);
-  });
-});
+renderFavorites();
 </script>
-
 </body>
 </html>
