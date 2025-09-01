@@ -231,10 +231,11 @@
 
 
 <script type="module">
+// ----------------- Firebase SDK -----------------
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc, onSnapshot, orderBy, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
-// Firebase setup
+// ----------------- Firebase Setup -----------------
 const firebaseConfig = {
   apiKey: "AIzaSyCM69r2wUibBFIFpML07Y5RUTrxHgonlSc",
   authDomain: "rii7e-sticky-notes-project.firebaseapp.com",
@@ -243,10 +244,11 @@ const firebaseConfig = {
   messagingSenderId: "962319162792",
   appId: "1:962319162792:web:8fad2b11c316766c8a119d"
 };
+
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// Members
+// ----------------- Members -----------------
 const members = [
   {name:'shotaro', color:'#8B0000'},
   {name:'eunseok', color:'#D3D3D3'},
@@ -259,6 +261,7 @@ const members = [
   {name:'brii7e', color:'#FFA500'}
 ];
 
+// ----------------- DOM Helpers -----------------
 const $ = s => document.querySelector(s);
 const submitDesignBtn = $('#submitDesign');
 const designFileInput = $('#design-file');
@@ -266,115 +269,119 @@ const designMember = $('#design-member');
 const designMsg = $('#design-msg');
 const designContainer = $('#designContainer');
 
-// ------------------ SUBMIT DESIGN ------------------
-submitDesignBtn.addEventListener('click', async () => {
+// ----------------- Fan Design Submission -----------------
+submitDesignBtn.onclick = () => {
   const file = designFileInput.files[0];
   const member = designMember.value;
-  if(!file){ designMsg.textContent='Select a file!'; return; }
+  if (!file) { designMsg.textContent = 'Select a file!'; return; }
 
   const reader = new FileReader();
   reader.onload = async e => {
     try {
-      await addDoc(collection(db, 'designs', member, 'fanDesigns'), {
+      await addDoc(collection(db,'designs',member,'fanDesigns'),{
         img: e.target.result,
         timestamp: Date.now(),
         member
       });
-      designMsg.textContent='Design submitted!';
-      designFileInput.value='';
+      designMsg.textContent = 'Design submitted!';
+      designFileInput.value = '';
       setTimeout(()=>designMsg.textContent='',3000);
-    } catch(err) {
+    } catch(err){
       console.error(err);
-      designMsg.textContent='Error submitting design.';
+      designMsg.textContent = 'Error submitting design.';
     }
   };
   reader.readAsDataURL(file);
+};
+
+// ----------------- Render Pick Section -----------------
+function renderPickSection(allDesigns){
+  members.forEach(member => {
+    const wall = document.querySelector(`#${member.name}-selection .wall`);
+    if (!wall) return;
+    wall.innerHTML = '';
+
+    // Placeholders
+    for(let i=1;i<=4;i++){
+      const imgFile = `${member.name}${i}.png`;
+      const note = document.createElement('div');
+      note.className = 'sticky-note';
+      note.style.border = `4px solid ${member.color}`;
+      note.innerHTML = `<img src="${imgFile}">`;
+      note.onclick = () => openModalForMember(member.name,imgFile);
+      wall.appendChild(note);
+    }
+
+    // Fan designs
+    allDesigns.filter(d=>d.member===member.name).forEach(d=>{
+      const note = document.createElement('div');
+      note.className = 'sticky-note fan-design';
+      note.style.border = `4px solid ${member.color}`;
+      note.innerHTML = `<img src="${d.img}">`;
+      note.onclick = () => openModalForMember(member.name,d.img);
+      wall.appendChild(note);
+    });
+  });
+}
+
+// ----------------- Render Manage Designs -----------------
+function renderManageDesigns(allDesigns){
+  designContainer.innerHTML='';
+  allDesigns.forEach(d=>{
+    const member = members.find(m=>m.name===d.member);
+    const wrapper = document.createElement('div');
+    wrapper.style.display='inline-block';
+    wrapper.style.position='relative';
+    wrapper.style.margin='6px';
+
+    const img = document.createElement('img');
+    img.src = d.img;
+    img.style.width='100px';
+    img.style.border=`2px solid ${member.color}`;
+    img.style.borderRadius='10px';
+    wrapper.appendChild(img);
+
+    const delBtn = document.createElement('button');
+    delBtn.textContent='✕';
+    delBtn.style.position='absolute';
+    delBtn.style.top='4px';
+    delBtn.style.right='4px';
+    delBtn.style.background='rgba(255,0,0,0.8)';
+    delBtn.style.color='#fff';
+    delBtn.style.border='none';
+    delBtn.style.borderRadius='50%';
+    delBtn.style.cursor='pointer';
+    delBtn.style.padding='2px 6px';
+    delBtn.onclick = async () => {
+      if(!confirm('Delete this design?')) return;
+      await deleteDoc(doc(db,'designs',d.member,'fanDesigns',d.id));
+    };
+    wrapper.appendChild(delBtn);
+    designContainer.appendChild(wrapper);
+  });
+}
+
+// ----------------- Listen for all Fan Designs -----------------
+const allDesignsFlat = [];
+members.forEach(member=>{
+  const q = collection(db,'designs',member.name,'fanDesigns');
+  onSnapshot(q,snap=>{
+    const designs = snap.docs.map(docSnap=>({id:docSnap.id, member: member.name, img: docSnap.data().img}));
+    // Remove old designs for this member
+    for(let i=allDesignsFlat.length-1;i>=0;i--){
+      if(allDesignsFlat[i].member===member.name) allDesignsFlat.splice(i,1);
+    }
+    allDesignsFlat.push(...designs);
+    renderPickSection(allDesignsFlat);
+    renderManageDesigns(allDesignsFlat);
+  });
 });
 
-// ------------------ PICK WALL ------------------
-function renderPickWalls(){
-  members.forEach(member=>{
-    const wall = document.querySelector(`#${member.name}-selection .wall`);
-    if(!wall) return;
-    wall.innerHTML='';
-    // placeholders
-    for(let i=1;i<=4;i++){
-      const div=document.createElement('div');
-      div.className='sticky-note';
-      div.style.border=`4px solid ${member.color}`;
-      div.innerHTML=`<img src="${member.name}${i}.png" alt="${member.name} ${i}">`;
-      wall.appendChild(div);
-    }
-    // live designs
-    const q=query(collection(db,'designs',member.name,'fanDesigns'),orderBy('timestamp','desc'));
-    onSnapshot(q,snap=>{
-      // remove old fan-designs
-      wall.querySelectorAll('.fan-design').forEach(el=>el.remove());
-      snap.docs.forEach(docSnap=>{
-        const data=docSnap.data();
-        const div=document.createElement('div');
-        div.className='sticky-note fan-design';
-        div.style.border=`4px solid ${member.color}`;
-        div.innerHTML=`<img src="${data.img}" alt="Fan design">`;
-        wall.appendChild(div);
-      });
-    });
-  });
-}
-
-// ------------------ MANAGE DESIGNS ------------------
-function renderManageDesigns(){
-  designContainer.innerHTML='';
-  members.forEach(member=>{
-    const q=query(collection(db,'designs',member.name,'fanDesigns'),orderBy('timestamp','desc'));
-    onSnapshot(q,snap=>{
-      // Remove old items for this member
-      designContainer.querySelectorAll(`[data-member="${member.name}"]`).forEach(el=>el.remove());
-
-      snap.docs.forEach(docSnap=>{
-        const data=docSnap.data();
-        const div=document.createElement('div');
-        div.style.position='relative';
-        div.style.display='inline-block';
-        div.style.margin='5px';
-        div.dataset.member=member.name;
-        div.dataset.id=docSnap.id;
-
-        const img=document.createElement('img');
-        img.src=data.img;
-        img.style.width='120px';
-        img.style.height='120px';
-        img.style.borderRadius='8px';
-        img.style.border=`3px solid ${member.color}`;
-        div.appendChild(img);
-
-        const delBtn=document.createElement('button');
-        delBtn.textContent='✕';
-        delBtn.style.position='absolute';
-        delBtn.style.top='5px';
-        delBtn.style.right='5px';
-        delBtn.style.background='rgba(255,0,0,0.8)';
-        delBtn.style.color='#fff';
-        delBtn.style.border='none';
-        delBtn.style.borderRadius='50%';
-        delBtn.style.cursor='pointer';
-        delBtn.style.padding='2px 6px';
-        delBtn.onclick=async()=>{
-          if(confirm('Delete this design?')){
-            await deleteDoc(doc(db,'designs',member.name,'fanDesigns',docSnap.id));
-          }
-        };
-        div.appendChild(delBtn);
-        designContainer.appendChild(div);
-      });
-    });
-  });
-}
-
-// ------------------ INIT ------------------
-renderPickWalls();
-renderManageDesigns();
+// ----------------- Initialize other stuff -----------------
+renderSimpleNotes();
+members.forEach(m=>renderMemberWall(m.name));
 </script>
+
 
 
 
@@ -382,6 +389,7 @@ renderManageDesigns();
 </html>  
 
   
+
 
 
 
