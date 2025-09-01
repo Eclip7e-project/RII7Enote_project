@@ -349,7 +349,7 @@ function renderPickSection(){
     if(!wall) return;
     wall.innerHTML = '';
 
-    // 1️⃣ Placeholders
+    // Placeholders
     for(let i=1;i<=4;i++){
       const imgFile = `${member.name}${i}.png`;
       const note = document.createElement('div');
@@ -360,13 +360,13 @@ function renderPickSection(){
       wall.appendChild(note);
     }
 
-    // 2️⃣ Fan designs from Firestore (real-time)
+    // Fan designs from Firestore (real-time)
     const designsCol = collection(db,'designs',member.name,'fanDesigns');
     onSnapshot(designsCol, snapshot => {
       snapshot.docChanges().forEach(change => {
         if(change.type === 'added'){
           const data = change.doc.data();
-          // Prevent duplicates
+          // prevent duplicates
           if([...wall.children].some(c=>c.querySelector('img').src===data.img)) return;
           const note = document.createElement('div');
           note.className = 'sticky-note';
@@ -419,7 +419,7 @@ function renderSimpleNotes(){
   });
 }
 
-// ----------------- Submit Design (sync) -----------------
+// ----------------- Submit Design to Firestore -----------------
 submitDesignBtn.addEventListener('click', async ()=>{
   const file = designFileInput.files[0];
   const member = designMember.value;
@@ -492,6 +492,7 @@ members.forEach(m => renderMemberWall(m.name));
 
 </body>
 </html> 
+
 
 
 
