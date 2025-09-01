@@ -406,75 +406,65 @@ function renderSimpleNotes(){
   });
 }
 
-
-
-
-
-
-// ----------------- Submit Design to Firestore -----------------
-submitDesignBtn.addEventListener('click', async ()=>{
+// ----------------- Submit Design -----------------
+submitDesignBtn.addEventListener('click', ()=>{
   const file = designFileInput.files[0];
   const member = designMember.value;
-  if(!file){ 
-    designMsg.textContent = 'Select a file!';
-    return; 
-  }
-
-  // Convert image to Base64
+  if(!file){ designMsg.textContent='Select a file!'; return; }
   const reader = new FileReader();
-  reader.onload = async e => {
-    const base64Image = e.target.result;
-
-    // Save to Firestore
-    const memberRef = doc(db, 'designs', member);
-    const memberSnap = await getDoc(memberRef);
-    if (!memberSnap.exists()) {
-      await setDoc(memberRef, { images: [base64Image] });
-    } else {
-      await updateDoc(memberRef, {
-        images: arrayUnion(base64Image)
-      });
-    }
-
-    designMsg.textContent = '✅ Design submitted!';
-    designFileInput.value = '';
-    setTimeout(()=>designMsg.textContent = '', 3000);
+  reader.onload = e=>{
+    let designs = JSON.parse(localStorage.getItem(member+'_designs')||'[]');
+    designs.push(e.target.result);
+    localStorage.setItem(member+'_designs', JSON.stringify(designs));
+    designMsg.textContent='Design submitted!';
+    designFileInput.value='';
+    renderPickSection();
+    renderAllDesigns();
+    setTimeout(()=>designMsg.textContent='',3000);
   };
   reader.readAsDataURL(file);
 });
 
+// ----------------- Render All Designs -----------------
+function renderAllDesigns(){
+  designContainer.innerHTML='';
+  members.forEach(member=>{
+    const designs = JSON.parse(localStorage.getItem(member.name+'_designs')||'[]');
+    designs.forEach((src,idx)=>{
+      const wrapper = document.createElement('div');
+      wrapper.style.display='inline-block';
+      wrapper.style.position='relative';
+      wrapper.style.margin='6px';
 
+      const img = document.createElement('img');
+      img.src = src;
+      img.style.width = '100px';
+      img.style.border = `2px solid ${member.color}`;
+      img.style.borderRadius = '10px';
+      wrapper.appendChild(img);
 
-
-
-// ----------------- Real-time Fan Designs -----------------
-members.forEach(member => {
-  const memberRef = doc(db, 'designs', member.name);
-  onSnapshot(memberRef, (docSnap) => {
-    const designs = docSnap.exists() ? docSnap.data().images || [] : [];
-    const container = document.getElementById(`${member.name}-designs`);
-    if (!container) return;
-    container.innerHTML = '';
-
-    designs.forEach((img, index) => {
-      const imgEl = document.createElement('img');
-      imgEl.src = img;
-      imgEl.alt = `${member.name} design ${index+1}`;
-      imgEl.className = 'design-preview';
-      container.appendChild(imgEl);
+      const delBtn = document.createElement('button');
+      delBtn.textContent='Delete';
+      delBtn.style.position='absolute';
+      delBtn.style.top='6px';
+      delBtn.style.right='6px';
+      delBtn.style.background='red';
+      delBtn.style.color='#fff';
+      delBtn.style.border='none';
+      delBtn.style.padding='4px 6px';
+      delBtn.style.cursor='pointer';
+      delBtn.onclick=()=>{
+        if(!confirm('Delete this design?')) return;
+        designs.splice(idx,1);
+        localStorage.setItem(member.name+'_designs', JSON.stringify(designs));
+        renderAllDesigns();
+        renderPickSection();
+      };
+      wrapper.appendChild(delBtn);
+      designContainer.appendChild(wrapper);
     });
   });
-});
-
-
-
-
-  
-
-
-  
-
-
+}
 
 // ----------------- Submit Modal Note -----------------
 modalSubmit.addEventListener('click', async ()=>{
@@ -530,19 +520,3 @@ members.forEach(m => renderMemberWall(m.name));
 
 </body>
 </html>  
-
-
-  
-
-
-
-
-
-
-
-
-
-
-
-
-
