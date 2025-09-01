@@ -232,7 +232,7 @@
 <script type="module">
 // ----------------- Firebase SDK -----------------
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc, onSnapshot, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
 // ----------------- Firebase Setup -----------------
 const firebaseConfig = {
@@ -243,7 +243,6 @@ const firebaseConfig = {
   messagingSenderId: "962319162792",
   appId: "1:962319162792:web:8fad2b11c316766c8a119d"
 };
-
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
@@ -262,14 +261,14 @@ const members = [
 
 // ----------------- DOM Helpers -----------------
 const $ = s => document.querySelector(s);
-const userId = localStorage.getItem('userId') || crypto.randomUUID();
-localStorage.setItem('userId', userId);
 
 // ----------------- Modal Elements -----------------
 const modal = $('#modal');
 const modalClose = $('#modal-close');
+const modalCancel = $('#modal-cancel');
 const modalImg = $('#modal-img');
 const modalMemberTitle = $('#modal-member');
+const previewText = $('#preview-text');
 const noteText = $('#note-text');
 const colorPicker = $('#color-picker');
 const memberSelect = $('#member-select');
@@ -278,11 +277,13 @@ const modalSubmit = $('#modal-submit');
 const designFileInput = $('#design-file');
 const designMember = $('#design-member');
 const submitDesignBtn = $('#submitDesign');
-const designMsg = $('#design-msg');
 
+// ----------------- State -----------------
 let currentImg = '';
 let currentMember = '';
 let currentMode = 'member';
+const userId = localStorage.getItem('userId') || crypto.randomUUID();
+localStorage.setItem('userId', userId);
 
 // ----------------- Helpers -----------------
 const getMemberColor = name => members.find(m => m.name === name)?.color || '#ccc';
@@ -291,29 +292,33 @@ const getCurrentWeek = () => Math.floor((new Date() - new Date('2025-09-01')) / 
 // ----------------- Modal -----------------
 function setupModal() {
   modalImg.src = currentImg;
+  previewText.textContent = '';
+  previewText.style.color = colorPicker.value || '#000';
   noteText.value = '';
-  colorPicker.value = '#000';
+
   if(currentMode === 'simple'){
     modalMemberTitle.textContent = 'Plain Note';
     memberSelect.style.display = 'block';
     memberSelectLabel.style.display = 'block';
-    memberSelect.value = currentMember;
+    memberSelect.value = currentMember || 'shotaro';
   } else {
     modalMemberTitle.textContent = currentMember.toUpperCase();
     memberSelect.style.display = 'none';
     memberSelectLabel.style.display = 'none';
   }
+
   modal.style.display = 'flex';
   document.body.style.overflow = 'hidden';
 }
-
 const closeModal = () => {
   modal.style.display = 'none';
   document.body.style.overflow = '';
 };
-
+noteText.addEventListener('input', e => previewText.textContent = e.target.value);
+colorPicker.addEventListener('input', e => previewText.style.color = e.target.value);
 modalClose.onclick = closeModal;
-window.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); });
+modalCancel.onclick = closeModal;
+window.addEventListener('keydown', e => { if(e.key === 'Escape') closeModal(); });
 
 // ----------------- Open Modal -----------------
 const openModalForMember = (memberName, imgSrc) => {
@@ -322,91 +327,160 @@ const openModalForMember = (memberName, imgSrc) => {
   currentMode = 'member';
   setupModal();
 };
+const openModalForSimple = (imgSrc, defaultMember='shotaro') => {
+  currentImg = imgSrc;
+  currentMode = 'simple';
+  currentMember = defaultMember;
+  setupModal();
+};
 
 // ----------------- Render Pick Section -----------------
 function renderPickSection(){
   members.forEach(member => {
     const wall = document.querySelector(`#${member.name}-selection .wall`);
     if(!wall) return;
-    wall.innerHTML = '';
 
-    // Placeholders
+    // Clear and add placeholders
+    wall.innerHTML = '';
     for(let i=1;i<=4;i++){
       const imgFile = `${member.name}${i}.png`;
       const note = document.createElement('div');
       note.className = 'sticky-note';
       note.style.border = `4px solid ${getMemberColor(member.name)}`;
       note.innerHTML = `<img src="${imgFile}" alt="${member.name} placeholder ${i}">`;
-      note.onclick = () => openModalForMember(member.name,imgFile);
+      note.onclick = () => openModalForMember(member.name, imgFile);
       wall.appendChild(note);
     }
 
     // Fan designs from Firestore
-    const designsCol = collection(db,'designs',member.name,'fanDesigns');
-    onSnapshot(designsCol, snapshot=>{
-      // Remove existing fan designs
-      Array.from(wall.querySelectorAll('.fan-design')).forEach(n=>n.remove());
+    const designsCol = collection(db, 'designs', member.name, 'fanDesigns');
+    onSnapshot(designsCol, snapshot => {
+      Array.from(wall.querySelectorAll('.fan-design')).forEach(n => n.remove());
 
-      snapshot.docs.forEach(docSnap=>{
+      snapshot.docs.forEach(docSnap => {
         const data = docSnap.data();
         const note = document.createElement('div');
         note.className = 'sticky-note fan-design';
         note.style.border = `4px solid ${getMemberColor(member.name)}`;
         note.innerHTML = `<img src="${data.img}" alt="Fan design">`;
 
-        // Delete button if this user is creator
+        // Delete button for creator
         if(data.creator === userId){
           const delBtn = document.createElement('button');
           delBtn.textContent = 'X';
-          delBtn.style.position='absolute';
-          delBtn.style.top='4px';
-          delBtn.style.right='4px';
-          delBtn.style.background='red';
-          delBtn.style.color='#fff';
-          delBtn.style.border='none';
-          delBtn.style.padding='2px 5px';
-          delBtn.style.cursor='pointer';
-          delBtn.onclick = async e=>{
+          delBtn.style.position = 'absolute';
+          delBtn.style.top = '4px';
+          delBtn.style.right = '4px';
+          delBtn.style.background = 'red';
+          delBtn.style.color = '#fff';
+          delBtn.style.border = 'none';
+          delBtn.style.padding = '2px 5px';
+          delBtn.style.cursor = 'pointer';
+          delBtn.onclick = async e => {
             e.stopPropagation();
             if(!confirm('Delete your design?')) return;
-            await deleteDoc(doc(db,'designs',member.name,'fanDesigns',docSnap.id));
+            await deleteDoc(doc(db, 'designs', member.name, 'fanDesigns', docSnap.id));
           };
           note.appendChild(delBtn);
         }
 
-        note.onclick = ()=>openModalForMember(member.name,data.img);
+        note.onclick = () => openModalForMember(member.name, data.img);
         wall.appendChild(note);
       });
     });
   });
 }
 
-// ----------------- Submit Design -----------------
-submitDesignBtn.addEventListener('click', ()=>{
+// ----------------- Render Member Walls -----------------
+function renderMemberWall(memberName){
+  const wall = document.querySelector(`#${memberName}-wall`);
+  if(!wall) return;
+
+  const notesCol = collection(db, 'notes', memberName, 'memberNotes');
+  onSnapshot(notesCol, snapshot => {
+    wall.innerHTML = '';
+    snapshot.docs.forEach(docSnap => {
+      const data = docSnap.data();
+      const noteDiv = document.createElement('div');
+      noteDiv.className = 'sticky-note';
+      noteDiv.style.border = `4px solid ${getMemberColor(memberName)}`;
+      noteDiv.innerHTML = `<img src="${data.img}" alt="Note"><div class="label">${data.text}</div>`;
+      wall.appendChild(noteDiv);
+    });
+  });
+}
+
+// ----------------- Simple Notes -----------------
+function renderSimpleNotes(){
+  const wall = $('#simple-note-wall');
+  if(!wall) return;
+  wall.innerHTML = '';
+  ['red','orange','yellow','green','blue','indigo','violet'].forEach(color => {
+    const imgFile = `${color}note.png`;
+    const note = document.createElement('div');
+    note.className = 'sticky-note';
+    note.style.width = '110px';
+    note.style.height = '110px';
+    note.style.border = '3px solid #ccc';
+    note.innerHTML = `<img src="${imgFile}" alt="Simple note">`;
+    note.onclick = () => openModalForSimple(imgFile);
+    wall.appendChild(note);
+  });
+}
+
+// ----------------- Submit Fan Design -----------------
+submitDesignBtn.addEventListener('click', async ()=>{
   const file = designFileInput.files[0];
   const member = designMember.value;
-  if(!file){ designMsg.textContent='Select a file!'; return; }
+  if(!file){ alert('Select a file!'); return; }
+
   const reader = new FileReader();
-  reader.onload = async e=>{
-    try{
-      await addDoc(collection(db,'designs',member,'fanDesigns'),{
+  reader.onload = async e => {
+    try {
+      await addDoc(collection(db, 'designs', member, 'fanDesigns'), {
         img: e.target.result,
-        creator: userId,
-        timestamp: Date.now()
+        timestamp: Date.now(),
+        creator: userId
       });
-      designMsg.textContent='Design submitted!';
-      designFileInput.value='';
-      setTimeout(()=>designMsg.textContent='',3000);
-    }catch(err){
-      console.error(err);
-      designMsg.textContent='Error submitting design.';
-    }
+      designFileInput.value = '';
+    } catch(err) { console.error(err); }
   };
   reader.readAsDataURL(file);
 });
 
+// ----------------- Submit Modal Note -----------------
+modalSubmit.addEventListener('click', async ()=>{
+  const text = noteText.value.trim();
+  if(!text){ alert('Write something!'); return; }
+
+  const color = colorPicker.value || '#000';
+  const week = getCurrentWeek();
+  const member = currentMode==='simple'?memberSelect.value:currentMember;
+
+  const noteData = {
+    img: currentImg,
+    text,
+    color,
+    likes:0,
+    week,
+    timestamp: Date.now(),
+    creator: userId
+  };
+
+  try {
+    await addDoc(collection(db,'notes',member,'memberNotes'), noteData);
+    closeModal();
+  } catch(err){
+    console.error(err);
+    alert('Error submitting note.');
+  }
+});
+
 // ----------------- Initialize -----------------
 renderPickSection();
+renderSimpleNotes();
+members.forEach(m => renderMemberWall(m.name));
+
 </script>
 
 
@@ -414,6 +488,7 @@ renderPickSection();
 
 </body>
 </html>  
+
 
 
 
