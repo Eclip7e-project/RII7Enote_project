@@ -228,7 +228,7 @@
 <script type="module">
 // ----------------- Firebase SDK -----------------
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-import { getFirestore, collection, addDoc, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc, onSnapshot, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
 // ----------------- Firebase Setup -----------------
 const firebaseConfig = {
@@ -239,6 +239,7 @@ const firebaseConfig = {
   messagingSenderId: "962319162792",
   appId: "1:962319162792:web:8fad2b11c316766c8a119d"
 };
+
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
@@ -258,7 +259,7 @@ const members = [
 // ----------------- DOM Helpers -----------------
 const $ = s => document.querySelector(s);
 
-// ----------------- Elements -----------------
+// ----------------- Modal Elements -----------------
 const modal = $('#modal');
 const modalClose = $('#modal-close');
 const modalCancel = $('#modal-cancel');
@@ -274,11 +275,12 @@ const designFileInput = $('#design-file');
 const designMember = $('#design-member');
 const submitDesignBtn = $('#submitDesign');
 const designMsg = $('#design-msg');
-const designContainer = $('#designContainer');
+const designContainer = $('#designContainer'); // For Manage Designs
 
 let currentImg = '';
 let currentMember = '';
 let currentMode = 'member';
+
 const userId = localStorage.getItem('userId') || crypto.randomUUID();
 localStorage.setItem('userId', userId);
 
@@ -376,7 +378,6 @@ function renderMemberWall(memberName){
 
   const notesCol = collection(db, 'notes', memberName, 'memberNotes');
   onSnapshot(notesCol, snapshot => {
-    wall.innerHTML = '';
     snapshot.docs.forEach(docSnap => {
       const data = docSnap.data();
       const noteDiv = document.createElement('div');
@@ -407,40 +408,40 @@ function renderSimpleNotes(){
   });
 }
 
-// ----------------- Submit Fan Design -----------------
+// ----------------- Submit Design -----------------
 submitDesignBtn.addEventListener('click', async ()=>{
   const file = designFileInput.files[0];
   const member = designMember.value;
   if(!file){ designMsg.textContent='Select a file!'; return; }
-
   const reader = new FileReader();
   reader.onload = async e=>{
-    const designData = { img: e.target.result, creator: userId, timestamp: Date.now() };
-    await addDoc(collection(db,'designs',member,'fanDesigns'), designData);
-    designMsg.textContent='Design submitted!';
-    designFileInput.value='';
-    setTimeout(()=>designMsg.textContent='',3000);
+    const imgData = e.target.result;
+    try{
+      await addDoc(collection(db,'designs',member,'fanDesigns'), { img: imgData, creator: userId });
+      designMsg.textContent='Design submitted!';
+      designFileInput.value='';
+      setTimeout(()=>designMsg.textContent='',3000);
+      renderManageDesigns(); // Update manage section
+    }catch(err){
+      console.error(err);
+      designMsg.textContent='Error submitting design.';
+      setTimeout(()=>designMsg.textContent='',3000);
+    }
   };
   reader.readAsDataURL(file);
 });
 
-// ----------------- Manage Designs Realtime -----------------
-function setupManageDesignsRealtime() {
+// ----------------- Manage Designs -----------------
+function renderManageDesigns(){
   designContainer.innerHTML = '';
-  
   members.forEach(member => {
     const designsCol = collection(db,'designs',member.name,'fanDesigns');
-    onSnapshot(designsCol, snapshot => {
-      // Remove old designs for this member
-      const memberDivs = Array.from(designContainer.children).filter(div => div.dataset.member === member.name);
-      memberDivs.forEach(div => div.remove());
-
-      snapshot.docs.forEach(docSnap => {
+    onSnapshot(designsCol, snapshot=>{
+      snapshot.docs.forEach(docSnap=>{
         const data = docSnap.data();
-        if(data.creator !== userId) return; // Only your own designs
+        if(data.creator !== userId) return; // Only show your own
 
         const wrapper = document.createElement('div');
-        wrapper.dataset.member = member.name;
         wrapper.style.display='inline-block';
         wrapper.style.position='relative';
         wrapper.style.margin='6px';
@@ -462,7 +463,7 @@ function setupManageDesignsRealtime() {
         delBtn.style.border='none';
         delBtn.style.padding='4px 6px';
         delBtn.style.cursor='pointer';
-        delBtn.onclick = async () => {
+        delBtn.onclick=async ()=>{
           if(!confirm('Delete this design?')) return;
           await deleteDoc(doc(db,'designs',member.name,'fanDesigns',docSnap.id));
         };
@@ -483,21 +484,22 @@ modalSubmit.addEventListener('click', async ()=>{
   const week = getCurrentWeek();
   const member = currentMode==='simple'?memberSelect.value:currentMember;
 
-  const noteData = { 
-    img: currentImg, 
-    text, 
-    color, 
-    likes:0, 
-    week, 
+  const noteData = {
+    img: currentImg,
+    text,
+    color,
+    likes: 0,
+    week,
     timestamp: Date.now(),
     creator: userId
   };
 
-  try {
+  try{
     await addDoc(collection(db,'notes',member,'memberNotes'), noteData);
     closeModal();
     renderMemberWall(member);
-  } catch(err){
+    alert(`Your note has been submitted to ${member.toUpperCase()}'s wall!`);
+  }catch(err){
     console.error(err);
     alert('Error submitting note.');
   }
@@ -506,17 +508,15 @@ modalSubmit.addEventListener('click', async ()=>{
 // ----------------- Initialize -----------------
 renderPickSection();
 renderSimpleNotes();
-setupManageDesignsRealtime();
 members.forEach(m => renderMemberWall(m.name));
-
-</script>
-
-
+renderManageDesigns();
+</script>  
 
 
 
 </body>
 </html> 
+
 
 
 
