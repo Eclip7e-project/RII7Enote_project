@@ -118,19 +118,23 @@ section { padding:30px; }
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-import { getFirestore, collection, addDoc, doc, onSnapshot, updateDoc, deleteDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+import { getFirestore, collection, doc, addDoc, onSnapshot, updateDoc, arrayUnion, deleteDoc } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-storage.js";
 
+// ---------------- Firebase Setup ----------------
 const firebaseConfig = {
-  apiKey:"YOUR_API_KEY",
-  authDomain:"YOUR_PROJECT.firebaseapp.com",
-  projectId:"YOUR_PROJECT",
-  storageBucket:"YOUR_PROJECT.appspot.com",
-  messagingSenderId:"YOUR_SENDER_ID",
-  appId:"YOUR_APP_ID"
+  apiKey:"AIzaSyCM69r2wUibBFIFpML07Y5RUTrxHgonlSc",
+  authDomain:"rii7e-sticky-notes-project.firebaseapp.com",
+  projectId:"rii7e-sticky-notes-project",
+  storageBucket:"rii7e-sticky-notes-project.appspot.com",
+  messagingSenderId:"962319162792",
+  appId:"1:962319162792:web:8fad2b11c316766c8a119d"
 };
-initializeApp(firebaseConfig);
-const db = getFirestore();
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const storage = getStorage(app);
 
+// ---------------- Elements ----------------
 const galleryContainer = document.getElementById('galleryContainer');
 const submitBtn = document.getElementById('submitImage');
 const imageFile = document.getElementById('imageFile');
@@ -149,116 +153,178 @@ const lightboxNewComment = document.getElementById('lightbox-new-comment');
 const lightboxSubmitComment = document.getElementById('lightbox-submit-comment');
 const lightboxLikeBtn = document.getElementById('lightbox-like');
 const lightboxSuggestions = document.getElementById('lightbox-suggestions');
-const modalDelete = document.getElementById('modal-delete');
+const lightboxDeleteBtn = document.getElementById('modal-delete');
 
 let currentImage = null;
-let userId = localStorage.getItem('userId') || (localStorage.setItem('userId', crypto.randomUUID()), localStorage.getItem('userId'));
+const userId = localStorage.getItem('userId') || (localStorage.setItem('userId', crypto.randomUUID()), localStorage.getItem('userId'));
 
-// Submit Image
+// ---------------- Firestore Collection ----------------
+const galleryRef = collection(db, "fanGallery");
+
+// ---------------- Submit Image ----------------
 submitBtn.onclick = async () => {
   const file = imageFile.files[0];
-  if(!file){ submitMsg.textContent='Select an image!'; return; }
-  const reader = new FileReader();
-  reader.onload = async e => {
-    try{
-      await addDoc(collection(db,"gallery"),{
-        creator: userId,
-        member: imageMember.value,
-        message: imageMessage.value,
-        src: e.target.result,
-        likes: 0,
-        comments: [],
-        timestamp: Date.now()
-      });
-      submitMsg.textContent='Image submitted successfully!';
-      imageFile.value=''; imageMessage.value='';
-    } catch(err){
-      submitMsg.textContent='Upload failed: '+err.message;
-    }
-  };
-  reader.readAsDataURL(file);
+  if(!file){ submitMsg.textContent="Select an image!"; return; }
+  
+  submitMsg.textContent = "Uploading...";
+  try {
+    const storageRef = ref(storage, `fanGallery/${Date.now()}-${file.name}`);
+    await uploadBytes(storageRef, file);
+    const url = await getDownloadURL(storageRef);
+
+    await addDoc(galleryRef, {
+      src: url,
+      member: imageMember.value,
+      category: imageMember.value,
+      message: imageMessage.value.trim(),
+      likes: 0,
+      likedBy: [],
+      comments: [],
+      creator: userId,
+      timestamp: Date.now()
+    });
+
+    submitMsg.textContent = "✅ Image submitted!";
+    imageFile.value = "";
+    imageMessage.value = "";
+  } catch(e) {
+    console.error("Upload failed:", e);
+    submitMsg.textContent = "❌ Upload failed: "+e.message;
+  }
 };
 
-// Real-time listener
-onSnapshot(collection(db,"gallery"), snapshot => {
-  const docs = snapshot.docs.map(d=>({ id:d.id, ...d.data() }));
-  renderGallery(searchInput.value, docs);
-});
+// ---------------- Render Gallery ----------------
+function renderGallery(data, filter=''){
+  galleryContainer.innerHTML = '';
+  const filtered = data.filter(item => 
+    !filter || item.member.toLowerCase().includes(filter.toLowerCase()) || item.category.toLowerCase().includes(filter.toLowerCase())
+  );
 
-// Render gallery
-function renderGallery(filter='', docs=[]){
-  galleryContainer.innerHTML='';
-  const filtered = docs.filter(d => !filter || d.member.toLowerCase().includes(filter.toLowerCase()));
   filtered.forEach(item => {
     const div = document.createElement('div');
-    div.className='gallery-item';
-    div.innerHTML=`
-      <div class="category-label">${item.member.toUpperCase()}</div>
+    div.className = 'gallery-item';
+    div.innerHTML = `
+      <div class="category-label">${item.category.toUpperCase()}</div>
       <img src="${item.src}">
-      <div class="info"><span>${item.member.toUpperCase()}</span>
-      <span><button class="like-btn">❤ ${item.likes||0}</button></span></div>
+      <div class="info">
+        <span>${item.member.toUpperCase()}</span>
+        <span><button class="like-btn">❤ ${item.likes||0}</button></span>
+      </div>
     `;
-    if(item.creator===userId){
+
+    // Delete button
+    if(item.creator === userId){
       const delBtn = document.createElement('button');
-      delBtn.className='delete-btn';
-      delBtn.textContent='Delete';
-      delBtn.onclick=async e=>{ e.stopPropagation(); if(confirm("Delete?")) await deleteDoc(doc(db,"gallery",item.id)); };
+      delBtn.className = 'delete-btn';
+      delBtn.textContent = 'Delete';
+      delBtn.onclick = async (e)=>{
+        e.stopPropagation();
+        if(!confirm("Delete this image?")) return;
+        await deleteDoc(doc(db, "fanGallery", item.id));
+      };
       div.appendChild(delBtn);
     }
-    div.querySelector('img').onclick = ()=>openLightbox(item);
-    div.querySelector('.like-btn').onclick = async e=>{ e.stopPropagation(); await updateDoc(doc(db,"gallery",item.id), { likes:(item.likes||0)+1 }); };
+
+    // Click image to open lightbox
+    div.querySelector('img').onclick = () => openLightbox(item.id);
+
+    // Like button
+    div.querySelector('.like-btn').onclick = async (e) => {
+      e.stopPropagation();
+      if(item.likedBy && item.likedBy.includes(userId)) { alert("Already liked!"); return; }
+      await updateDoc(doc(db,"fanGallery",item.id),{
+        likes: (item.likes||0)+1,
+        likedBy: arrayUnion(userId)
+      });
+    };
+
     galleryContainer.appendChild(div);
   });
 }
 
-// Search
-searchInput.oninput = e => { onSnapshot(collection(db,"gallery"), snapshot => { const docs = snapshot.docs.map(d=>({id:d.id,...d.data()})); renderGallery(e.target.value,docs); }); };
+// ---------------- Lightbox ----------------
+function openLightbox(id){
+  const item = galleryData.find(i=>i.id===id);
+  if(!item) return;
+  currentImage = item;
 
-// Lightbox
-function openLightbox(item){
-  currentImage=item;
-  lightboxImg.src=item.src;
-  lightboxMember.textContent=item.member.toUpperCase();
-  lightboxMessage.textContent=item.message||'';
-  lightboxLikeBtn.textContent=`❤ ${item.likes||0}`;
-  modalDelete.style.display=(item.creator===userId)?'inline-block':'none';
-  lightbox.style.display='block';
-  renderComments(item);
-  renderSuggestions(item);
-}
+  lightboxImg.src = item.src;
+  lightboxMember.textContent = item.member.toUpperCase();
+  lightboxMessage.textContent = item.message || '';
+  lightboxLikeBtn.textContent = `❤ ${item.likes||0}`;
+  lightboxDeleteBtn.style.display = (item.creator===userId) ? 'inline-block':'none';
 
-function renderComments(item){
-  lightboxComments.innerHTML='';
-  (item.comments||[]).forEach(c=>{ const div=document.createElement('div'); div.textContent=c; lightboxComments.appendChild(div); });
-}
-
-lightboxSubmitComment.onclick = async ()=>{ 
-  const txt = lightboxNewComment.value.trim(); 
-  if(!txt) return; 
-  await updateDoc(doc(db,"gallery",currentImage.id),{ comments: arrayUnion(txt) }); 
-  lightboxNewComment.value=''; 
-};
-
-lightboxLikeBtn.onclick = async ()=>{ 
-  await updateDoc(doc(db,"gallery",currentImage.id),{ likes:(currentImage.likes||0)+1 });
-};
-
-modalDelete.onclick=async()=>{ if(confirm("Delete?")){ await deleteDoc(doc(db,"gallery",currentImage.id)); lightbox.style.display='none'; } };
-
-closeLightbox.onclick=()=>lightbox.style.display='none';
-lightbox.onclick=()=>lightbox.style.display='none';
-document.querySelector('.lightbox-content').onclick=e=>e.stopPropagation();
-
-function renderSuggestions(item){
-  lightboxSuggestions.innerHTML='';
-  onSnapshot(collection(db,"gallery"), snapshot=>{
-    snapshot.docs.filter(d=>d.id!==item.id).slice(0,8).forEach(d=>{
-      const img=document.createElement('img'); img.src=d.data().src;
-      img.onclick=()=>openLightbox({id:d.id,...d.data()});
-      lightboxSuggestions.appendChild(img);
-    });
+  // Render comments
+  lightboxComments.innerHTML = '';
+  (item.comments||[]).forEach(c=>{
+    const div = document.createElement('div');
+    div.textContent = `${c.user}: ${c.text}`;
+    lightboxComments.appendChild(div);
   });
+
+  // Render suggestions
+  lightboxSuggestions.innerHTML = '';
+  galleryData.filter(g=>g.id!==id).slice(0,8).forEach(s=>{
+    const img = document.createElement('img');
+    img.src = s.src;
+    img.onclick = ()=>openLightbox(s.id);
+    lightboxSuggestions.appendChild(img);
+  });
+
+  lightbox.style.display='block';
+  document.body.style.overflow='hidden';
 }
+
+closeLightbox.onclick = ()=>{ lightbox.style.display='none'; document.body.style.overflow='auto'; }
+document.getElementById('lightbox').onclick = ()=>{ lightbox.style.display='none'; document.body.style.overflow='auto'; }
+document.getElementById('lightbox-content').onclick = e=> e.stopPropagation();
+
+// Lightbox like
+lightboxLikeBtn.onclick = async () => {
+  if(!currentImage) return;
+  if(currentImage.likedBy && currentImage.likedBy.includes(userId)){ alert("Already liked!"); return; }
+  await updateDoc(doc(db,"fanGallery",currentImage.id),{
+    likes: (currentImage.likes||0)+1,
+    likedBy: arrayUnion(userId)
+  });
+};
+
+// Lightbox comment
+lightboxSubmitComment.onclick = async () => {
+  if(!currentImage) return;
+  const text = lightboxNewComment.value.trim();
+  if(!text) return alert("Write a comment!");
+  await updateDoc(doc(db,"fanGallery",currentImage.id),{
+    comments: arrayUnion({ user: userId, text })
+  });
+  lightboxNewComment.value = '';
+};
+
+// Lightbox delete
+lightboxDeleteBtn.onclick = async () => {
+  if(!currentImage) return;
+  if(!confirm("Delete this image?")) return;
+  await deleteDoc(doc(db,"fanGallery",currentImage.id));
+  lightbox.style.display='none';
+};
+
+// ---------------- Search ----------------
+searchInput.oninput = () => renderGallery(galleryData, searchInput.value);
+
+// ---------------- Real-time Sync ----------------
+let galleryData = [];
+onSnapshot(galleryRef, snapshot => {
+  galleryData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  renderGallery(galleryData, searchInput.value);
+  
+  // Update lightbox if open
+  if(currentImage){
+    const updated = galleryData.find(i=>i.id===currentImage.id);
+    if(updated) openLightbox(updated.id);
+    else lightbox.style.display='none'; // deleted image
+  }
+});
 </script>
+
 </body>
 </html>
