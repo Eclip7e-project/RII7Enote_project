@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -152,176 +151,121 @@ section {padding:30px;}
 </div>
 
 
-<script>
-// ---------------- Setup ----------------
-const galleryContainer = document.getElementById('galleryContainer');
-const submitBtn = document.getElementById('submitImage');
-const imageFile = document.getElementById('imageFile');
-const imageMember = document.getElementById('imageMember');
-const imageMessage = document.getElementById('imageMessage');
-const submitMsg = document.getElementById('submitMsg');
-const searchInput = document.getElementById('searchInput');
 
-const lightbox = document.getElementById('lightbox');
-const closeLightbox = document.getElementById('close-lightbox');
-const lightboxImg = document.getElementById('lightbox-img');
-const lightboxMember = document.getElementById('lightbox-member');
-const lightboxMessage = document.getElementById('lightbox-message');
-const lightboxComments = document.getElementById('lightbox-comments');
-const lightboxNewComment = document.getElementById('lightbox-new-comment');
-const lightboxSubmitComment = document.getElementById('lightbox-submit-comment');
-const lightboxLikeBtn = document.getElementById('lightbox-like');
-const lightboxSuggestions = document.getElementById('lightbox-suggestions');
 
-let currentImage = null;
 
-// ---------------- Helpers ----------------
-function generateID(){ return Date.now().toString() + Math.floor(Math.random()*1000); }
+<script type="module">
+  // ---------------- Firebase Setup ----------------
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+  import { 
+    getFirestore, collection, addDoc, getDocs, onSnapshot, deleteDoc, doc, updateDoc 
+  } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+  import { 
+    getStorage, ref, uploadBytes, getDownloadURL 
+  } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-storage.js";
 
-function getGallery() { return JSON.parse(localStorage.getItem('fanGallery')||'[]'); }
-function setGallery(gallery) { localStorage.setItem('fanGallery', JSON.stringify(gallery)); }
+  const firebaseConfig = {
+    apiKey: "AIzaSyCM69r2wUibBFIFpML07Y5RUTrxHgonlSc",
+    authDomain: "rii7e-sticky-notes-project.firebaseapp.com",
+    projectId: "rii7e-sticky-notes-project",
+    storageBucket: "rii7e-sticky-notes-project.appspot.com",
+    messagingSenderId: "962319162792",
+    appId: "1:962319162792:web:8fad2b11c316766c8a119d"
+  };
 
-function getUserImages() { return JSON.parse(localStorage.getItem('userImages')||'[]'); }
-function setUserImages(arr) { localStorage.setItem('userImages', JSON.stringify(arr)); }
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const storage = getStorage(app);
 
-function getLikedGallery() { return JSON.parse(localStorage.getItem('likedGallery')||'[]'); }
-function setLikedGallery(arr) { localStorage.setItem('likedGallery', JSON.stringify(arr)); }
+  const galleryRef = collection(db, "fanGallery");
 
-// ---------------- Render Gallery ----------------
-function renderGallery(filter=''){
-  let gallery = getGallery();
-  galleryContainer.innerHTML='';
-  gallery.filter(item=>{
-    return !filter || item.member.toLowerCase().includes(filter.toLowerCase()) 
-           || item.category.toLowerCase().includes(filter.toLowerCase());
-  }).forEach(item=>{
-    const div = document.createElement('div');
-    div.className='gallery-item';
-    div.innerHTML = `
-      <div class="category-label">${item.category.toUpperCase()}</div>
-      <img src="${item.src}">
-      <div class="info">
-        <span>${item.member.toUpperCase()}</span>
-        <span>
-          <button class="like-btn" data-id="${item.id}">❤ ${item.likes||0}</button>
-        </span>
-      </div>
-    `;
-    // Delete button if user owns image
-    let userImages = getUserImages();
-    if(userImages.includes(item.id)){
-      const delBtn = document.createElement('button');
-      delBtn.className='delete-btn';
-      delBtn.textContent='Delete';
-      delBtn.onclick=()=>{
-        if(!confirm('Delete this image?')) return;
-        gallery = gallery.filter(g=>g.id!==item.id);
-        setGallery(gallery);
-        setUserImages(userImages.filter(uid=>uid!==item.id));
-        renderGallery(searchInput.value);
-      };
-      div.appendChild(delBtn);
+  // ---------------- Elements ----------------
+  const galleryContainer = document.getElementById('galleryContainer');
+  const submitBtn = document.getElementById('submitImage');
+  const imageFile = document.getElementById('imageFile');
+  const imageMember = document.getElementById('imageMember');
+  const imageMessage = document.getElementById('imageMessage');
+  const submitMsg = document.getElementById('submitMsg');
+  const searchInput = document.getElementById('searchInput');
+
+  let allImages = [];
+
+  // ---------------- Render Gallery ----------------
+  function renderGallery(filter = '') {
+    galleryContainer.innerHTML = '';
+    allImages
+      .filter(item =>
+        !filter ||
+        item.member.toLowerCase().includes(filter.toLowerCase()) ||
+        item.category.toLowerCase().includes(filter.toLowerCase())
+      )
+      .forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'gallery-item';
+        div.innerHTML = `
+          <div class="category-label">${item.category.toUpperCase()}</div>
+          <img src="${item.src}">
+          <div class="info">
+            <span>${item.member.toUpperCase()}</span>
+            <span><button class="like-btn" data-id="${item.id}">❤ ${item.likes || 0}</button></span>
+          </div>
+        `;
+        galleryContainer.appendChild(div);
+
+        // Like button
+        div.querySelector('.like-btn').onclick = async () => {
+          const docRef = doc(db, "fanGallery", item.id);
+          await updateDoc(docRef, { likes: (item.likes || 0) + 1 });
+        };
+      });
+  }
+
+  // ---------------- Real-Time Sync ----------------
+  onSnapshot(galleryRef, (snapshot) => {
+    allImages = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    renderGallery(searchInput.value);
+  });
+
+  // ---------------- Submit Image ----------------
+  submitBtn.onclick = async () => {
+    const file = imageFile.files[0];
+    if (!file) {
+      submitMsg.textContent = 'Select an image!';
+      return;
     }
 
-    // Open lightbox on click
-    div.querySelector('img').onclick = ()=>openLightbox(item.id);
-    galleryContainer.appendChild(div);
+    const member = imageMember.value;
+    const message = imageMessage.value.trim();
+    const category = member;
 
-    // Like button
-    div.querySelector('.like-btn').onclick=()=>{
-      let liked = getLikedGallery();
-      if(liked.includes(item.id)){alert("Already liked!"); return;}
-      item.likes = item.likes?item.likes+1:1;
-      let allGallery = getGallery().map(g=>g.id===item.id?item:g);
-      setGallery(allGallery);
-      liked.push(item.id);
-      setLikedGallery(liked);
-      renderGallery(searchInput.value);
-    };
-  });
-}
+    submitMsg.textContent = 'Uploading...';
 
-// ---------------- Image Submission ----------------
-submitBtn.onclick=()=>{
-  const file = imageFile.files[0];
-  if(!file){submitMsg.textContent='Select an image!'; return;}
-  const member = imageMember.value;
-  const message = imageMessage.value.trim();
-  const category = member; // member itself as category
-  const reader = new FileReader();
-  reader.onload = function(e){
-    let gallery = getGallery();
-    const id = generateID();
-    const newItem = {id:id, src:e.target.result, member:member, category:category, message:message, likes:0, comments:[]};
-    gallery.push(newItem);
-    setGallery(gallery);
-    let userImages = getUserImages(); userImages.push(id); setUserImages(userImages);
-    renderGallery(searchInput.value);
-    submitMsg.textContent='Image submitted successfully!';
-    imageFile.value=''; imageMessage.value='';
+    // Upload image to Firebase Storage
+    const storageRef = ref(storage, `fanGallery/${Date.now()}-${file.name}`);
+    await uploadBytes(storageRef, file);
+    const imageUrl = await getDownloadURL(storageRef);
+
+    // Add to Firestore
+    await addDoc(galleryRef, {
+      src: imageUrl,
+      member,
+      category,
+      message,
+      likes: 0,
+      comments: []
+    });
+
+    submitMsg.textContent = 'Image submitted successfully!';
+    imageFile.value = '';
+    imageMessage.value = '';
   };
-  reader.readAsDataURL(file);
-};
 
-// ---------------- Search ----------------
-searchInput.oninput = ()=>renderGallery(searchInput.value);
-
-// ---------------- Lightbox ----------------
-function openLightbox(id){
-  let gallery = getGallery();
-  const item = gallery.find(g=>g.id===id);
-  if(!item) return;
-  currentImage = item;
-  lightboxImg.src = item.src;
-  lightboxMember.textContent = item.member.toUpperCase();
-  lightboxMessage.textContent = item.message||'';
-  lightboxLikeBtn.textContent = `❤ ${item.likes||0}`;
-
-  // Render comments
-  lightboxComments.innerHTML='';
-  (item.comments||[]).forEach(c=>{
-    const div = document.createElement('div'); div.textContent=c; lightboxComments.appendChild(div);
-  });
-
-  // Render suggestions (other images)
-  lightboxSuggestions.innerHTML='';
-  gallery.filter(g=>g.id!==item.id).slice(0,8).forEach(s=>{
-    const img = document.createElement('img'); img.src=s.src;
-    img.onclick = ()=>openLightbox(s.id);
-    lightboxSuggestions.appendChild(img);
-  });
-
-  lightbox.style.display='block';
-  document.body.style.overflow='hidden';
-}
-
-closeLightbox.onclick = ()=>{lightbox.style.display='none'; document.body.style.overflow='auto';}
-
-// ---------------- Lightbox Comments ----------------
-lightboxSubmitComment.onclick=()=>{
-  const txt = lightboxNewComment.value.trim();
-  if(!txt){alert("Write a comment!"); return;}
-  if(!currentImage.comments) currentImage.comments=[];
-  currentImage.comments.push(txt);
-  lightboxNewComment.value='';
-  renderGallery(searchInput.value);
-  openLightbox(currentImage.id);
-};
-
-// ---------------- Lightbox Likes ----------------
-lightboxLikeBtn.onclick=()=>{
-  let liked = getLikedGallery();
-  if(liked.includes(currentImage.id)){alert("Already liked!"); return;}
-  currentImage.likes = currentImage.likes?currentImage.likes+1:1;
-  let allGallery = getGallery().map(g=>g.id===currentImage.id?currentImage:g);
-  setGallery(allGallery);
-  liked.push(currentImage.id); setLikedGallery(liked);
-  openLightbox(currentImage.id);
-};
-
-// ---------------- Initial Render ----------------
-renderGallery();
+  // ---------------- Search ----------------
+  searchInput.oninput = () => renderGallery(searchInput.value);
 </script>
+
+  
 </body>
 </html>
+
 
