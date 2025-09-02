@@ -190,6 +190,50 @@ section {padding:30px;}
 
   let allImages = [];
 
+
+
+// ----------------- Render Pick Section (REALTIME) -----------------
+function renderPickSection() {
+  members.forEach(member => {
+    const wall = document.querySelector(`#${member.name}-selection .wall`);
+    if (!wall) return;
+
+    // Clear wall now
+    wall.innerHTML = '';
+
+    // Always add placeholders
+    for (let i = 1; i <= 4; i++) {
+      const imgFile = `${member.name}${i}.png`;
+      const note = document.createElement('div');
+      note.className = 'sticky-note';
+      note.style.border = `4px solid ${getMemberColor(member.name)}`;
+      note.innerHTML = `<img src="${imgFile}" alt="${member.name} placeholder ${i}">`;
+      note.onclick = () => openModalForMember(member.name, imgFile);
+      wall.appendChild(note);
+    }
+
+    // Listen for realtime fan designs
+    const designsCol = collection(db, 'designs', member.name, 'fanDesigns');
+    onSnapshot(designsCol, snapshot => {
+      // Clear fan designs for this member before adding updated ones
+      const oldDesigns = wall.querySelectorAll('.fan-design');
+      oldDesigns.forEach(el => el.remove());
+
+      snapshot.docs.forEach(docSnap => {
+        const data = docSnap.data();
+        const note = document.createElement('div');
+        note.className = 'sticky-note fan-design';
+        note.style.border = `4px solid ${getMemberColor(member.name)}`;
+        note.innerHTML = `<img src="${data.img}" alt="Fan design">`;
+        note.onclick = () => openModalForMember(member.name, data.img);
+        wall.appendChild(note);
+      });
+    });
+  });
+}
+
+
+  
   // ---------------- Render Gallery ----------------
   function renderGallery(filter = '') {
     galleryContainer.innerHTML = '';
@@ -267,5 +311,6 @@ section {padding:30px;}
   
 </body>
 </html>
+
 
 
