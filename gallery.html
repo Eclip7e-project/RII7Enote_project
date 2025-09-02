@@ -180,11 +180,18 @@ submitBtn.onclick = async () => {
   reader.readAsDataURL(file);
 };
 
-// Real-time listener
-onSnapshot(collection(db,"gallery"), snapshot => {
-  const docs = snapshot.docs.map(d=>({ id:d.id, ...d.data() }));
-  renderGallery(searchInput.value, docs);
+let allDocs = []; // Store all documents from Firestore
+
+// Single real-time listener for the gallery
+onSnapshot(collection(db, "gallery"), snapshot => {
+  allDocs = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+  renderGallery(searchInput.value, allDocs);
 });
+
+// Search input filters locally without creating new listeners
+searchInput.oninput = e => {
+  renderGallery(e.target.value, allDocs);
+};
 
 // Render gallery
 function renderGallery(filter='', docs=[]){
@@ -212,8 +219,7 @@ function renderGallery(filter='', docs=[]){
   });
 }
 
-// Search
-searchInput.oninput = e => { onSnapshot(collection(db,"gallery"), snapshot => { const docs = snapshot.docs.map(d=>({id:d.id,...d.data()})); renderGallery(e.target.value,docs); }); };
+
 
 // Lightbox
 function openLightbox(item){
@@ -263,3 +269,4 @@ function renderSuggestions(item){
 </script>
 </body>
 </html>  
+
