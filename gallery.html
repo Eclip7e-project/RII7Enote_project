@@ -120,7 +120,7 @@ section { padding:30px; }
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
 import { getFirestore, collection, addDoc, doc, onSnapshot, updateDoc, deleteDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
-// Firebase config
+// 🔑 Your Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyCM69r2wUibBFIFpML07Y5RUTrxHgonlSc",
   authDomain: "rii7e-sticky-notes-project.firebaseapp.com",
@@ -156,47 +156,36 @@ const modalDelete = document.getElementById('modal-delete');
 let currentImage = null;
 let userId = localStorage.getItem('userId') || (localStorage.setItem('userId', crypto.randomUUID()), localStorage.getItem('userId'));
 
-// Submit Image via Postimages
+// ✅ Submit image
 submitBtn.onclick = async () => {
   const file = imageFile.files[0];
   if (!file) { submitMsg.textContent = 'Select an image!'; return; }
 
-  const formData = new FormData();
-  formData.append('file', file);
+  const reader = new FileReader();
+  reader.onload = async e => {
+    try {
+      await addDoc(collection(db, "gallery"), {
+        creator: userId,
+        member: imageMember.value,
+        message: imageMessage.value,
+        src: e.target.result,  // Base64 image
+        likes: 0,
+        comments: [],
+        timestamp: Date.now()
+      });
 
-  try {
-    // Upload to Postimages
-    const res = await fetch('https://api.postimages.org/1/upload', {
-      method: 'POST',
-      body: formData
-    });
-
-    const data = await res.json();
-    if (!data || !data.url) throw new Error('Postimages upload failed');
-
-    const imageUrl = data.url;
-
-    // Save to Firestore
-    await addDoc(collection(db, "gallery"), {
-      creator: userId,
-      member: imageMember.value,
-      message: imageMessage.value,
-      src: imageUrl,
-      likes: 0,
-      comments: [],
-      timestamp: Date.now()
-    });
-
-    submitMsg.textContent = 'Image submitted successfully!';
-    imageFile.value = '';
-    imageMessage.value = '';
-
-  } catch (err) {
-    submitMsg.textContent = 'Upload failed: ' + err.message;
-  }
+      submitMsg.textContent = 'Image submitted successfully!';
+      imageFile.value = '';
+      imageMessage.value = '';
+    } catch (err) {
+      submitMsg.textContent = 'Upload failed: ' + err.message;
+      console.error(err);
+    }
+  };
+  reader.readAsDataURL(file);
 };
 
-// Store all documents
+// Store all documents for search/filter
 let allDocs = [];
 
 // Real-time listener
@@ -205,10 +194,8 @@ onSnapshot(collection(db, "gallery"), snapshot => {
   renderGallery(searchInput.value, allDocs);
 });
 
-// Search locally
-searchInput.oninput = e => {
-  renderGallery(e.target.value, allDocs);
-};
+// Search input
+searchInput.oninput = e => renderGallery(e.target.value, allDocs);
 
 // Render gallery
 function renderGallery(filter='', docs=[]){
@@ -227,16 +214,22 @@ function renderGallery(filter='', docs=[]){
       const delBtn = document.createElement('button');
       delBtn.className='delete-btn';
       delBtn.textContent='Delete';
-      delBtn.onclick=async e=>{ e.stopPropagation(); if(confirm("Delete?")) await deleteDoc(doc(db,"gallery",item.id)); };
+      delBtn.onclick=async e=>{
+        e.stopPropagation();
+        if(confirm("Delete?")) await deleteDoc(doc(db,"gallery",item.id));
+      };
       div.appendChild(delBtn);
     }
     div.querySelector('img').onclick = ()=>openLightbox(item);
-    div.querySelector('.like-btn').onclick = async e=>{ e.stopPropagation(); await updateDoc(doc(db,"gallery",item.id), { likes:(item.likes||0)+1 }); };
+    div.querySelector('.like-btn').onclick = async e=>{
+      e.stopPropagation();
+      await updateDoc(doc(db,"gallery",item.id), { likes:(item.likes||0)+1 });
+    };
     galleryContainer.appendChild(div);
   });
 }
 
-// Lightbox
+// Lightbox functions
 function openLightbox(item){
   currentImage=item;
   lightboxImg.src=item.src;
@@ -252,8 +245,8 @@ function openLightbox(item){
 function renderComments(item){
   lightboxComments.innerHTML='';
   (item.comments||[]).forEach(c=>{
-    const div=document.createElement('div'); 
-    div.textContent=c; 
+    const div=document.createElement('div');
+    div.textContent=c;
     lightboxComments.appendChild(div);
   });
 }
@@ -265,37 +258,37 @@ lightboxSubmitComment.onclick = async ()=>{
   lightboxNewComment.value=''; 
 };
 
-lightboxLikeBtn.onclick = async ()=>{ 
+lightboxLikeBtn.onclick = async ()=>{
   await updateDoc(doc(db,"gallery",currentImage.id),{ likes:(currentImage.likes||0)+1 });
 };
 
-modalDelete.onclick=async()=>{
+modalDelete.onclick = async ()=>{
   if(confirm("Delete?")){ 
     await deleteDoc(doc(db,"gallery",currentImage.id)); 
     lightbox.style.display='none'; 
   }
 };
 
-closeLightbox.onclick=()=>lightbox.style.display='none';
-lightbox.onclick=()=>lightbox.style.display='none';
+closeLightbox.onclick = ()=>lightbox.style.display='none';
+lightbox.onclick = ()=>lightbox.style.display='none';
 document.querySelector('.lightbox-content').onclick=e=>e.stopPropagation();
 
 // Suggestions
 function renderSuggestions(item){
   lightboxSuggestions.innerHTML='';
-  onSnapshot(collection(db,"gallery"), snapshot=>{
-    snapshot.docs.filter(d=>d.id!==item.id).slice(0,8).forEach(d=>{
-      const img=document.createElement('img'); 
-      img.src=d.data().src;
-      img.onclick=()=>openLightbox({id:d.id,...d.data()});
-      lightboxSuggestions.appendChild(img);
-    });
+  allDocs.filter(d=>d.id!==item.id).slice(0,8).forEach(d=>{
+    const img=document.createElement('img');
+    img.src=d.src;
+    img.onclick=()=>openLightbox(d);
+    lightboxSuggestions.appendChild(img);
   });
 }
 </script>
 
+
 </body>
 </html>  
+
 
 
 
