@@ -7,100 +7,147 @@
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
 <style>
 body {
-  margin:0;
-  font-family:'Playfair Display', serif;
-  background-color:black;
-  color:white;
-  background-image:url('https://www.transparenttextures.com/patterns/stardust.png');
+  margin: 0;
+  font-family: 'Playfair Display', serif;
+  background-color: black;
+  color: white;
+  background-image: url('https://www.transparenttextures.com/patterns/stardust.png');
 }
-header{
-  padding:30px;
-  text-align:center;
+
+header {
+  padding: 30px;
+  text-align: center;
 }
-h1{
-  color:gold;
+
+h1 {
+  color: gold;
+  margin: 0 0 10px 0;
 }
-.member-section{
-  margin:40px 0;
+
+.member-section {
+  margin: 40px 0;
 }
-.member-section h2{
-  text-align:center;
-  color:gold;
-  margin-bottom:20px;
+
+.member-section h2 {
+  text-align: center;
+  color: gold;
+  margin-bottom: 20px;
 }
-.wall-container{
-  display:flex;
-  flex-wrap:nowrap;
-  overflow-x:auto;
-  gap:20px;
-  padding:20px;
+
+.wall-container {
+  display: flex;
+  flex-wrap: wrap; /* wrap notes on smaller screens */
+  gap: 20px;
+  padding: 20px;
+  justify-content: center;
 }
-.note{
-  flex:0 0 auto;
-  width:250px;
-  min-height:200px;
-  border-radius:15px;
-  position:relative;
-  cursor:pointer;
+
+.note {
+  flex: 0 0 220px; /* default width on large screens */
+  max-width: 220px;
+  min-width: 150px;
+  min-height: 160px; /* slightly smaller height */
+  border-radius: 12px;
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
 }
-.note img{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  border-radius:15px;
+
+.note:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 10px gold;
 }
-.note .text{
-  position:absolute;
-  top:10px;
-  left:10px;
-  right:10px;
-  bottom:30px;
-  color:black;
-  white-space:pre-wrap;
-  overflow-wrap:break-word;
-  font-size:0.9em;
+
+.note img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 12px;
 }
-.info-box{
-  position:absolute;
-  bottom:5px;
-  left:10px;
-  right:10px;
-  background:rgba(0,0,0,0.6);
-  color:white;
-  font-size:0.8em;
-  padding:2px 5px;
-  border-radius:5px;
-  display:flex;
-  justify-content:space-between;
+
+.note .text {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  right: 8px;
+  bottom: 28px;
+  color: black;
+  font-size: 0.85em;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
 }
-.top-note{
-  border:3px solid gold;
-  box-shadow:0 0 15px gold;
+
+.info-box {
+  position: absolute;
+  bottom: 5px;
+  left: 8px;
+  right: 8px;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  font-size: 0.75em;
+  padding: 2px 5px;
+  border-radius: 5px;
+  display: flex;
+  justify-content: space-between;
 }
-footer{
-  padding:30px 0;
-  border-top:2px solid gold;
-  text-align:center;
+
+.top-note {
+  border: 2px solid gold;
+  box-shadow: 0 0 12px gold;
 }
-footer a{
-  color:gold;
-  text-decoration:none;
+
+footer {
+  padding: 30px 0;
+  border-top: 2px solid gold;
+  text-align: center;
 }
-footer a:hover{
-  text-decoration:underline;
+
+footer a {
+  color: gold;
+  text-decoration: none;
 }
-.delete-btn{
-  position:absolute;
-  top:5px;
-  right:5px;
-  background:red;
-  color:white;
-  border:none;
-  border-radius:5px;
-  padding:3px 7px;
-  cursor:pointer;
+
+footer a:hover {
+  text-decoration: underline;
+}
+
+.delete-btn {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background: red;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 3px 7px;
+  cursor: pointer;
+}
+
+/* ----------------- Responsive ----------------- */
+@media (max-width: 900px) {
+  .note {
+    flex: 0 0 45%; /* two per row on tablets */
+    max-width: 45%;
+    min-height: 150px;
+  }
+}
+
+@media (max-width: 600px) {
+  .note {
+    flex: 0 0 48%; /* two per row on phones */
+    max-width: 48%;
+    min-height: 140px;
+  }
+}
+
+@media (max-width: 400px) {
+  .note {
+    flex: 0 0 90%; /* one per row on very small screens */
+    max-width: 90%;
+  }
 }
 </style>
+
 </head>
 <body>
 
@@ -225,3 +272,4 @@ members.forEach(member=>{
 
 </body>
 </html>
+
