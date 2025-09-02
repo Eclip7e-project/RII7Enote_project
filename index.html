@@ -3,27 +3,29 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-   <meta name="viewport" content="width=1200">
   <title>RII7E Sticky Notes Project</title>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
   <style>
 
-     /* For smaller screens (phones) */
-@media screen and (max-width: 768px) {
-  body {
-    font-size: 14px;  /* smaller base size */
-    line-height: 1.4;
-  }
 
-  h1, h2, h3 {
-    font-size: 90%; /* make headings scale down */
-  }
-
-  p, li {
-    font-size: 90%; /* shrink paragraphs + list items */
-  }
+.pinned-note {
+  background: #fef68a; /* sticky note yellow */
+  border: 2px solid #333;
+  padding: 15px;
+  margin: 20px auto;
+  width: 90%;
+  max-width: 500px;
+  font-family: "Comic Sans MS", cursive, sans-serif;
+  font-size: 1rem;
+  box-shadow: 3px 3px 5px rgba(0,0,0,0.3);
+  border-radius: 6px;
+}
+.pinned-note h2 {
+  margin: 0 0 10px;
+  font-size: 1.2rem;
 }
 
+     
      
     :root{
       --gold:#d4af37;
@@ -73,6 +75,37 @@
     @media (max-width:800px){
       .modal-grid{grid-template-columns:1fr; max-height:85vh; overflow:auto}
     }
+
+
+.share-project {
+  text-align: center;
+  margin: 30px 0;
+}
+.share-btn {
+  background: #222;
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: bold;
+  transition: background 0.3s;
+}
+.share-btn:hover {
+  background: #444;
+}
+
+     @media (max-width: 768px) {
+  .note {
+    width: 140px;   /* smaller note size */
+    height: auto;
+    font-size: 0.8rem;
+  }
+  .pinned-note {
+    font-size: 0.9rem;
+  }
+}
+
+     
   </style>
 </head>
 <body>
@@ -101,6 +134,17 @@
 </nav>
 
 <main>
+
+<div class="pinned-note">
+  <h2>📌 RII7E NOTE PROJECT</h2>
+  <p>Our voices, our love, our protest.  
+  Each note left here is a memory, a demand, and a promise:  
+  RIIZE is seven, and we will never be silenced. 💛</p>
+</div>
+
+
+
+   
 <section id="note-selection">
   <h2>Pick a Sticky Note</h2>
 
@@ -142,7 +186,7 @@
   </div>
 
   <div class="member-section" id="simple-notes">
-    <h3>Plain Sticky Notes</h3>
+    <h3>Simple Sticky Notes</h3>
     <p style="max-width:720px;margin:6px auto 12px;color:#ddd;">Prefer something minimal? Click a plain one-color sticky note, pick a member, choose your text color, and write your message, you'll preview the text on the note in real time.</p>
     <div class="wall" id="simple-note-wall"></div>
   </div>
@@ -168,6 +212,15 @@
   </div>
   <p id="design-msg" style="color:var(--gold);text-align:center;margin-top:10px;"></p>
 </section>
+
+
+<div class="share-project">
+  <p>📢 Share this project with BRII7E!</p>
+  <a href="https://twitter.com/intent/tweet?text=Join%20the%20RII7E%20NOTE%20PROJECT%20—%20leave%20your%20message%20of%20love%20and%20protest!%20%23RIIZEISSEVEN%20%23SMBRINGRII7EBACK&url=https://eclip7e-project.github.io/RII7Enote_project/" 
+     target="_blank" class="share-btn">Share on X</a>
+</div>
+
+   
 
 <section id="design-management" style="margin-top:28px;">
   <h2>Manage Your Designs</h2>
@@ -560,6 +613,7 @@ setupManageDesignsRealtime();
 
 </body>
 </html> 
+
 
 
 
