@@ -158,7 +158,7 @@ section {padding:30px;}
   // ---------------- Firebase Setup ----------------
   import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
   import { 
-    getFirestore, collection, addDoc, getDocs, onSnapshot, deleteDoc, doc, updateDoc, arrayUnion 
+    getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, arrayUnion 
   } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
   import { 
     getStorage, ref, uploadBytes, getDownloadURL 
@@ -168,7 +168,7 @@ section {padding:30px;}
     apiKey: "AIzaSyCM69r2wUibBFIFpML07Y5RUTrxHgonlSc",
     authDomain: "rii7e-sticky-notes-project.firebaseapp.com",
     projectId: "rii7e-sticky-notes-project",
-    storageBucket: "rii7e-sticky-notes-project.appspot.com", // ✅ correct bucket
+    storageBucket: "rii7e-sticky-notes-project.appspot.com", // ✅ must be .appspot.com
     messagingSenderId: "962319162792",
     appId: "1:962319162792:web:8fad2b11c316766c8a119d"
   };
@@ -221,8 +221,13 @@ section {padding:30px;}
 
         // Like button
         div.querySelector('.like-btn').onclick = async () => {
-          const docRef = doc(db, "fanGallery", item.id);
-          await updateDoc(docRef, { likes: (item.likes || 0) + 1 });
+          try {
+            const docRef = doc(db, "fanGallery", item.id);
+            await updateDoc(docRef, { likes: (item.likes || 0) + 1 });
+          } catch (err) {
+            console.error("Like failed:", err);
+            alert("Like failed: " + err.message);
+          }
         };
 
         // Comment button
@@ -230,12 +235,16 @@ section {padding:30px;}
           const input = div.querySelector('.comment-input');
           const text = input.value.trim();
           if (!text) return;
-
-          const docRef = doc(db, "fanGallery", item.id);
-          await updateDoc(docRef, {
-            comments: arrayUnion({ user: "Anon", text })
-          });
-          input.value = '';
+          try {
+            const docRef = doc(db, "fanGallery", item.id);
+            await updateDoc(docRef, {
+              comments: arrayUnion({ user: "Anon", text })
+            });
+            input.value = '';
+          } catch (err) {
+            console.error("Comment failed:", err);
+            alert("Comment failed: " + err.message);
+          }
         };
       });
   }
@@ -260,33 +269,40 @@ section {padding:30px;}
 
     submitMsg.textContent = 'Uploading...';
 
-    // Upload image to Firebase Storage
-    const storageRef = ref(storage, `fanGallery/${Date.now()}-${file.name}`);
-    await uploadBytes(storageRef, file);
-    const imageUrl = await getDownloadURL(storageRef);
+    try {
+      // Upload image to Firebase Storage
+      const storageRef = ref(storage, `fanGallery/${Date.now()}-${file.name}`);
+      await uploadBytes(storageRef, file);
+      const imageUrl = await getDownloadURL(storageRef);
 
-    // Add to Firestore
-    await addDoc(galleryRef, {
-      src: imageUrl,
-      member,
-      category,
-      message,
-      likes: 0,
-      comments: []
-    });
+      // Add to Firestore
+      await addDoc(galleryRef, {
+        src: imageUrl,
+        member,
+        category,
+        message,
+        likes: 0,
+        comments: message ? [{ user: "Uploader", text: message }] : []
+      });
 
-    submitMsg.textContent = 'Image submitted successfully!';
-    imageFile.value = '';
-    imageMessage.value = '';
+      submitMsg.textContent = '✅ Image submitted successfully!';
+      imageFile.value = '';
+      imageMessage.value = '';
+    } catch (err) {
+      console.error("Upload failed:", err);
+      submitMsg.textContent = "❌ Upload failed: " + err.message;
+    }
   };
 
   // ---------------- Search ----------------
   searchInput.oninput = () => renderGallery(searchInput.value);
 </script>
 
+
   
 </body>
 </html>
+
 
 
 
