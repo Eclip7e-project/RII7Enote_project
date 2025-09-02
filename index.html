@@ -24,6 +24,12 @@
   margin: 0 0 10px;
   font-size: 1.2rem;
 }
+     /* Pinned note styling */
+.pinned-note {
+  color: #000 !important;   /* always black text */
+  font-weight: bold;
+}
+
 
      
      
@@ -105,6 +111,24 @@
   }
 }
 
+
+/* 2 columns on phones */
+@media screen and (max-width: 768px) {
+  .wall {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px;
+  }
+
+  .sticky-note {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 auto !important;
+  }
+}
+
+
+     
      
   </style>
 </head>
@@ -212,13 +236,6 @@
   </div>
   <p id="design-msg" style="color:var(--gold);text-align:center;margin-top:10px;"></p>
 </section>
-
-
-<div class="share-project">
-  <p>📢 Share this project with BRII7E!</p>
-  <a href="https://twitter.com/intent/tweet?text=Join%20the%20RII7E%20NOTE%20PROJECT%20—%20leave%20your%20message%20of%20love%20and%20protest!%20%23RIIZEISSEVEN%20%23SMBRINGRII7EBACK&url=https://eclip7e-project.github.io/RII7Enote_project/" 
-     target="_blank" class="share-btn">Share on X</a>
-</div>
 
    
 
@@ -610,9 +627,29 @@ members.forEach(m => renderMemberWall(m.name));
 setupManageDesignsRealtime();
 </script>
 
+<div id="share-section" style="text-align:center; margin:40px 0;">
+  <h2 style="color:#FFD700; margin-bottom:10px;">📢 Share the RII7E Note Project</h2>
+  <p style="color:#fff; margin-bottom:15px;">Spread our wall of love & protest — let’s make our voices impossible to ignore.</p>
+  
+  <div style="display:flex; justify-content:center; gap:15px; flex-wrap:wrap;">
+    <a href="https://twitter.com/intent/tweet?text=Join%20the%20RII7E%20Note%20Project!%20Our%20voices%20for%20Seunghan%20and%20RIIZE%20💛%20https://eclip7e-project.github.io/RII7Enote_project/" target="_blank">
+      <img src="twitter-icon.png" alt="Share on Twitter" style="width:40px;">
+    </a>
+    <a href="https://www.facebook.com/sharer/sharer.php?u=https://eclip7e-project.github.io/RII7Enote_project/" target="_blank">
+      <img src="facebook-icon.png" alt="Share on Facebook" style="width:40px;">
+    </a>
+    <a href="https://www.tumblr.com/widgets/share/tool?canonicalUrl=https://eclip7e-project.github.io/RII7Enote_project/" target="_blank">
+      <img src="tumblr-icon.png" alt="Share on Tumblr" style="width:40px;">
+    </a>
+    <a href="https://www.reddit.com/submit?url=https://eclip7e-project.github.io/RII7Enote_project/&title=RII7E%20Note%20Project" target="_blank">
+      <img src="reddit-icon.png" alt="Share on Reddit" style="width:40px;">
+    </a>
+  </div>
+</div>
 
 </body>
 </html> 
+
 
 
 
