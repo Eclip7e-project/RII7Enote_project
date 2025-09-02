@@ -119,7 +119,6 @@ section { padding:30px; }
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
 import { getFirestore, collection, addDoc, doc, onSnapshot, updateDoc, deleteDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-storage.js";
 
 // Firebase config
 const firebaseConfig = {
@@ -131,11 +130,9 @@ const firebaseConfig = {
   appId: "1:962319162792:web:8fad2b11c316766c8a119d"
 };
 initializeApp(firebaseConfig);
-
 const db = getFirestore();
-const storage = getStorage();
 
-// DOM Elements
+// Elements
 const galleryContainer = document.getElementById('galleryContainer');
 const submitBtn = document.getElementById('submitImage');
 const imageFile = document.getElementById('imageFile');
@@ -159,48 +156,61 @@ const modalDelete = document.getElementById('modal-delete');
 let currentImage = null;
 let userId = localStorage.getItem('userId') || (localStorage.setItem('userId', crypto.randomUUID()), localStorage.getItem('userId'));
 
-// ------------------- Submit Image -------------------
+// Submit Image via Postimages
 submitBtn.onclick = async () => {
   const file = imageFile.files[0];
-  if(!file){ submitMsg.textContent='Select an image!'; return; }
+  if (!file) { submitMsg.textContent = 'Select an image!'; return; }
 
-  const storageRef = ref(storage, 'gallery/' + crypto.randomUUID() + '_' + file.name);
+  const formData = new FormData();
+  formData.append('file', file);
 
   try {
-    await uploadBytes(storageRef, file);
-    const url = await getDownloadURL(storageRef);
+    // Upload to Postimages
+    const res = await fetch('https://api.postimages.org/1/upload', {
+      method: 'POST',
+      body: formData
+    });
 
-    await addDoc(collection(db,"gallery"),{
+    const data = await res.json();
+    if (!data || !data.url) throw new Error('Postimages upload failed');
+
+    const imageUrl = data.url;
+
+    // Save to Firestore
+    await addDoc(collection(db, "gallery"), {
       creator: userId,
       member: imageMember.value,
       message: imageMessage.value,
-      src: url,
+      src: imageUrl,
       likes: 0,
       comments: [],
       timestamp: Date.now()
     });
 
-    submitMsg.textContent='Image submitted successfully!';
-    imageFile.value=''; 
-    imageMessage.value='';
-  } catch(err){
-    submitMsg.textContent='Upload failed: '+err.message;
+    submitMsg.textContent = 'Image submitted successfully!';
+    imageFile.value = '';
+    imageMessage.value = '';
+
+  } catch (err) {
+    submitMsg.textContent = 'Upload failed: ' + err.message;
   }
 };
 
-// ------------------- Real-time Sync -------------------
+// Store all documents
 let allDocs = [];
 
-onSnapshot(collection(db,"gallery"), snapshot => {
+// Real-time listener
+onSnapshot(collection(db, "gallery"), snapshot => {
   allDocs = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
   renderGallery(searchInput.value, allDocs);
 });
 
+// Search locally
 searchInput.oninput = e => {
   renderGallery(e.target.value, allDocs);
 };
 
-// ------------------- Render Gallery -------------------
+// Render gallery
 function renderGallery(filter='', docs=[]){
   galleryContainer.innerHTML='';
   const filtered = docs.filter(d => !filter || d.member.toLowerCase().includes(filter.toLowerCase()));
@@ -226,7 +236,7 @@ function renderGallery(filter='', docs=[]){
   });
 }
 
-// ------------------- Lightbox -------------------
+// Lightbox
 function openLightbox(item){
   currentImage=item;
   lightboxImg.src=item.src;
@@ -241,14 +251,14 @@ function openLightbox(item){
 
 function renderComments(item){
   lightboxComments.innerHTML='';
-  (item.comments||[]).forEach(c=>{ 
+  (item.comments||[]).forEach(c=>{
     const div=document.createElement('div'); 
     div.textContent=c; 
-    lightboxComments.appendChild(div); 
+    lightboxComments.appendChild(div);
   });
 }
 
-lightboxSubmitComment.onclick = async ()=>{ 
+lightboxSubmitComment.onclick = async ()=>{
   const txt = lightboxNewComment.value.trim(); 
   if(!txt) return; 
   await updateDoc(doc(db,"gallery",currentImage.id),{ comments: arrayUnion(txt) }); 
@@ -259,17 +269,18 @@ lightboxLikeBtn.onclick = async ()=>{
   await updateDoc(doc(db,"gallery",currentImage.id),{ likes:(currentImage.likes||0)+1 });
 };
 
-modalDelete.onclick=async()=>{ 
+modalDelete.onclick=async()=>{
   if(confirm("Delete?")){ 
     await deleteDoc(doc(db,"gallery",currentImage.id)); 
     lightbox.style.display='none'; 
-  } 
+  }
 };
 
 closeLightbox.onclick=()=>lightbox.style.display='none';
 lightbox.onclick=()=>lightbox.style.display='none';
 document.querySelector('.lightbox-content').onclick=e=>e.stopPropagation();
 
+// Suggestions
 function renderSuggestions(item){
   lightboxSuggestions.innerHTML='';
   onSnapshot(collection(db,"gallery"), snapshot=>{
@@ -285,6 +296,7 @@ function renderSuggestions(item){
 
 </body>
 </html>  
+
 
 
 
