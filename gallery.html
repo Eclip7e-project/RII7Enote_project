@@ -158,7 +158,7 @@ section {padding:30px;}
   // ---------------- Firebase Setup ----------------
   import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
   import { 
-    getFirestore, collection, addDoc, getDocs, onSnapshot, deleteDoc, doc, updateDoc 
+    getFirestore, collection, addDoc, getDocs, onSnapshot, deleteDoc, doc, updateDoc, arrayUnion 
   } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
   import { 
     getStorage, ref, uploadBytes, getDownloadURL 
@@ -168,7 +168,7 @@ section {padding:30px;}
     apiKey: "AIzaSyCM69r2wUibBFIFpML07Y5RUTrxHgonlSc",
     authDomain: "rii7e-sticky-notes-project.firebaseapp.com",
     projectId: "rii7e-sticky-notes-project",
-    storageBucket: "rii7e-sticky-notes-project.appspot.com",
+    storageBucket: "rii7e-sticky-notes-project.appspot.com", // ✅ correct bucket
     messagingSenderId: "962319162792",
     appId: "1:962319162792:web:8fad2b11c316766c8a119d"
   };
@@ -190,50 +190,6 @@ section {padding:30px;}
 
   let allImages = [];
 
-
-
-// ----------------- Render Pick Section (REALTIME) -----------------
-function renderPickSection() {
-  members.forEach(member => {
-    const wall = document.querySelector(`#${member.name}-selection .wall`);
-    if (!wall) return;
-
-    // Clear wall now
-    wall.innerHTML = '';
-
-    // Always add placeholders
-    for (let i = 1; i <= 4; i++) {
-      const imgFile = `${member.name}${i}.png`;
-      const note = document.createElement('div');
-      note.className = 'sticky-note';
-      note.style.border = `4px solid ${getMemberColor(member.name)}`;
-      note.innerHTML = `<img src="${imgFile}" alt="${member.name} placeholder ${i}">`;
-      note.onclick = () => openModalForMember(member.name, imgFile);
-      wall.appendChild(note);
-    }
-
-    // Listen for realtime fan designs
-    const designsCol = collection(db, 'designs', member.name, 'fanDesigns');
-    onSnapshot(designsCol, snapshot => {
-      // Clear fan designs for this member before adding updated ones
-      const oldDesigns = wall.querySelectorAll('.fan-design');
-      oldDesigns.forEach(el => el.remove());
-
-      snapshot.docs.forEach(docSnap => {
-        const data = docSnap.data();
-        const note = document.createElement('div');
-        note.className = 'sticky-note fan-design';
-        note.style.border = `4px solid ${getMemberColor(member.name)}`;
-        note.innerHTML = `<img src="${data.img}" alt="Fan design">`;
-        note.onclick = () => openModalForMember(member.name, data.img);
-        wall.appendChild(note);
-      });
-    });
-  });
-}
-
-
-  
   // ---------------- Render Gallery ----------------
   function renderGallery(filter = '') {
     galleryContainer.innerHTML = '';
@@ -253,6 +209,13 @@ function renderPickSection() {
             <span>${item.member.toUpperCase()}</span>
             <span><button class="like-btn" data-id="${item.id}">❤ ${item.likes || 0}</button></span>
           </div>
+          <div class="comments">
+            ${(item.comments || []).map(c => `<p><b>${c.user}:</b> ${c.text}</p>`).join('')}
+          </div>
+          <div class="comment-box">
+            <input type="text" placeholder="Add a comment..." class="comment-input" data-id="${item.id}">
+            <button class="comment-btn" data-id="${item.id}">Send</button>
+          </div>
         `;
         galleryContainer.appendChild(div);
 
@@ -260,6 +223,19 @@ function renderPickSection() {
         div.querySelector('.like-btn').onclick = async () => {
           const docRef = doc(db, "fanGallery", item.id);
           await updateDoc(docRef, { likes: (item.likes || 0) + 1 });
+        };
+
+        // Comment button
+        div.querySelector('.comment-btn').onclick = async () => {
+          const input = div.querySelector('.comment-input');
+          const text = input.value.trim();
+          if (!text) return;
+
+          const docRef = doc(db, "fanGallery", item.id);
+          await updateDoc(docRef, {
+            comments: arrayUnion({ user: "Anon", text })
+          });
+          input.value = '';
         };
       });
   }
@@ -311,6 +287,7 @@ function renderPickSection() {
   
 </body>
 </html>
+
 
 
 
