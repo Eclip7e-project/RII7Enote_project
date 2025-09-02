@@ -168,7 +168,7 @@ section {padding:30px;}
     apiKey: "AIzaSyCM69r2wUibBFIFpML07Y5RUTrxHgonlSc",
     authDomain: "rii7e-sticky-notes-project.firebaseapp.com",
     projectId: "rii7e-sticky-notes-project",
-    storageBucket: "rii7e-sticky-notes-project.appspot.com", // ✅ must be .appspot.com
+    storageBucket: "rii7e-sticky-notes-project.appspot.com", // ✅ must match bucket exactly
     messagingSenderId: "962319162792",
     appId: "1:962319162792:web:8fad2b11c316766c8a119d"
   };
@@ -272,8 +272,13 @@ section {padding:30px;}
     try {
       // Upload image to Firebase Storage
       const storageRef = ref(storage, `fanGallery/${Date.now()}-${file.name}`);
+      console.log("Uploading to:", storageRef.fullPath);
+
       await uploadBytes(storageRef, file);
+      console.log("✅ Upload complete");
+
       const imageUrl = await getDownloadURL(storageRef);
+      console.log("✅ Download URL:", imageUrl);
 
       // Add to Firestore
       await addDoc(galleryRef, {
@@ -296,12 +301,15 @@ section {padding:30px;}
 
   // ---------------- Search ----------------
   searchInput.oninput = () => renderGallery(searchInput.value);
+
 </script>
+
 
 
   
 </body>
 </html>
+
 
 
 
