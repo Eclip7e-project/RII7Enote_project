@@ -7,6 +7,24 @@
   <title>RII7E Sticky Notes Project</title>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
   <style>
+
+     /* For smaller screens (phones) */
+@media screen and (max-width: 768px) {
+  body {
+    font-size: 14px;  /* smaller base size */
+    line-height: 1.4;
+  }
+
+  h1, h2, h3 {
+    font-size: 90%; /* make headings scale down */
+  }
+
+  p, li {
+    font-size: 90%; /* shrink paragraphs + list items */
+  }
+}
+
+     
     :root{
       --gold:#d4af37;
       --bg:#000;
@@ -542,6 +560,7 @@ setupManageDesignsRealtime();
 
 </body>
 </html> 
+
 
 
 
