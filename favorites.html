@@ -24,29 +24,35 @@ h1{
   margin:40px 0;
 }
 .member-section h2{
-  text-align:center;
+  text-align:left;
   color:gold;
   margin-bottom:20px;
 }
 .wall-container{
   display:flex;
-  flex-wrap:wrap; /* wrap notes to next line */
-  justify-content:flex-start; /* align left */
+  flex-wrap:wrap;
   gap:15px;
-  padding:10px 20px;
+  padding:0 20px 20px 20px;
+  justify-content:flex-start;
 }
 .note{
+  flex: 0 0 calc(50% - 15px);
+  min-height:180px;
+  border-radius:12px;
   position:relative;
   cursor:pointer;
-  width:48%; /* 2 per row on mobile */
-  min-height:150px;
-  border-radius:15px;
+}
+@media(min-width:768px){
+  .note{
+    flex: 0 0 200px;
+    min-height:200px;
+  }
 }
 .note img{
   width:100%;
   height:100%;
   object-fit:cover;
-  border-radius:15px;
+  border-radius:12px;
 }
 .note .text{
   position:absolute;
@@ -57,7 +63,7 @@ h1{
   color:black;
   white-space:pre-wrap;
   overflow-wrap:break-word;
-  font-size:0.8em;
+  font-size:0.9em;
 }
 .info-box{
   position:absolute;
@@ -66,7 +72,7 @@ h1{
   right:10px;
   background:rgba(0,0,0,0.6);
   color:white;
-  font-size:0.75em;
+  font-size:0.8em;
   padding:2px 5px;
   border-radius:5px;
   display:flex;
@@ -74,7 +80,7 @@ h1{
 }
 .top-note{
   border:3px solid gold;
-  box-shadow:0 0 10px gold;
+  box-shadow:0 0 15px gold;
 }
 footer{
   padding:30px 0;
@@ -98,20 +104,6 @@ footer a:hover{
   border-radius:5px;
   padding:3px 7px;
   cursor:pointer;
-}
-
-/* Desktop adjustments */
-@media(min-width:768px){
-  .note{
-    width:200px; /* smaller on desktop */
-    min-height:180px;
-  }
-}
-@media(min-width:1024px){
-  .note{
-    width:180px;
-    min-height:160px;
-  }
 }
 </style>
 </head>
@@ -160,40 +152,36 @@ const members = [
 const currentWeek = Math.floor((new Date()-new Date('2025-09-01'))/(7*24*60*60*1000)) + 1;
 const favoritesContainer = document.getElementById('favorites-container');
 
-// Store userId per member
 members.forEach(m=>{
   if(!localStorage.getItem('userId_'+m.name)){
     localStorage.setItem('userId_'+m.name, Date.now() + Math.random());
   }
 });
 
-function createNoteDiv(note, member, isTop=false){
+function createNoteDiv(n, member, highlight=false){
   const div = document.createElement('div');
-  div.className = 'note';
-  if(isTop) div.classList.add('top-note');
-
-  div.innerHTML = `
-    <img src="${note.img}">
-    <div class="text">${note.text}</div>
-    <div class="info-box"><span>❤️ ${note.likes||0}</span><span>Week ${note.week}</span></div>
+  div.className='note';
+  if(highlight) div.classList.add('top-note');
+  div.innerHTML=`
+    <img src="${n.img}">
+    <div class="text">${n.text}</div>
+    <div class="info-box"><span>❤️ ${n.likes||0}</span><span>Week ${n.week}</span></div>
   `;
-
   const userId = localStorage.getItem('userId_'+member.name);
-  if(note.creator === userId){
+  if(n.creator === userId){
     const btn = document.createElement('button');
     btn.textContent='Delete';
     btn.className='delete-btn';
-    btn.onclick = async e=>{
+    btn.onclick = async (e)=>{
       e.stopPropagation();
       if(confirm("Delete your note?")){
-        const noteDoc = doc(db,'notes',member.name,'memberNotes',note.id);
+        const noteDoc = doc(db,'notes',member.name,'memberNotes',n.id);
         await deleteDoc(noteDoc);
       }
-    };
+    }
     div.appendChild(btn);
   }
-
-  div.onclick = ()=>{ window.location.href = member.wall; }
+  div.onclick = ()=>{ window.location.href=member.wall; }
   return div;
 }
 
@@ -205,46 +193,39 @@ function renderMemberNotes(member, notes){
   section.appendChild(title);
 
   const wallDiv = document.createElement('div');
-  wallDiv.className = 'wall-container';
+  wallDiv.className='wall-container';
 
   notes = notes.filter(n=>n.week>=1 && !n.deleted);
 
-  // Top note per week
+  // Only top-liked note per week
   const weekTopMap = {};
   notes.forEach(n=>{
     if(!weekTopMap[n.week] || (n.likes||0) > (weekTopMap[n.week].likes||0)){
-      weekTopMap[n.week] = n;
+      weekTopMap[n.week]=n;
     }
   });
 
-  // Sort weeks descending: current week first
+  // Sort weeks descending (newest first)
   const sortedWeeks = Object.keys(weekTopMap).sort((a,b)=>b-a);
-
-  // Render top notes
   sortedWeeks.forEach(weekNum=>{
     const n = weekTopMap[weekNum];
-    wallDiv.appendChild(createNoteDiv(n, member, weekNum == currentWeek));
-  });
-
-  // Render other notes
-  const topIds = Object.values(weekTopMap).map(n=>n.id);
-  notes.forEach(n=>{
-    if(!topIds.includes(n.id)){
-      wallDiv.appendChild(createNoteDiv(n, member));
-    }
+    const highlight = weekNum==currentWeek;
+    wallDiv.appendChild(createNoteDiv(n, member, highlight));
   });
 
   section.appendChild(wallDiv);
   favoritesContainer.appendChild(section);
 }
 
-// Real-time listener
 members.forEach(member=>{
   const col = collection(db,'notes',member.name,'memberNotes');
   onSnapshot(col, snapshot=>{
-    const notes = snapshot.docs.map(d=>({id:d.id, creator:d.data().creator, ...d.data()}));
+    const notes = snapshot.docs.map(d=>{
+      const data = d.data();
+      return {id:d.id, creator:data.creator, ...data};
+    });
     const oldSection = [...favoritesContainer.getElementsByClassName('member-section')]
-      .find(s=>s.querySelector('h2').textContent===member.name.toUpperCase());
+        .find(s=>s.querySelector('h2').textContent===member.name.toUpperCase());
     if(oldSection) oldSection.remove();
     renderMemberNotes(member, notes);
   });
