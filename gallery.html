@@ -9,18 +9,27 @@
 body { font-family: 'Playfair Display', serif; margin:0; padding:0; background:#111; color:white; }
 header { text-align:center; padding:50px 20px; background:black; border-bottom:3px solid gold; }
 header h1 { color:gold; font-size:2.5em; letter-spacing:2px; margin-bottom:10px; }
-#submission { text-align:center; background:#222; border-radius:15px; padding:20px; box-shadow:0 0 20px rgba(255,215,0,0.3); margin:30px; }
+nav { text-align:center; margin:15px 0; }
+nav a { color:gold; margin:0 10px; text-decoration:none; font-weight:bold; }
+nav a:hover { text-decoration:underline; }
+section { padding:30px; }
+#submission { text-align:center; background:#222; border-radius:15px; padding:20px; box-shadow:0 0 20px rgba(255,215,0,0.3); margin-bottom:40px; }
 #submission input, #submission select, #submission button, #submission textarea { margin:5px; padding:10px; border-radius:10px; border:none; font-size:1em; }
 #submission button { background:gold; color:black; font-weight:bold; cursor:pointer; transition:0.3s; }
 #submission button:hover { background:#daa520; }
-.gallery { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:20px; padding:30px; }
-.gallery-item { position:relative; cursor:pointer; display:flex; flex-direction:column; background:white; border-radius:15px; overflow:hidden; box-shadow:0 5px 20px rgba(0,0,0,0.5); transition:0.3s; color:black; }
+#search-bar { margin-bottom:30px; text-align:center; }
+#search-bar input { padding:10px; width:220px; border-radius:10px; border:none; font-size:1em; }
+.gallery { display:grid; grid-template-columns: repeat(auto-fill, minmax(220px,1fr)); gap:20px; }
+.gallery-item { position:relative; cursor:pointer; display:flex; flex-direction:column; color:black; background:white; border-radius:15px; overflow:hidden; box-shadow:0 5px 20px rgba(0,0,0,0.5); transition:0.3s; }
 .gallery-item:hover { transform:scale(1.03); box-shadow:0 10px 25px rgba(255,215,0,0.4); }
 .gallery-item img { width:100%; object-fit:cover; height:200px; display:block; }
 .gallery-item .info { padding:10px; display:flex; justify-content:space-between; align-items:center; font-size:0.9em; }
+.gallery-item .info span { font-weight:bold; }
 .gallery-item .info button { padding:5px 8px; font-weight:bold; border:none; border-radius:5px; cursor:pointer; transition:0.2s; }
 .gallery-item .info button:hover { opacity:0.8; }
+.category-label { position:absolute; top:8px; left:8px; background:gold; color:black; padding:3px 7px; border-radius:5px; font-size:0.8em; font-weight:bold; }
 .delete-btn { position:absolute; top:8px; right:8px; background:red; color:white; border:none; border-radius:5px; padding:4px 8px; cursor:pointer; font-weight:bold; z-index:2; }
+/* Lightbox */
 #lightbox { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:1000; overflow:auto; }
 .lightbox-content { display:flex; flex-wrap:wrap; max-width:1200px; margin:50px auto; background:#111; border-radius:15px; overflow:hidden; }
 .lightbox-left { flex:1 1 60%; min-width:300px; max-height:80vh; overflow:hidden; }
@@ -37,32 +46,49 @@ header h1 { color:gold; font-size:2.5em; letter-spacing:2px; margin-bottom:10px;
 #close-lightbox { position:absolute; top:20px; right:20px; font-size:2em; color:white; cursor:pointer; font-weight:bold; }
 .lightbox-right .suggestions { display:flex; flex-wrap:wrap; gap:10px; }
 .lightbox-right .suggestions img { width:60px; height:60px; object-fit:cover; border-radius:10px; cursor:pointer; border:2px solid gold; }
-@media(max-width:800px){ .lightbox-content {flex-direction:column;} .lightbox-left, .lightbox-right {flex:1 1 100%; max-height:none;} .lightbox-right {margin-top:10px;} }
+@media(max-width:800px){ .lightbox-content { flex-direction:column; } .lightbox-left, .lightbox-right { flex:1 1 100%; max-height:none; } .lightbox-right { margin-top:10px; } }
 </style>
 </head>
 <body>
 
 <header>
-<h1>RII7E Fan Gallery</h1>
+  <h1>RII7E Fan Gallery</h1>
+  <nav>
+    <a href="index.html">HOME</a>
+    <a href="shotaro.html">SHOTARO</a>
+    <a href="eunseok.html">EUNSEOK</a>
+    <a href="sungchan.html">SUNGCHAN</a>
+    <a href="wonbin.html">WONBIN</a>
+    <a href="seunghan.html">SEUNGHAN</a>
+    <a href="sohee.html">SOHEE</a>
+    <a href="anton.html">ANTON</a>
+    <a href="rii7e.html">RII7E</a>
+    <a href="brii7e.html">BRII7E</a>
+  </nav>
 </header>
 
 <section id="submission">
-<input type="file" id="imageFile" accept="image/*"><br>
-<select id="imageMember">
-  <option value="shotaro">SHOTARO</option>
-  <option value="eunseok">EUNSEOK</option>
-  <option value="sungchan">SUNGCHAN</option>
-  <option value="wonbin">WONBIN</option>
-  <option value="seunghan">SEUNGHAN</option>
-  <option value="sohee">SOHEE</option>
-  <option value="anton">ANTON</option>
-  <option value="brii7e">BRII7E</option>
-  <option value="rii7e">RII7E</option>
-  <option value="other">OTHER</option>
-</select><br>
-<textarea id="imageMessage" placeholder="Add a message (optional)" rows="2"></textarea><br>
-<button id="submitImage">Submit Image</button>
-<p id="submitMsg" style="color:gold;"></p>
+  <h2>Submit Your Favorite Image</h2>
+  <input type="file" id="imageFile" accept="image/*"><br>
+  <select id="imageMember">
+    <option value="shotaro">SHOTARO</option>
+    <option value="eunseok">EUNSEOK</option>
+    <option value="sungchan">SUNGCHAN</option>
+    <option value="wonbin">WONBIN</option>
+    <option value="seunghan">SEUNGHAN</option>
+    <option value="sohee">SOHEE</option>
+    <option value="anton">ANTON</option>
+    <option value="brii7e">BRII7E</option>
+    <option value="rii7e">RII7E</option>
+    <option value="other">OTHER</option>
+  </select><br>
+  <textarea id="imageMessage" placeholder="Add a message or title (optional)" rows="2"></textarea><br>
+  <button id="submitImage">Submit Image</button>
+  <p id="submitMsg" style="color:gold;"></p>
+</section>
+
+<section id="search-bar">
+  <input type="text" id="searchInput" placeholder="Search by member or category...">
 </section>
 
 <section class="gallery" id="galleryContainer"></section>
@@ -71,46 +97,47 @@ header h1 { color:gold; font-size:2.5em; letter-spacing:2px; margin-bottom:10px;
 <div id="lightbox">
   <span id="close-lightbox">&times;</span>
   <div class="lightbox-content">
-    <div class="lightbox-left"><img id="lightbox-img"></div>
+    <div class="lightbox-left">
+      <img id="lightbox-img" src="">
+    </div>
     <div class="lightbox-right">
       <h2 id="lightbox-member"></h2>
       <div class="message" id="lightbox-message"></div>
-      <div class="likes-comments"><button id="lightbox-like">❤ 0</button></div>
+      <div class="likes-comments">
+        <button id="lightbox-like">❤ 0</button>
+      </div>
       <div class="comments" id="lightbox-comments"></div>
       <textarea id="lightbox-new-comment" placeholder="Add a comment"></textarea>
       <button id="lightbox-submit-comment">Submit Comment</button>
-      <h3>Suggestions</h3>
+      <button id="modal-delete" style="display:none;">Delete</button>
+      <h3 style="margin-top:10px;">Suggestions</h3>
       <div class="suggestions" id="lightbox-suggestions"></div>
-      <button id="lightbox-delete" style="display:none;background:red;color:white;">Delete</button>
     </div>
   </div>
 </div>
 
 <script type="module">
-// ---------------- Firebase Setup ----------------
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-storage.js";
+import { getFirestore, collection, addDoc, doc, onSnapshot, updateDoc, deleteDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey:"AIzaSyCM69r2wUibBFIFpML07Y5RUTrxHgonlSc",
-  authDomain:"rii7e-sticky-notes-project.firebaseapp.com",
-  projectId:"rii7e-sticky-notes-project",
-  storageBucket:"rii7e-sticky-notes-project.appspot.com",
-  messagingSenderId:"962319162792",
-  appId:"1:962319162792:web:8fad2b11c316766c8a119d"
+  apiKey:"YOUR_API_KEY",
+  authDomain:"YOUR_PROJECT.firebaseapp.com",
+  projectId:"YOUR_PROJECT",
+  storageBucket:"YOUR_PROJECT.appspot.com",
+  messagingSenderId:"YOUR_SENDER_ID",
+  appId:"YOUR_APP_ID"
 };
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const storage = getStorage(app);
+initializeApp(firebaseConfig);
+const db = getFirestore();
 
-// ---------------- Elements ----------------
 const galleryContainer = document.getElementById('galleryContainer');
 const submitBtn = document.getElementById('submitImage');
 const imageFile = document.getElementById('imageFile');
 const imageMember = document.getElementById('imageMember');
 const imageMessage = document.getElementById('imageMessage');
 const submitMsg = document.getElementById('submitMsg');
+const searchInput = document.getElementById('searchInput');
 
 const lightbox = document.getElementById('lightbox');
 const closeLightbox = document.getElementById('close-lightbox');
@@ -122,115 +149,116 @@ const lightboxNewComment = document.getElementById('lightbox-new-comment');
 const lightboxSubmitComment = document.getElementById('lightbox-submit-comment');
 const lightboxLikeBtn = document.getElementById('lightbox-like');
 const lightboxSuggestions = document.getElementById('lightbox-suggestions');
-const lightboxDeleteBtn = document.getElementById('lightbox-delete');
+const modalDelete = document.getElementById('modal-delete');
 
 let currentImage = null;
 let userId = localStorage.getItem('userId') || (localStorage.setItem('userId', crypto.randomUUID()), localStorage.getItem('userId'));
 
-// ---------------- Submit Image ----------------
-submitBtn.onclick = async ()=>{
+// Submit Image
+submitBtn.onclick = async () => {
   const file = imageFile.files[0];
-  if(!file){submitMsg.textContent="Select a file!"; return;}
-  submitMsg.textContent="Uploading...";
-  const storageRef = ref(storage, `fanGallery/${Date.now()}-${file.name}`);
-  await uploadBytes(storageRef,file);
-  const url = await getDownloadURL(storageRef);
-  await addDoc(collection(db,'fanGallery'),{
-    src:url,
-    member:imageMember.value,
-    message:imageMessage.value,
-    likes:0,
-    comments:[],
-    creator:userId,
-    createdAt:Date.now()
-  });
-  submitMsg.textContent="Uploaded!";
-  imageFile.value=""; imageMessage.value="";
+  if(!file){ submitMsg.textContent='Select an image!'; return; }
+  const reader = new FileReader();
+  reader.onload = async e => {
+    try{
+      await addDoc(collection(db,"gallery"),{
+        creator: userId,
+        member: imageMember.value,
+        message: imageMessage.value,
+        src: e.target.result,
+        likes: 0,
+        comments: [],
+        timestamp: Date.now()
+      });
+      submitMsg.textContent='Image submitted successfully!';
+      imageFile.value=''; imageMessage.value='';
+    } catch(err){
+      submitMsg.textContent='Upload failed: '+err.message;
+    }
+  };
+  reader.readAsDataURL(file);
 };
 
-// ---------------- Render Gallery ----------------
-function renderGallery(docs){
+// Real-time listener
+onSnapshot(collection(db,"gallery"), snapshot => {
+  const docs = snapshot.docs.map(d=>({ id:d.id, ...d.data() }));
+  renderGallery(searchInput.value, docs);
+});
+
+// Render gallery
+function renderGallery(filter='', docs=[]){
   galleryContainer.innerHTML='';
-  docs.forEach(item=>{
+  const filtered = docs.filter(d => !filter || d.member.toLowerCase().includes(filter.toLowerCase()));
+  filtered.forEach(item => {
     const div = document.createElement('div');
     div.className='gallery-item';
-    div.innerHTML = `<img src="${item.src}"><div class="info"><span>${item.member}</span><span>❤ ${item.likes||0}</span></div>`;
-    div.querySelector('img').onclick = ()=>openLightbox(item);
+    div.innerHTML=`
+      <div class="category-label">${item.member.toUpperCase()}</div>
+      <img src="${item.src}">
+      <div class="info"><span>${item.member.toUpperCase()}</span>
+      <span><button class="like-btn">❤ ${item.likes||0}</button></span></div>
+    `;
     if(item.creator===userId){
       const delBtn = document.createElement('button');
       delBtn.className='delete-btn';
       delBtn.textContent='Delete';
-      delBtn.onclick = async ()=>{
-        if(!confirm("Delete this image?")) return;
-        await deleteDoc(doc(db,'fanGallery',item.id));
-      };
+      delBtn.onclick=async e=>{ e.stopPropagation(); if(confirm("Delete?")) await deleteDoc(doc(db,"gallery",item.id)); };
       div.appendChild(delBtn);
     }
+    div.querySelector('img').onclick = ()=>openLightbox(item);
+    div.querySelector('.like-btn').onclick = async e=>{ e.stopPropagation(); await updateDoc(doc(db,"gallery",item.id), { likes:(item.likes||0)+1 }); };
     galleryContainer.appendChild(div);
   });
 }
 
-// ---------------- Firestore Realtime ----------------
-onSnapshot(collection(db,'fanGallery'), snapshot=>{
-  const docs = snapshot.docs.map(d=>({id:d.id, ...d.data()}));
-  renderGallery(docs);
-});
+// Search
+searchInput.oninput = e => { onSnapshot(collection(db,"gallery"), snapshot => { const docs = snapshot.docs.map(d=>({id:d.id,...d.data()})); renderGallery(e.target.value,docs); }); };
 
-// ---------------- Lightbox ----------------
+// Lightbox
 function openLightbox(item){
   currentImage=item;
   lightboxImg.src=item.src;
-  lightboxMember.textContent=item.member;
+  lightboxMember.textContent=item.member.toUpperCase();
   lightboxMessage.textContent=item.message||'';
   lightboxLikeBtn.textContent=`❤ ${item.likes||0}`;
-  lightboxDeleteBtn.style.display=(item.creator===userId)?'inline-block':'none';
-
-  lightboxComments.innerHTML='';
-  (item.comments||[]).forEach(c=>{
-    const div=document.createElement('div'); div.textContent=c;
-    lightboxComments.appendChild(div);
-  });
-
-  lightboxSuggestions.innerHTML='';
-  galleryContainer.querySelectorAll('.gallery-item img').forEach(imgEl=>{
-    if(imgEl.src!==item.src){
-      const img = document.createElement('img');
-      img.src = imgEl.src;
-      img.onclick = ()=>openLightbox(docs.find(d=>d.src===img.src));
-      lightboxSuggestions.appendChild(img);
-    }
-  });
-
-  lightbox.style.display='flex';
-  document.body.style.overflow='hidden';
+  modalDelete.style.display=(item.creator===userId)?'inline-block':'none';
+  lightbox.style.display='block';
+  renderComments(item);
+  renderSuggestions(item);
 }
 
-closeLightbox.onclick = ()=>{ lightbox.style.display='none'; document.body.style.overflow='auto'; }
-lightbox.onclick = ()=>{ lightbox.style.display='none'; document.body.style.overflow='auto'; }
+function renderComments(item){
+  lightboxComments.innerHTML='';
+  (item.comments||[]).forEach(c=>{ const div=document.createElement('div'); div.textContent=c; lightboxComments.appendChild(div); });
+}
+
+lightboxSubmitComment.onclick = async ()=>{ 
+  const txt = lightboxNewComment.value.trim(); 
+  if(!txt) return; 
+  await updateDoc(doc(db,"gallery",currentImage.id),{ comments: arrayUnion(txt) }); 
+  lightboxNewComment.value=''; 
+};
+
+lightboxLikeBtn.onclick = async ()=>{ 
+  await updateDoc(doc(db,"gallery",currentImage.id),{ likes:(currentImage.likes||0)+1 });
+};
+
+modalDelete.onclick=async()=>{ if(confirm("Delete?")){ await deleteDoc(doc(db,"gallery",currentImage.id)); lightbox.style.display='none'; } };
+
+closeLightbox.onclick=()=>lightbox.style.display='none';
+lightbox.onclick=()=>lightbox.style.display='none';
 document.querySelector('.lightbox-content').onclick=e=>e.stopPropagation();
 
-// ---------------- Lightbox Likes ----------------
-lightboxLikeBtn.onclick = async ()=>{
-  if(!currentImage) return;
-  currentImage.likes = (currentImage.likes||0)+1;
-  await updateDoc(doc(db,'fanGallery',currentImage.id), { likes:currentImage.likes });
-};
-
-// ---------------- Lightbox Comments ----------------
-lightboxSubmitComment.onclick = async ()=>{
-  if(!currentImage) return;
-  const txt = lightboxNewComment.value.trim(); if(!txt) return;
-  await updateDoc(doc(db,'fanGallery',currentImage.id), { comments: arrayUnion(txt) });
-  lightboxNewComment.value='';
-};
-  
-// ---------------- Delete ----------------
-lightboxDeleteBtn.onclick = async ()=>{
-  if(!currentImage) return;
-  if(!confirm("Delete your image?")) return;
-  await deleteDoc(doc(db,'fanGallery',currentImage.id));
-  lightbox.style.display='none';
-};
+function renderSuggestions(item){
+  lightboxSuggestions.innerHTML='';
+  onSnapshot(collection(db,"gallery"), snapshot=>{
+    snapshot.docs.filter(d=>d.id!==item.id).slice(0,8).forEach(d=>{
+      const img=document.createElement('img'); img.src=d.data().src;
+      img.onclick=()=>openLightbox({id:d.id,...d.data()});
+      lightboxSuggestions.appendChild(img);
+    });
+  });
+}
 </script>
 </body>
 </html>
