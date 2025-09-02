@@ -119,7 +119,9 @@ section { padding:30px; }
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
 import { getFirestore, collection, addDoc, doc, onSnapshot, updateDoc, deleteDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-storage.js";
 
+// Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyCM69r2wUibBFIFpML07Y5RUTrxHgonlSc",
   authDomain: "rii7e-sticky-notes-project.firebaseapp.com",
@@ -129,8 +131,11 @@ const firebaseConfig = {
   appId: "1:962319162792:web:8fad2b11c316766c8a119d"
 };
 initializeApp(firebaseConfig);
-const db = getFirestore();
 
+const db = getFirestore();
+const storage = getStorage();
+
+// DOM Elements
 const galleryContainer = document.getElementById('galleryContainer');
 const submitBtn = document.getElementById('submitImage');
 const imageFile = document.getElementById('imageFile');
@@ -154,57 +159,60 @@ const modalDelete = document.getElementById('modal-delete');
 let currentImage = null;
 let userId = localStorage.getItem('userId') || (localStorage.setItem('userId', crypto.randomUUID()), localStorage.getItem('userId'));
 
-// Submit Image
+// ------------------- Submit Image -------------------
 submitBtn.onclick = async () => {
   const file = imageFile.files[0];
   if(!file){ submitMsg.textContent='Select an image!'; return; }
-  const reader = new FileReader();
-  reader.onload = async e => {
-    try{
-      await addDoc(collection(db,"gallery"),{
-        creator: userId,
-        member: imageMember.value,
-        message: imageMessage.value,
-        src: e.target.result,
-        likes: 0,
-        comments: [],
-        timestamp: Date.now()
-      });
-      submitMsg.textContent='Image submitted successfully!';
-      imageFile.value=''; imageMessage.value='';
-    } catch(err){
-      submitMsg.textContent='Upload failed: '+err.message;
-    }
-  };
-  reader.readAsDataURL(file);
+
+  const storageRef = ref(storage, 'gallery/' + crypto.randomUUID() + '_' + file.name);
+
+  try {
+    await uploadBytes(storageRef, file);
+    const url = await getDownloadURL(storageRef);
+
+    await addDoc(collection(db,"gallery"),{
+      creator: userId,
+      member: imageMember.value,
+      message: imageMessage.value,
+      src: url,
+      likes: 0,
+      comments: [],
+      timestamp: Date.now()
+    });
+
+    submitMsg.textContent='Image submitted successfully!';
+    imageFile.value=''; 
+    imageMessage.value='';
+  } catch(err){
+    submitMsg.textContent='Upload failed: '+err.message;
+  }
 };
 
-let allDocs = []; // Store all documents from Firestore
+// ------------------- Real-time Sync -------------------
+let allDocs = [];
 
-// Single real-time listener for the gallery
-onSnapshot(collection(db, "gallery"), snapshot => {
+onSnapshot(collection(db,"gallery"), snapshot => {
   allDocs = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
   renderGallery(searchInput.value, allDocs);
 });
 
-// Search input filters locally without creating new listeners
 searchInput.oninput = e => {
   renderGallery(e.target.value, allDocs);
 };
 
-// Render gallery
+// ------------------- Render Gallery -------------------
 function renderGallery(filter='', docs=[]){
   galleryContainer.innerHTML='';
   const filtered = docs.filter(d => !filter || d.member.toLowerCase().includes(filter.toLowerCase()));
   filtered.forEach(item => {
     const div = document.createElement('div');
     div.className='gallery-item';
-    div.innerHTML=
+    div.innerHTML=`
       <div class="category-label">${item.member.toUpperCase()}</div>
       <img src="${item.src}">
       <div class="info"><span>${item.member.toUpperCase()}</span>
       <span><button class="like-btn">❤ ${item.likes||0}</button></span></div>
-    ;
+    `;
     if(item.creator===userId){
       const delBtn = document.createElement('button');
       delBtn.className='delete-btn';
@@ -218,15 +226,13 @@ function renderGallery(filter='', docs=[]){
   });
 }
 
-
-
-// Lightbox
+// ------------------- Lightbox -------------------
 function openLightbox(item){
   currentImage=item;
   lightboxImg.src=item.src;
   lightboxMember.textContent=item.member.toUpperCase();
   lightboxMessage.textContent=item.message||'';
-  lightboxLikeBtn.textContent=❤ ${item.likes||0};
+  lightboxLikeBtn.textContent=`❤ ${item.likes||0}`;
   modalDelete.style.display=(item.creator===userId)?'inline-block':'none';
   lightbox.style.display='block';
   renderComments(item);
@@ -235,7 +241,11 @@ function openLightbox(item){
 
 function renderComments(item){
   lightboxComments.innerHTML='';
-  (item.comments||[]).forEach(c=>{ const div=document.createElement('div'); div.textContent=c; lightboxComments.appendChild(div); });
+  (item.comments||[]).forEach(c=>{ 
+    const div=document.createElement('div'); 
+    div.textContent=c; 
+    lightboxComments.appendChild(div); 
+  });
 }
 
 lightboxSubmitComment.onclick = async ()=>{ 
@@ -249,7 +259,12 @@ lightboxLikeBtn.onclick = async ()=>{
   await updateDoc(doc(db,"gallery",currentImage.id),{ likes:(currentImage.likes||0)+1 });
 };
 
-modalDelete.onclick=async()=>{ if(confirm("Delete?")){ await deleteDoc(doc(db,"gallery",currentImage.id)); lightbox.style.display='none'; } };
+modalDelete.onclick=async()=>{ 
+  if(confirm("Delete?")){ 
+    await deleteDoc(doc(db,"gallery",currentImage.id)); 
+    lightbox.style.display='none'; 
+  } 
+};
 
 closeLightbox.onclick=()=>lightbox.style.display='none';
 lightbox.onclick=()=>lightbox.style.display='none';
@@ -259,15 +274,18 @@ function renderSuggestions(item){
   lightboxSuggestions.innerHTML='';
   onSnapshot(collection(db,"gallery"), snapshot=>{
     snapshot.docs.filter(d=>d.id!==item.id).slice(0,8).forEach(d=>{
-      const img=document.createElement('img'); img.src=d.data().src;
+      const img=document.createElement('img'); 
+      img.src=d.data().src;
       img.onclick=()=>openLightbox({id:d.id,...d.data()});
       lightboxSuggestions.appendChild(img);
     });
   });
 }
 </script>
+
 </body>
 </html>  
+
 
 
 
