@@ -29,18 +29,18 @@ h1{
   margin-bottom:20px;
 }
 .wall-container{
-  display: flex;
-  flex-wrap: wrap;           /* allow rows */
-  justify-content: flex-start; /* start from left */
-  gap: 15px;
-  padding: 20px;
+  display:flex;
+  flex-wrap:wrap; /* wrap notes to next line */
+  justify-content:flex-start; /* align left */
+  gap:15px;
+  padding:10px 20px;
 }
 .note{
-  flex: 0 0 200px;           /* width of each note */
-  min-height:180px;
-  border-radius:15px;
-  position: relative;
+  position:relative;
   cursor:pointer;
+  width:48%; /* 2 per row on mobile */
+  min-height:150px;
+  border-radius:15px;
 }
 .note img{
   width:100%;
@@ -57,7 +57,7 @@ h1{
   color:black;
   white-space:pre-wrap;
   overflow-wrap:break-word;
-  font-size:0.85em;
+  font-size:0.8em;
 }
 .info-box{
   position:absolute;
@@ -74,7 +74,7 @@ h1{
 }
 .top-note{
   border:3px solid gold;
-  box-shadow:0 0 15px gold;
+  box-shadow:0 0 10px gold;
 }
 footer{
   padding:30px 0;
@@ -100,10 +100,17 @@ footer a:hover{
   cursor:pointer;
 }
 
-/* Mobile responsive: 2 per row */
-@media(max-width:600px){
+/* Desktop adjustments */
+@media(min-width:768px){
   .note{
-    flex: 0 0 48%; /* 2 per row */
+    width:200px; /* smaller on desktop */
+    min-height:180px;
+  }
+}
+@media(min-width:1024px){
+  .note{
+    width:180px;
+    min-height:160px;
   }
 }
 </style>
@@ -153,11 +160,42 @@ const members = [
 const currentWeek = Math.floor((new Date()-new Date('2025-09-01'))/(7*24*60*60*1000)) + 1;
 const favoritesContainer = document.getElementById('favorites-container');
 
+// Store userId per member
 members.forEach(m=>{
   if(!localStorage.getItem('userId_'+m.name)){
     localStorage.setItem('userId_'+m.name, Date.now() + Math.random());
   }
 });
+
+function createNoteDiv(note, member, isTop=false){
+  const div = document.createElement('div');
+  div.className = 'note';
+  if(isTop) div.classList.add('top-note');
+
+  div.innerHTML = `
+    <img src="${note.img}">
+    <div class="text">${note.text}</div>
+    <div class="info-box"><span>❤️ ${note.likes||0}</span><span>Week ${note.week}</span></div>
+  `;
+
+  const userId = localStorage.getItem('userId_'+member.name);
+  if(note.creator === userId){
+    const btn = document.createElement('button');
+    btn.textContent='Delete';
+    btn.className='delete-btn';
+    btn.onclick = async e=>{
+      e.stopPropagation();
+      if(confirm("Delete your note?")){
+        const noteDoc = doc(db,'notes',member.name,'memberNotes',note.id);
+        await deleteDoc(noteDoc);
+      }
+    };
+    div.appendChild(btn);
+  }
+
+  div.onclick = ()=>{ window.location.href = member.wall; }
+  return div;
+}
 
 function renderMemberNotes(member, notes){
   const section = document.createElement('div');
@@ -172,58 +210,41 @@ function renderMemberNotes(member, notes){
   notes = notes.filter(n=>n.week>=1 && !n.deleted);
 
   // Top note per week
-  const weekMap = {};
+  const weekTopMap = {};
   notes.forEach(n=>{
-    if(!weekMap[n.week] || (n.likes||0) > (weekMap[n.week].likes||0)){
-      weekMap[n.week] = n;
+    if(!weekTopMap[n.week] || (n.likes||0) > (weekTopMap[n.week].likes||0)){
+      weekTopMap[n.week] = n;
     }
   });
 
-  // Sort by week ascending
-  Object.values(weekMap).sort((a,b)=>a.week-b.week).forEach(n=>{
-    const div = document.createElement('div');
-    div.className = 'note';
-    if(n.week === currentWeek) div.classList.add('top-note');
-    div.innerHTML = `
-      <img src="${n.img}">
-      <div class="text">${n.text}</div>
-      <div class="info-box"><span>❤️ ${n.likes||0}</span><span>Week ${n.week}</span></div>
-    `;
+  // Sort weeks descending: current week first
+  const sortedWeeks = Object.keys(weekTopMap).sort((a,b)=>b-a);
 
-    const userId = localStorage.getItem('userId_'+member.name);
+  // Render top notes
+  sortedWeeks.forEach(weekNum=>{
+    const n = weekTopMap[weekNum];
+    wallDiv.appendChild(createNoteDiv(n, member, weekNum == currentWeek));
+  });
 
-    // Delete button for creator
-    if(n.creator === userId){
-      const btn = document.createElement('button');
-      btn.textContent='Delete';
-      btn.className='delete-btn';
-      btn.onclick = async (e)=>{
-        e.stopPropagation();
-        if(confirm("Delete your note?")){
-          const noteDoc = doc(db,'notes',member.name,'memberNotes',n.id);
-          await deleteDoc(noteDoc);
-        }
-      }
-      div.appendChild(btn);
+  // Render other notes
+  const topIds = Object.values(weekTopMap).map(n=>n.id);
+  notes.forEach(n=>{
+    if(!topIds.includes(n.id)){
+      wallDiv.appendChild(createNoteDiv(n, member));
     }
-
-    div.onclick = ()=>{ window.location.href = member.wall; }
-    wallDiv.appendChild(div);
   });
 
   section.appendChild(wallDiv);
   favoritesContainer.appendChild(section);
 }
 
+// Real-time listener
 members.forEach(member=>{
   const col = collection(db,'notes',member.name,'memberNotes');
   onSnapshot(col, snapshot=>{
-    const notes = snapshot.docs.map(d=>{
-      const data = d.data();
-      return {id:d.id, creator:data.creator, ...data};
-    });
+    const notes = snapshot.docs.map(d=>({id:d.id, creator:d.data().creator, ...d.data()}));
     const oldSection = [...favoritesContainer.getElementsByClassName('member-section')]
-        .find(s=>s.querySelector('h2').textContent===member.name.toUpperCase());
+      .find(s=>s.querySelector('h2').textContent===member.name.toUpperCase());
     if(oldSection) oldSection.remove();
     renderMemberNotes(member, notes);
   });
@@ -232,3 +253,4 @@ members.forEach(member=>{
 
 </body>
 </html>
+
