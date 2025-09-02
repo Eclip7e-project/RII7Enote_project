@@ -29,18 +29,17 @@ h1{
   margin-bottom:20px;
 }
 .wall-container{
-  display:flex;
-  flex-wrap:nowrap;
-  overflow-x:auto;
-  gap:20px;
-  padding:20px;
+  display: flex;
+  flex-wrap: wrap;           /* allow rows */
+  justify-content: flex-start; /* start from left */
+  gap: 15px;
+  padding: 20px;
 }
 .note{
-  flex:0 0 auto;
-  width:250px;
-  min-height:200px;
+  flex: 0 0 200px;           /* width of each note */
+  min-height:180px;
   border-radius:15px;
-  position:relative;
+  position: relative;
   cursor:pointer;
 }
 .note img{
@@ -58,7 +57,7 @@ h1{
   color:black;
   white-space:pre-wrap;
   overflow-wrap:break-word;
-  font-size:0.9em;
+  font-size:0.85em;
 }
 .info-box{
   position:absolute;
@@ -67,7 +66,7 @@ h1{
   right:10px;
   background:rgba(0,0,0,0.6);
   color:white;
-  font-size:0.8em;
+  font-size:0.75em;
   padding:2px 5px;
   border-radius:5px;
   display:flex;
@@ -99,6 +98,13 @@ footer a:hover{
   border-radius:5px;
   padding:3px 7px;
   cursor:pointer;
+}
+
+/* Mobile responsive: 2 per row */
+@media(max-width:600px){
+  .note{
+    flex: 0 0 48%; /* 2 per row */
+  }
 }
 </style>
 </head>
@@ -173,7 +179,8 @@ function renderMemberNotes(member, notes){
     }
   });
 
-  Object.values(weekMap).forEach(n=>{
+  // Sort by week ascending
+  Object.values(weekMap).sort((a,b)=>a.week-b.week).forEach(n=>{
     const div = document.createElement('div');
     div.className = 'note';
     if(n.week === currentWeek) div.classList.add('top-note');
@@ -224,4 +231,4 @@ members.forEach(member=>{
 </script>
 
 </body>
-</html>  
+</html>
