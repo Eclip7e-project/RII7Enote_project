@@ -71,14 +71,14 @@ h1{
   top: 10px;
   left: 10px;
   right: 10px;
-  bottom: 35px; /* leave space for info box */
+  bottom: 30px;
   color: black;
   white-space: pre-wrap;
   overflow-wrap: break-word;
-  font-size: 0.8em; /* smaller so text fits */
-  line-height: 1.1em;
-  overflow: hidden; /* prevents spilling */
+  font-size: clamp(0.6em, 2vw, 0.9em); /* automatically shrink on smaller screens */
+  overflow-y: auto; /* scroll if still too big */
 }
+
 
 .info-box{
   position:absolute;
@@ -264,6 +264,7 @@ members.forEach(member=>{
 
 </body>
 </html>
+
 
 
 
