@@ -6,82 +6,72 @@
 <title>Weekly Favorites Archive</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
 <style>
-:root{
-  --gold:#d4af37;
-  --bg:#000;
-  --panel:#111;
-  --muted:#ddd;
-}
-
 body {
   margin:0;
   font-family:'Playfair Display', serif;
-  background-color: var(--bg);
+  background-color:black;
   color:white;
   background-image:url('https://www.transparenttextures.com/patterns/stardust.png');
+}
+header{
+  padding:30px;
   text-align:center;
 }
-
-header {
-  padding:30px;
+h1{
+  color:gold;
 }
-
-h1 {
-  color:var(--gold);
-}
-
-.member-section {
+.member-section{
   margin:40px 0;
 }
-
-.member-section h2 {
+.member-section h2{
   text-align:center;
-  color:var(--gold);
+  color:gold;
   margin-bottom:20px;
 }
 
-.wall-container {
+/* WALL / NOTES */
+.wall-container{
   display:flex;
   flex-wrap: wrap;
   gap: 15px;
   padding: 0 20px 20px 20px;
-  justify-content:flex-start;
+  justify-content: flex-start;
 }
 
 .note {
   flex: 0 0 180px; /* desktop size */
-  min-height:180px;
   border-radius:12px;
   position: relative;
   cursor: pointer;
-  aspect-ratio: 1 / 1; /* square layout */
-  overflow:hidden;
+  overflow: hidden; /* prevent spilling */
 }
 
+/* Note image */
 .note img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit:cover;
   border-radius:12px;
   display:block;
 }
 
+/* Text inside note */
 .note .text {
-  position: absolute;
+  position:absolute;
   top:10px;
   left:10px;
   right:10px;
-  bottom:35px; /* leave space for info box */
+  bottom:35px; /* leave space for info-box */
   color:black;
-  font-size:0.8em;
+  font-size:0.75em; /* smaller so text fits */
   line-height:1.1em;
   white-space:pre-wrap;
-  overflow-wrap:break-word;
-  overflow:hidden; /* prevent spilling */
-  padding: 2px;
+  word-wrap:break-word;
+  overflow:hidden;
 }
 
-.info-box {
+/* Info box */
+.info-box{
   position:absolute;
   bottom:5px;
   left:10px;
@@ -95,12 +85,14 @@ h1 {
   justify-content:space-between;
 }
 
-.top-note {
-  border:3px solid var(--gold);
-  box-shadow:0 0 15px var(--gold);
+/* Top liked note highlight */
+.top-note{
+  border:3px solid gold;
+  box-shadow:0 0 15px gold;
 }
 
-.delete-btn {
+/* Delete button */
+.delete-btn{
   position:absolute;
   top:5px;
   right:5px;
@@ -112,41 +104,38 @@ h1 {
   cursor:pointer;
 }
 
-footer {
+/* FOOTER */
+footer{
   padding:30px 0;
-  border-top:2px solid var(--gold);
+  border-top:2px solid gold;
   text-align:center;
 }
-
-footer a {
-  color:var(--gold);
+footer a{
+  color:gold;
   text-decoration:none;
 }
-
-footer a:hover {
+footer a:hover{
   text-decoration:underline;
 }
 
-/* ---------------- Mobile / responsive ---------------- */
+/* Responsive adjustments for mobile */
 @media screen and (max-width: 768px) {
   .wall-container {
-    display:block;
-    padding: 0 10px;
+    display:block; /* one note per row */
+    padding:0 10px;
   }
-
   .note {
-    width:100%;
-    max-height:180px; /* keep notes small */
+    width:100% !important;
+    min-height:auto;
+    aspect-ratio: auto; /* keep natural size */
     margin-bottom:15px;
   }
-
   .note .text {
-    font-size:0.7rem;
-    overflow-y:auto; /* scroll if text too long */
-    max-height: calc(100% - 35px);
+    font-size:0.7em; /* smaller for mobile */
   }
 }
 </style>
+
 
 
 </head>
@@ -276,6 +265,7 @@ members.forEach(member=>{
 
 </body>
 </html>
+
 
 
 
