@@ -61,10 +61,12 @@ h1{
 
 .note img {
   width: 100%;
-  height: auto;
-  display: block;
+  height: 100%;
+  object-fit: contain; /* so whole note fits without being cut */
   border-radius: 12px;
+  display: block;
 }
+
 
 .note .text {
   position: absolute;
@@ -266,6 +268,7 @@ members.forEach(member=>{
 
 </body>
 </html>
+
 
 
 
