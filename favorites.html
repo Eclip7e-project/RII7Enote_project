@@ -12,22 +12,27 @@ body {
   background-color:black;
   color:white;
   background-image:url('https://www.transparenttextures.com/patterns/stardust.png');
-}
-header{
-  padding:30px;
   text-align:center;
 }
+
+header{
+  padding:30px;
+}
+
 h1{
   color:gold;
 }
+
 .member-section{
   margin:40px 0;
 }
+
 .member-section h2{
   text-align:center;
   color:gold;
   margin-bottom:20px;
 }
+
 .wall-container{
   display:flex;
   flex-wrap: wrap;
@@ -37,52 +42,35 @@ h1{
 }
 
 .note {
-  flex: 0 0 180px; /* slightly smaller on desktop */
+  flex: 0 0 180px;  /* desktop width */
   min-height:180px;
   border-radius:12px;
   position: relative;
   cursor: pointer;
-  aspect-ratio: 1 / 1; /* ensures square layout */
+  aspect-ratio: 1 / 1; /* keeps square shape */
 }
-
-/* Responsive for mobile phones */
-@media screen and (max-width: 768px) {
-  .wall-container {
-    display: block !important; /* one note per row */
-    padding: 0 10px;
-  }
-
-  .note {
-    width: 100% !important;
-    margin-bottom: 15px;
-  }
-}
-
 
 .note img {
   width: 100%;
-  height: auto;
-  display: block;
-  border-radius: 12px;
+  height: 100%;
+  object-fit:cover;
+  border-radius:12px;
+  display:block;
 }
-
-
 
 .note .text {
   position: absolute;
-  top: 10px;
-  left: 10px;
-  right: 10px;
-  bottom: 35px; /* leave space for info box */
-  color: black;
+  top:10px;
+  left:10px;
+  right:10px;
+  bottom:35px;  /* leave space for info box */
+  color:black;
   white-space: pre-wrap;
   overflow-wrap: break-word;
-  font-size: 0.8em; /* smaller so text fits */
-  line-height: 1.1em;
-  overflow: hidden; /* prevents spilling */
+  font-size:0.8em;
+  line-height:1.1em;
+  overflow:hidden;
 }
-
-
 
 .info-box{
   position:absolute;
@@ -102,18 +90,7 @@ h1{
   border:3px solid gold;
   box-shadow:0 0 15px gold;
 }
-footer{
-  padding:30px 0;
-  border-top:2px solid gold;
-  text-align:center;
-}
-footer a{
-  color:gold;
-  text-decoration:none;
-}
-footer a:hover{
-  text-decoration:underline;
-}
+
 .delete-btn{
   position:absolute;
   top:5px;
@@ -126,18 +103,34 @@ footer a:hover{
   cursor:pointer;
 }
 
-/* Responsive for mobile phones */
+footer{
+  padding:30px 0;
+  border-top:2px solid gold;
+  text-align:center;
+}
+
+footer a{
+  color:gold;
+  text-decoration:none;
+}
+
+footer a:hover{
+  text-decoration:underline;
+}
+
+/* MOBILE STYLES: one note per row, smaller */
 @media screen and (max-width: 768px) {
   .wall-container {
-    display: grid !important;
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 10px !important;
+    display: block;       /* one note per row */
+    padding: 0 10px 20px; 
   }
 
   .note {
-    width: 100% !important;
-    aspect-ratio: 1 / 1; /* make square */
-    min-height: unset;
+    width: 160px;         /* smaller width on mobile */
+    margin: 0 auto 15px;  /* center with spacing */
+    height: auto;         
+    aspect-ratio: 1 / 1;  /* keep square */
+    font-size: 0.75rem;   /* text fits inside */
   }
 }
 </style>
@@ -270,6 +263,7 @@ members.forEach(member=>{
 
 </body>
 </html>
+
 
 
 
