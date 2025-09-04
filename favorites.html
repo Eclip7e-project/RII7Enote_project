@@ -28,8 +28,6 @@ h1{
   color:gold;
   margin-bottom:20px;
 }
-
-/* WALL / NOTES */
 .wall-container{
   display:flex;
   flex-wrap: wrap;
@@ -39,38 +37,53 @@ h1{
 }
 
 .note {
-  flex: 0 0 180px; /* desktop size */
+  flex: 0 0 180px; /* slightly smaller on desktop */
+  min-height:180px;
   border-radius:12px;
   position: relative;
   cursor: pointer;
-  overflow: hidden; /* prevent spilling */
+  aspect-ratio: 1 / 1; /* ensures square layout */
 }
 
-/* Note image */
+/* Responsive for mobile phones */
+@media screen and (max-width: 768px) {
+  .wall-container {
+    display: block !important; /* one note per row */
+    padding: 0 10px;
+  }
+
+  .note {
+    width: 100% !important;
+    margin-bottom: 15px;
+  }
+}
+
+
 .note img {
   width: 100%;
-  height: 100%;
-  object-fit:cover;
-  border-radius:12px;
-  display:block;
+  height: auto;
+  display: block;
+  border-radius: 12px;
 }
 
-/* Text inside note */
+
+
 .note .text {
-  position:absolute;
-  top:10px;
-  left:10px;
-  right:10px;
-  bottom:35px; /* leave space for info-box */
-  color:black;
-  font-size:0.75em; /* smaller so text fits */
-  line-height:1.1em;
-  white-space:pre-wrap;
-  word-wrap:break-word;
-  overflow:hidden;
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  bottom: 35px; /* leave space for info box */
+  color: black;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  font-size: 0.8em; /* smaller so text fits */
+  line-height: 1.1em;
+  overflow: hidden; /* prevents spilling */
 }
 
-/* Info box */
+
+
 .info-box{
   position:absolute;
   bottom:5px;
@@ -85,26 +98,10 @@ h1{
   justify-content:space-between;
 }
 
-/* Top liked note highlight */
 .top-note{
   border:3px solid gold;
   box-shadow:0 0 15px gold;
 }
-
-/* Delete button */
-.delete-btn{
-  position:absolute;
-  top:5px;
-  right:5px;
-  background:red;
-  color:white;
-  border:none;
-  border-radius:5px;
-  padding:3px 7px;
-  cursor:pointer;
-}
-
-/* FOOTER */
 footer{
   padding:30px 0;
   border-top:2px solid gold;
@@ -117,25 +114,33 @@ footer a{
 footer a:hover{
   text-decoration:underline;
 }
+.delete-btn{
+  position:absolute;
+  top:5px;
+  right:5px;
+  background:red;
+  color:white;
+  border:none;
+  border-radius:5px;
+  padding:3px 7px;
+  cursor:pointer;
+}
 
-/* Responsive adjustments for mobile */
+/* Responsive for mobile phones */
 @media screen and (max-width: 768px) {
   .wall-container {
-    display:block; /* one note per row */
-    padding:0 10px;
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
   }
+
   .note {
-    width:100% !important;
-    min-height:auto;
-    aspect-ratio: auto; /* keep natural size */
-    margin-bottom:15px;
-  }
-  .note .text {
-    font-size:0.7em; /* smaller for mobile */
+    width: 100% !important;
+    aspect-ratio: 1 / 1; /* make square */
+    min-height: unset;
   }
 }
 </style>
-
 
 
 </head>
@@ -265,6 +270,7 @@ members.forEach(member=>{
 
 </body>
 </html>
+
 
 
 
