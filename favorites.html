@@ -48,27 +48,24 @@ h1{
 /* Responsive for mobile phones */
 @media screen and (max-width: 768px) {
   .wall-container {
-    display: grid !important;
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 10px !important;
-    justify-items: center;
+    display: block !important; /* one note per row */
+    padding: 0 10px;
   }
 
   .note {
     width: 100% !important;
-    max-width: 150px;
-    min-height: unset;
-    aspect-ratio: 1 / 1; /* square */
+    margin-bottom: 15px;
   }
 }
 
 
-.note img{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  border-radius:12px;
+.note img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 12px;
 }
+
 .note .text {
   position: absolute;
   top: 10px;
@@ -217,10 +214,10 @@ function renderMemberNotes(member, notes){
     div.className = 'note';
     if(n.week === currentWeek) div.classList.add('top-note');
     div.innerHTML = `
-      <img src="${n.img}">
-      <div class="text">${n.text}</div>
-      <div class="info-box"><span>❤️ ${n.likes||0}</span><span>Week ${n.week}</span></div>
-    `;
+  <img src="${n.img}" alt="note">
+  <div class="info-box"><span>❤️ ${n.likes||0}</span><span>Week ${n.week}</span></div>
+`;
+
 
     const userId = localStorage.getItem('userId_'+member.name);
 
@@ -264,6 +261,7 @@ members.forEach(member=>{
 
 </body>
 </html>
+
 
 
 
