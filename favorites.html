@@ -37,53 +37,43 @@ h1{
 }
 
 .note {
-  flex: 0 0 180px; /* slightly smaller on desktop */
+  flex: 0 0 180px; /* default desktop size */
   min-height:180px;
   border-radius:12px;
   position: relative;
   cursor: pointer;
-  aspect-ratio: 1 / 1; /* ensures square layout */
+  aspect-ratio: 1 / 1; /* keeps notes square */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden; /* ensures nothing spills out */
+  background: #fff; /* so text notes still look like sticky notes */
 }
 
-/* Responsive for mobile phones */
-@media screen and (max-width: 768px) {
-  .wall-container {
-    display: block !important; /* one note per row */
-    padding: 0 10px;
-  }
-
-  .note {
-    width: 100% !important;
-    margin-bottom: 15px;
-  }
-}
-
-
+/* Make sure note images scale naturally */
 .note img {
   width: 100%;
-  height: auto;
-  display: block;
+  height: 100%;
+  object-fit: cover;
   border-radius: 12px;
+  display: block;
 }
 
-
-
+/* Text inside note */
 .note .text {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  right: 10px;
-  bottom: 35px; /* leave space for info box */
+  padding: 10px;
+  font-size: 0.85em; /* slightly smaller for fit */
+  line-height: 1.2em;
   color: black;
   white-space: pre-wrap;
-  overflow-wrap: break-word;
-  font-size: 0.8em; /* smaller so text fits */
-  line-height: 1.1em;
-  overflow: hidden; /* prevents spilling */
+  word-break: break-word;
+  text-align: center;
+  overflow-y: auto; /* allows scrolling if text is too long */
+  max-height: 100%; /* never overflow the box */
+  box-sizing: border-box;
 }
 
-
-
+/* Info box (bottom label) */
 .info-box{
   position:absolute;
   bottom:5px;
@@ -102,6 +92,7 @@ h1{
   border:3px solid gold;
   box-shadow:0 0 15px gold;
 }
+
 footer{
   padding:30px 0;
   border-top:2px solid gold;
@@ -126,21 +117,27 @@ footer a:hover{
   cursor:pointer;
 }
 
-/* Responsive for mobile phones */
+/* ✅ Responsive for mobile phones */
 @media screen and (max-width: 768px) {
   .wall-container {
-    display: grid !important;
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 10px !important;
+    display: block !important; /* one note per row */
+    padding: 0 10px;
   }
 
   .note {
-    width: 100% !important;
-    aspect-ratio: 1 / 1; /* make square */
-    min-height: unset;
+    width: 100% !important; /* full width of screen */
+    max-width: 100% !important;
+    aspect-ratio: unset; /* remove forced square so full text fits */
+    min-height: auto;
+    margin-bottom: 15px;
+  }
+
+  .note .text {
+    font-size: 0.9em; /* slightly larger for readability on phones */
   }
 }
 </style>
+
 </head>
 <body>
 
@@ -268,6 +265,7 @@ members.forEach(member=>{
 
 </body>
 </html>
+
 
 
 
