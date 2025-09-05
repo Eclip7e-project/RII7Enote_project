@@ -25,7 +25,7 @@
 }
      /* Pinned note styling */
 .pinned-note {
-  color: #000 !important;   /* always black text */
+
   font-weight: bold;
 }
 
@@ -491,7 +491,13 @@ function renderMemberWall(memberName){
       const noteDiv = document.createElement('div');
       noteDiv.className = 'sticky-note';
       noteDiv.style.border = `4px solid ${getMemberColor(memberName)}`;
-      noteDiv.innerHTML = `<img src="${data.img}" alt="Note"><div class="label">${data.text}</div>`;
+      noteDiv.innerHTML = `
+  <img src="${data.img}" alt="Note">
+  <div class="label" style="color:${data.color || '#000'}">
+    ${data.text}
+  </div>
+`;
+
       wall.appendChild(noteDiv);
     });
   });
@@ -628,6 +634,7 @@ setupManageDesignsRealtime();
 
 </body>
 </html> 
+
 
 
 
