@@ -25,7 +25,7 @@
 }
      /* Pinned note styling */
 .pinned-note {
-
+ color: #000 !important;   /* always black text */
   font-weight: bold;
 }
 
@@ -477,28 +477,45 @@ function setupPickFanDesignsRealtime() {
   });
 }
 
-// ----------------- Render Member Walls -----------------
+// ----------------- Render Member Walls (with correct text color) -----------------
 function renderMemberWall(memberName){
   const wall = document.querySelector(`#${memberName}-wall`);
   if(!wall) return;
-  wall.innerHTML = '';
+  wall.innerHTML = ''; // clear existing notes
 
   const notesCol = collection(db, 'notes', memberName, 'memberNotes');
   onSnapshot(notesCol, snapshot => {
     wall.innerHTML = ''; // clear before re-render
+
     snapshot.docs.forEach(docSnap => {
       const data = docSnap.data();
+
+      // Create sticky note container
       const noteDiv = document.createElement('div');
       noteDiv.className = 'sticky-note';
       noteDiv.style.border = `4px solid ${getMemberColor(memberName)}`;
-      noteDiv.innerHTML = `<img src="${data.img}" alt="Note"><div class="label">${data.text}</div>`;
-noteDiv.querySelector('.label').style.color = data.color || '#000';
 
+      // Create image element
+      const imgEl = document.createElement('img');
+      imgEl.src = data.img;
+      imgEl.alt = "Note";
 
+      // Create label element with correct color
+      const labelDiv = document.createElement('div');
+      labelDiv.className = 'label';
+      labelDiv.textContent = data.text;
+      labelDiv.style.color = data.color || '#000'; // fallback to black
+
+      // Append image and label to note container
+      noteDiv.appendChild(imgEl);
+      noteDiv.appendChild(labelDiv);
+
+      // Append note to wall
       wall.appendChild(noteDiv);
     });
   });
 }
+
 
 // ----------------- Simple Notes -----------------
 function renderSimpleNotes(){
@@ -631,6 +648,7 @@ setupManageDesignsRealtime();
 
 </body>
 </html> 
+
 
 
 
