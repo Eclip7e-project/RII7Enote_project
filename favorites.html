@@ -47,6 +47,7 @@ h1{
   border-radius:12px;
   position: relative;
   cursor: pointer;
+  aspect-ratio: 1 / 1; /* keeps square shape */
 }
 
 .note img {
@@ -207,7 +208,11 @@ function renderMemberNotes(member, notes){
     }
   });
 
-Object.values(weekMap).forEach(n => {
+  Object.values(weekMap).forEach(n=>{
+    const div = document.createElement('div');
+    div.className = 'note';
+    if(n.week === currentWeek) div.classList.add('top-note');
+   Object.values(weekMap).forEach(n => {
   const div = document.createElement('div');
   div.className = 'note';
   if(n.week === currentWeek) div.classList.add('top-note');
@@ -218,11 +223,11 @@ Object.values(weekMap).forEach(n => {
   imgEl.alt = 'Note';
   div.appendChild(imgEl);
 
-  // Text with saved color
+  // Text
   const textDiv = document.createElement('div');
   textDiv.className = 'text';
   textDiv.textContent = n.text;
-  textDiv.style.color = n.color || 'black';
+  textDiv.style.color = n.color || 'black'; // apply saved color
   div.appendChild(textDiv);
 
   // Info box
@@ -231,29 +236,11 @@ Object.values(weekMap).forEach(n => {
   infoDiv.innerHTML = `<span>❤️ ${n.likes||0}</span><span>Week ${n.week}</span>`;
   div.appendChild(infoDiv);
 
-  // Delete button if creator
-  const userId = localStorage.getItem('userId_' + member.name);
-  if(n.creator === userId){
-    const btn = document.createElement('button');
-    btn.textContent='Delete';
-    btn.className='delete-btn';
-    btn.onclick = async (e)=>{
-      e.stopPropagation();
-      if(confirm("Delete your note?")){
-        const noteDoc = doc(db,'notes',member.name,'memberNotes',n.id);
-        await deleteDoc(noteDoc);
-      }
-    }
-    div.appendChild(btn);
-  }
-
-  // On click redirect to member wall
-  div.onclick = ()=>{ window.location.href = member.wall; }
+  // Keep existing onclick for member wall
+  div.onclick = () => { window.location.href = member.wall; }
 
   wallDiv.appendChild(div);
 });
-
-
 
 
 
@@ -301,21 +288,6 @@ members.forEach(member=>{
 
 </body>
 </html>  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
