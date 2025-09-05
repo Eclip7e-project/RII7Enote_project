@@ -67,7 +67,7 @@ h1{
   color:black;
   white-space: pre-wrap;
   overflow-wrap: break-word;
-  font-size:0.75rem;
+  font-size: 0.75rem;
   line-height:1.1em;
   overflow:hidden;
 }
@@ -198,68 +198,25 @@ function renderMemberNotes(member, notes){
   const wallDiv = document.createElement('div');
   wallDiv.className = 'wall-container';
 
-  // filter out deleted notes
-  notes = notes.filter(n => n.week >= 1 && !n.deleted);
+  notes = notes.filter(n=>n.week>=1 && !n.deleted);
 
-  // Only keep the most liked note per week
+  // Only most liked per week
   const weekMap = {};
-  notes.forEach(n => {
-    if(!weekMap[n.week] || (n.likes || 0) > (weekMap[n.week].likes || 0)){
+  notes.forEach(n=>{
+    if(!weekMap[n.week] || (n.likes||0) > (weekMap[n.week].likes||0)){
       weekMap[n.week] = n;
     }
   });
 
-  // Loop over top notes per week
-  Object.values(weekMap).forEach(n => {
+  Object.values(weekMap).forEach(n=>{
     const div = document.createElement('div');
     div.className = 'note';
     if(n.week === currentWeek) div.classList.add('top-note');
-
-    // Image
-    const imgEl = document.createElement('img');
-    imgEl.src = n.img;
-    imgEl.alt = 'Note';
-    div.appendChild(imgEl);
-
-    // Text
-    const textDiv = document.createElement('div');
-    textDiv.className = 'text';
-    textDiv.textContent = n.text;
-    textDiv.style.color = n.color || 'black';
-    div.appendChild(textDiv);
-
-    // Info box
-    const infoDiv = document.createElement('div');
-    infoDiv.className = 'info-box';
-    infoDiv.innerHTML = `<span>❤️ ${n.likes || 0}</span><span>Week ${n.week}</span>`;
-    div.appendChild(infoDiv);
-
-    // Delete button if user is creator
-    const userId = localStorage.getItem('userId_' + member.name);
-    if(n.creator === userId){
-      const btn = document.createElement('button');
-      btn.textContent = 'Delete';
-      btn.className = 'delete-btn';
-      btn.onclick = async e => {
-        e.stopPropagation();
-        if(confirm("Delete your note?")){
-          await deleteDoc(doc(db,'notes',member.name,'memberNotes',n.id));
-        }
-      }
-      div.appendChild(btn);
-    }
-
-    // Click to member wall
-    div.onclick = () => { window.location.href = member.wall; }
-
-    wallDiv.appendChild(div);
-  });
-
-  section.appendChild(wallDiv);
-  favoritesContainer.appendChild(section);
-}
-
-
+    div.innerHTML = `
+      <img src="${n.img}">
+      <div class="text">${n.text}</div>
+      <div class="info-box"><span❤️ ${n.likes||0}</span><span>Week ${n.week}</span></div>
+    `;
 
 
 
@@ -306,21 +263,3 @@ members.forEach(member=>{
 
 </body>
 </html>  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
