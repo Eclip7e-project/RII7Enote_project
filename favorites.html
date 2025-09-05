@@ -212,11 +212,7 @@ function renderMemberNotes(member, notes){
     const div = document.createElement('div');
     div.className = 'note';
     if(n.week === currentWeek) div.classList.add('top-note');
-   Object.values(weekMap).forEach(n => {
-  const div = document.createElement('div');
-  div.className = 'note';
-  if(n.week === currentWeek) div.classList.add('top-note');
-
+   
   // Image
   const imgEl = document.createElement('img');
   imgEl.src = n.img;
@@ -288,6 +284,7 @@ members.forEach(member=>{
 
 </body>
 </html>  
+
 
 
 
