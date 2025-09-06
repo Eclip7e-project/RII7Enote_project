@@ -94,7 +94,7 @@ footer a:hover { text-decoration:underline; }
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-import { getFirestore, collection, onSnapshot, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+import { getFirestore, collection, onSnapshot, doc, updateDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
 // Firebase
 const firebaseConfig = {
@@ -124,13 +124,20 @@ let currentModalNote = null;
 let userId = localStorage.getItem('userId');
 if(!userId){ userId = crypto.randomUUID(); localStorage.setItem('userId', userId); }
 
-// Open modal
-function openModal(note){
+// Open modal with latest likes
+async function openModal(note){
   currentModalNote = note;
-  modalImg.src = note.img;
-  modalText.textContent = note.text;
+  const docRef = doc(db,'notes',memberName,'memberNotes',note.id);
+  const docSnap = await getDoc(docRef);
+  if(docSnap.exists()){
+    currentModalNote = {id: docSnap.id, ...docSnap.data()};
+  }
+
+  modalImg.src = currentModalNote.img;
+  modalText.textContent = currentModalNote.text;
+  modalLike.textContent = `❤ ${currentModalNote.likes || 0}`;
+  modalDelete.style.display = (currentModalNote.creator===userId)?'inline-block':'none';
   modal.style.display = 'flex';
-  modalDelete.style.display = (note.creator===userId)?'inline-block':'none';
 }
 
 // Close modal
@@ -178,7 +185,19 @@ function renderNotes(notes){
     const div = document.createElement('div');
     div.className='sticky-note';
     if(n.id===topNoteId) div.classList.add('top-note');
-    div.innerHTML = `<img src="${n.img}" alt="Note"><div class="text">${n.text}</div>`;
+
+    const imgEl = document.createElement('img');
+    imgEl.src = n.img;
+    imgEl.alt = 'Note';
+
+    const textDiv = document.createElement('div');
+    textDiv.className = 'text';
+    textDiv.textContent = n.text;
+    textDiv.style.color = n.color || 'black';
+
+    div.appendChild(imgEl);
+    div.appendChild(textDiv);
+
     div.onclick = ()=>openModal(n);
     wall.appendChild(div);
   });
@@ -194,5 +213,7 @@ onSnapshot(notesCol, snapshot=>{
   renderNotes(notes);
 });
 </script>
+
 </body>
 </html>
+
