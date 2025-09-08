@@ -170,7 +170,7 @@ function renderNotes(notes){
   wall.innerHTML='';
   let maxLikes = -1;
   let topNoteId = null;
-  const currentWeek = Math.floor((new Date()-new Date('2025-09-01'))/(7*24*60*60*1000))+1;
+  const currentWeek = Math.floor((new Date()-new Date('2025-09-04'))/(7*24*60*60*1000))+1;
 
   notes = notes.filter(n => n.creator);
 
@@ -216,4 +216,5 @@ onSnapshot(notesCol, snapshot=>{
 
 </body>
 </html>
+
 
