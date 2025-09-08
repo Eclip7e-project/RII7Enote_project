@@ -158,37 +158,50 @@ function renderNotes(notes){
   wall.innerHTML='';
   let maxLikes = -1;
   let topNoteId = null;
-  const currentWeek = Math.floor((new Date()-new Date('2025-09-01'))/(7*24*60*60*1000))+1;
+  const currentWeek = Math.floor((new Date()-new Date('2025-09-04'))/(7*24*60*60*1000))+1;
 
   notes = notes.filter(n => n.creator);
 
-  notes.forEach(n=>{
-    if(n.week === currentWeek && (n.likes||0) > maxLikes){
-      maxLikes = n.likes||0;
+ // 1️⃣ First try to find top note this week
+notes.forEach(n => {
+  if (n.week === currentWeek && (n.likes || 0) > maxLikes) {
+    maxLikes = n.likes || 0;
+    topNoteId = n.id;
+  }
+});
+
+// 2️⃣ If none found this week, fallback to all-time
+if (!topNoteId) {
+  maxLikes = -1;
+  notes.forEach(n => {
+    if ((n.likes || 0) > maxLikes) {
+      maxLikes = n.likes || 0;
       topNoteId = n.id;
     }
   });
-
-  notes.forEach(n=>{
-    const div = document.createElement('div');
-    div.className='sticky-note';
-    if(n.id===topNoteId) div.classList.add('top-note');
-    const imgEl = document.createElement('img');
-    imgEl.src = n.img;
-    imgEl.alt = 'Note';
-
-    const textDiv = document.createElement('div');
-    textDiv.className = 'text';
-    textDiv.textContent = n.text;
-    textDiv.style.color = n.color || 'black'; // apply saved color
-
-    div.appendChild(imgEl);
-    div.appendChild(textDiv);
-
-    div.onclick = ()=>openModal(n);
-    wall.appendChild(div);
-  });
 }
+
+// 3️⃣ Now render all notes and highlight top
+notes.forEach(n => {
+  const div = document.createElement('div');
+  div.className = 'sticky-note';
+  if (n.id === topNoteId) div.classList.add('top-note');
+
+  const imgEl = document.createElement('img');
+  imgEl.src = n.img;
+  imgEl.alt = 'Note';
+
+  const textDiv = document.createElement('div');
+  textDiv.className = 'text';
+  textDiv.textContent = n.text;
+  textDiv.style.color = n.color || 'black';
+
+  div.appendChild(imgEl);
+  div.appendChild(textDiv);
+
+  div.onclick = () => openModal(n);
+  wall.appendChild(div);
+});
 
 // Firestore realtime
 const notesCol = collection(db,'notes',memberName,'memberNotes');
@@ -203,5 +216,6 @@ onSnapshot(notesCol, snapshot=>{
 
 </body>
 </html> 
+
 
 
