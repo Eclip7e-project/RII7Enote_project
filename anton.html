@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Anton Wall - RII7E Project</title>
@@ -36,22 +36,11 @@ section.wall { display:flex; flex-wrap:wrap; justify-content:flex-start; gap:20p
 /* MODAL */
 #modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); justify-content:center; align-items:center; z-index:1000; }
 #modal-content { position:relative; background:transparent; border-radius:15px; max-width:500px; width:90%; max-height:90%; overflow:auto; }
-#modal-note-wrapper { position: relative; width: 100%; padding-top: 100%; border-radius: 15px; overflow: hidden; }
-#modal-img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 15px; }
-#modal-text {
-  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-  padding: 10px;
-  white-space: pre-wrap;
-  display: flex;
-  justify-content: flex-start;
-  align-items: flex-start;
-  text-align: left;
-  pointer-events: none;
-}
+#modal-img { width:100%; border-radius:15px; display:block; }
+#modal-text { position:absolute; top:10px; left:10px; right:10px; bottom:10px; color:black; font-size:1rem; white-space:pre-wrap; pointer-events:none; text-shadow:1px 1px 3px white; }
 #modal-buttons { margin-top:10px; display:flex; justify-content:center; gap:10px; }
 #modal-like { padding:5px 10px; cursor:pointer; background:gold; border:none; border-radius:5px; color:black; font-weight:bold; }
 #modal-delete { display:none; background:red; color:white; border:none; border-radius:5px; padding:5px 10px; cursor:pointer; }
-#modal-download { padding:5px 10px; cursor:pointer; background:limegreen; border:none; border-radius:5px; color:black; font-weight:bold; }
 #modal-close { position:absolute; top:10px; right:10px; cursor:pointer; font-size:1.2rem; font-weight:bold; background:red; color:white; border:none; border-radius:5px; padding:3px 7px; z-index:1001; }
 
 /* FOOTER */
@@ -77,14 +66,14 @@ footer a:hover { text-decoration:underline; }
 <div id="modal">
   <div id="modal-content">
     <button id="modal-close">X</button>
-    <div id="modal-note-wrapper">
+    <div style="position:relative;">
       <img id="modal-img" src="">
       <div id="modal-text"></div>
     </div>
     <div id="modal-buttons">
       <button id="modal-like">❤ 0</button>
       <button id="modal-delete">Delete</button>
-      <button id="modal-download">⬇ Download</button>
+       <button id="modal-download">⬇ Download</button> <!-- new -->
     </div>
   </div>
 </div>
@@ -119,29 +108,23 @@ const modalText = document.getElementById('modal-text');
 const modalLike = document.getElementById('modal-like');
 const modalClose = document.getElementById('modal-close');
 const modalDelete = document.getElementById('modal-delete');
-const modalDownload = document.getElementById('modal-download');
 
 let currentModalNote = null;
 let userId = localStorage.getItem('userId') || (localStorage.setItem('userId', crypto.randomUUID()), localStorage.getItem('userId'));
 
-// Open modal
+// Open modal (fixed likes)
 async function openModal(note){
   currentModalNote = note;
-
+  
+  // Get latest likes from Firestore
   const docRef = doc(db,'notes',memberName,'memberNotes',note.id);
   const docSnap = await getDoc(docRef);
-  if(docSnap.exists()) currentModalNote = {id: docSnap.id, ...docSnap.data()};
+  if(docSnap.exists()){
+    currentModalNote = {id: docSnap.id, ...docSnap.data()};
+  }
 
   modalImg.src = currentModalNote.img;
   modalText.textContent = currentModalNote.text;
-
-  // Apply creator's styles
-  modalText.style.color = currentModalNote.color || 'black';
-  modalText.style.textAlign = currentModalNote.align || 'left';
-  modalText.style.fontSize = currentModalNote.fontSize || '0.75rem';
-  modalText.style.justifyContent = currentModalNote.justify || 'flex-start';
-  modalText.style.alignItems = currentModalNote.alignItems || 'flex-start';
-
   modalLike.textContent = `❤ ${currentModalNote.likes || 0}`;
   modalDelete.style.display = (currentModalNote.creator === userId) ? 'inline-block' : 'none';
   modal.style.display = 'flex';
@@ -181,7 +164,7 @@ function renderNotes(notes){
 
   notes = notes.filter(n => n.creator);
 
-  notes.forEach(n=>{
+ notes.forEach(n=>{
     if(n.week === currentWeek && (n.likes||0) > maxLikes){
       maxLikes = n.likes||0;
       topNoteId = n.id;
@@ -199,14 +182,11 @@ function renderNotes(notes){
     const textDiv = document.createElement('div');
     textDiv.className = 'text';
     textDiv.textContent = n.text;
-    textDiv.style.color = n.color || 'black';
-    textDiv.style.textAlign = n.align || 'left';
-    textDiv.style.fontSize = n.fontSize || '0.75rem';
-    textDiv.style.justifyContent = n.justify || 'flex-start';
-    textDiv.style.alignItems = n.alignItems || 'flex-start';
+    textDiv.style.color = n.color || 'black'; // apply saved color
 
     div.appendChild(imgEl);
     div.appendChild(textDiv);
+
     div.onclick = ()=>openModal(n);
     wall.appendChild(div);
   });
@@ -222,9 +202,12 @@ onSnapshot(notesCol, snapshot=>{
   renderNotes(notes);
 });
 
-// Download button
+
+
+  const modalDownload = document.getElementById("modal-download");
+
 modalDownload.onclick = () => {
-  const noteElement = document.getElementById("modal-note-wrapper");
+  const noteElement = document.querySelector("#modal-content > div"); // the note wrapper
   html2canvas(noteElement).then(canvas => {
     const link = document.createElement("a");
     link.download = "note.png";
@@ -232,16 +215,8 @@ modalDownload.onclick = () => {
     link.click();
   });
 };
+
 </script>
 
 </body>
-</html>
-
-
-
-
-
-
-
-
-
+</html> 
