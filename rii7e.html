@@ -27,7 +27,23 @@ header img.banner { width:100%; height:auto; object-fit:contain; border-bottom:2
 section.wall { display:flex; flex-wrap:wrap; justify-content:flex-start; gap:20px; padding:40px; }
 .sticky-note { width:200px; height:200px; position:relative; cursor:pointer; }
 .sticky-note img { width:100%; height:100%; object-fit:cover; border-radius:15px; }
-.sticky-note .text { position:absolute; top:10px; left:10px; right:10px; bottom:10px; color:black; font-size:0.75rem; white-space:pre-wrap; overflow:hidden; text-overflow:ellipsis; }
+.sticky-note .text {
+  position:absolute;
+  top:10px;
+  left:10px;
+  right:10px;
+  bottom:10px;
+  color:black;
+  font-size:0.75rem;
+  white-space:pre-wrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  text-align:center;      /* center horizontally */
+  display:flex;
+  justify-content:center;
+  align-items:flex-start; /* text starts from top */
+  padding:5px;
+}
 
 /* Highlight top note */
 .top-note { border:5px solid gold; box-shadow:0 0 15px gold; }
@@ -36,7 +52,19 @@ section.wall { display:flex; flex-wrap:wrap; justify-content:flex-start; gap:20p
 #modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); justify-content:center; align-items:center; z-index:1000; }
 #modal-content { position:relative; background:transparent; border-radius:15px; max-width:500px; width:90%; max-height:90%; overflow:auto; }
 #modal-img { width:100%; border-radius:15px; display:block; }
-#modal-text { position:absolute; top:10px; left:10px; right:10px; bottom:10px; color:black; font-size:1rem; white-space:pre-wrap; pointer-events:none; text-shadow:1px 1px 3px white; }
+#modal-text {
+  position:absolute;
+  top:10px; left:10px; right:10px; bottom:10px;
+  color:black;
+  font-size:1rem;
+  white-space:pre-wrap;
+  pointer-events:none;
+  text-align:center;
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  padding:10px;
+}
 #modal-buttons { margin-top:10px; display:flex; justify-content:center; gap:10px; }
 #modal-like { padding:5px 10px; cursor:pointer; background:gold; border:none; border-radius:5px; color:black; font-weight:bold; }
 #modal-delete { display:none; background:red; color:white; border:none; border-radius:5px; padding:5px 10px; cursor:pointer; }
@@ -203,6 +231,3 @@ onSnapshot(notesCol, snapshot=>{
 
 </body>
 </html>
-
-
-
