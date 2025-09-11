@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Anton Wall - RII7E Project</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
 body {
   font-family: 'Playfair Display', serif;
@@ -26,11 +25,14 @@ header img.banner { width:100%; height:auto; object-fit:contain; border-bottom:2
 
 /* WALL */
 section.wall { display:flex; flex-wrap:wrap; justify-content:flex-start; gap:20px; padding:40px; }
+.sticky-note { width:200px; height:200px; position:relative; cursor:pointer; }
+.sticky-note img { width:100%; height:100%; object-fit:cover; border-radius:15px; }
+.sticky-note .text { position:absolute; top:10px; left:10px; right:10px; bottom:10px; color:black; font-size:0.75rem; white-space:pre-wrap; overflow:hidden; text-overflow:ellipsis; }
 
-/* We hide the old note divs; we render the generated images instead */
-.sticky-note { cursor:pointer; border-radius:15px; }
+/* Highlight top note */
+.top-note { border:5px solid gold; box-shadow:0 0 15px gold; }
 
-/* MODAL (optional) */
+/* MODAL */
 #modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); justify-content:center; align-items:center; z-index:1000; }
 #modal-content { position:relative; background:transparent; border-radius:15px; max-width:500px; width:90%; max-height:90%; overflow:auto; }
 #modal-img { width:100%; border-radius:15px; display:block; }
@@ -108,12 +110,17 @@ const modalDelete = document.getElementById('modal-delete');
 let currentModalNote = null;
 let userId = localStorage.getItem('userId') || (localStorage.setItem('userId', crypto.randomUUID()), localStorage.getItem('userId'));
 
-// Open modal
+// Open modal (fixed likes)
 async function openModal(note){
   currentModalNote = note;
+  
+  // Get latest likes from Firestore
   const docRef = doc(db,'notes',memberName,'memberNotes',note.id);
   const docSnap = await getDoc(docRef);
-  if(docSnap.exists()) currentModalNote = {id: docSnap.id, ...docSnap.data()};
+  if(docSnap.exists()){
+    currentModalNote = {id: docSnap.id, ...docSnap.data()};
+  }
+
   modalImg.src = currentModalNote.img;
   modalText.textContent = currentModalNote.text;
   modalLike.textContent = `❤ ${currentModalNote.likes || 0}`;
@@ -146,60 +153,41 @@ modalDelete.onclick = async () => {
   modal.style.display='none';
 };
 
-// Render notes as images for wall
-async function renderNotes(notes){
-  wall.innerHTML = '';
+// Render notes
+function renderNotes(notes){
+  wall.innerHTML='';
   let maxLikes = -1;
   let topNoteId = null;
   const currentWeek = Math.floor((new Date()-new Date('2025-09-04'))/(7*24*60*60*1000))+1;
 
   notes = notes.filter(n => n.creator);
 
-  notes.forEach(n=>{
+ notes.forEach(n=>{
     if(n.week === currentWeek && (n.likes||0) > maxLikes){
       maxLikes = n.likes||0;
       topNoteId = n.id;
     }
   });
 
-  for(const n of notes){
-    // Create the note as a temporary div
-    const tempDiv = document.createElement('div');
-    tempDiv.style.position='relative';
-    tempDiv.style.width='200px';
-    tempDiv.style.height='200px';
-    tempDiv.style.borderRadius='15px';
-    tempDiv.style.backgroundImage = `url(${n.img})`;
-    tempDiv.style.backgroundSize = 'cover';
-    tempDiv.style.backgroundPosition = 'center';
+  notes.forEach(n=>{
+    const div = document.createElement('div');
+    div.className='sticky-note';
+    if(n.id===topNoteId) div.classList.add('top-note');
+    const imgEl = document.createElement('img');
+    imgEl.src = n.img;
+    imgEl.alt = 'Note';
 
     const textDiv = document.createElement('div');
-    textDiv.style.position='absolute';
-    textDiv.style.top='10px';
-    textDiv.style.left='10px';
-    textDiv.style.right='10px';
-    textDiv.style.bottom='10px';
-    textDiv.style.color = n.color || 'black';
-    textDiv.style.fontSize = '0.75rem';
-    textDiv.style.whiteSpace = 'pre-wrap';
-    textDiv.style.textAlign = n.align || 'left';
+    textDiv.className = 'text';
     textDiv.textContent = n.text;
-    tempDiv.appendChild(textDiv);
+    textDiv.style.color = n.color || 'black'; // apply saved color
 
-    // Convert to image using html2canvas
-    const canvas = await html2canvas(tempDiv);
-    const imgEl = document.createElement('img');
-    imgEl.src = canvas.toDataURL('image/png');
-    imgEl.className = 'sticky-note';
-    if(n.id === topNoteId) imgEl.style.border = '5px solid gold';
-    imgEl.style.borderRadius='15px';
-    imgEl.style.cursor='pointer';
+    div.appendChild(imgEl);
+    div.appendChild(textDiv);
 
-    // Open modal when clicked
-    imgEl.onclick = ()=>openModal(n);
-
-    wall.appendChild(imgEl);
-  }
+    div.onclick = ()=>openModal(n);
+    wall.appendChild(div);
+  });
 }
 
 // Firestore realtime
@@ -207,20 +195,11 @@ const notesCol = collection(db,'notes',memberName,'memberNotes');
 onSnapshot(notesCol, snapshot=>{
   const notes = snapshot.docs.map(d=>{
     const data = d.data();
-    return {id:d.id, creator:data.creator, ...data};
+    return {id:d.id, creator: data.creator, ...data};
   });
   renderNotes(notes);
 });
 </script>
 
 </body>
-</html>
-
-
-
-
-
-
-
-
-
+</html> 
