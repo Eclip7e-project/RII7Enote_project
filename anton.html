@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Anton Wall - RII7E Project</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
 body {
   font-family: 'Playfair Display', serif;
@@ -28,20 +28,10 @@ header img.banner { width:100%; height:auto; object-fit:contain; border-bottom:2
 section.wall { display:flex; flex-wrap:wrap; justify-content:flex-start; gap:20px; padding:40px; }
 .sticky-note { width:200px; height:200px; position:relative; cursor:pointer; }
 .sticky-note img { width:100%; height:100%; object-fit:cover; border-radius:15px; }
-.sticky-note .text { position:absolute; top:10px; left:10px; right:10px; bottom:10px; color:black; font-size:0.75rem; white-space:pre-wrap; overflow:hidden; text-overflow:ellipsis; }
+.sticky-note .text { position:absolute; top:10px; left:10px; right:10px; bottom:10px; font-size:0.75rem; white-space:pre-wrap; overflow:hidden; text-overflow:ellipsis; }
 
 /* Highlight top note */
 .top-note { border:5px solid gold; box-shadow:0 0 15px gold; }
-
-/* MODAL */
-#modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); justify-content:center; align-items:center; z-index:1000; }
-#modal-content { position:relative; background:transparent; border-radius:15px; max-width:500px; width:90%; max-height:90%; overflow:auto; }
-#modal-img { width:100%; border-radius:15px; display:block; }
-#modal-text { position:absolute; top:10px; left:10px; right:10px; bottom:10px; color:black; font-size:1rem; white-space:pre-wrap; pointer-events:none; text-shadow:1px 1px 3px white; }
-#modal-buttons { margin-top:10px; display:flex; justify-content:center; gap:10px; }
-#modal-like { padding:5px 10px; cursor:pointer; background:gold; border:none; border-radius:5px; color:black; font-weight:bold; }
-#modal-delete { display:none; background:red; color:white; border:none; border-radius:5px; padding:5px 10px; cursor:pointer; }
-#modal-close { position:absolute; top:10px; right:10px; cursor:pointer; font-size:1.2rem; font-weight:bold; background:red; color:white; border:none; border-radius:5px; padding:3px 7px; z-index:1001; }
 
 /* FOOTER */
 footer { padding:30px 0; border-top:2px solid gold; margin-top:50px; }
@@ -62,22 +52,6 @@ footer a:hover { text-decoration:underline; }
 
 <section class="wall" id="anton-wall"></section>
 
-<!-- Modal -->
-<div id="modal">
-  <div id="modal-content">
-    <button id="modal-close">X</button>
-    <div style="position:relative;">
-      <img id="modal-img" src="">
-      <div id="modal-text"></div>
-    </div>
-    <div id="modal-buttons">
-      <button id="modal-like">❤ 0</button>
-      <button id="modal-delete">Delete</button>
-       <button id="modal-download">⬇ Download</button> <!-- new -->
-    </div>
-  </div>
-</div>
-
 <footer>
 <p>Created by <a href="https://x.com/Eclip7e_project" target="_blank">@Eclip7e_project</a></p>
 <img src="logo.png" alt="Logo" height="80">
@@ -85,7 +59,7 @@ footer a:hover { text-decoration:underline; }
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-import { getFirestore, collection, onSnapshot, doc, updateDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
 // Firebase
 const firebaseConfig = {
@@ -99,128 +73,74 @@ const firebaseConfig = {
 initializeApp(firebaseConfig);
 const db = getFirestore();
 
-// Variables
 const memberName = "anton";
 const wall = document.getElementById('anton-wall');
-const modal = document.getElementById('modal');
-const modalImg = document.getElementById('modal-img');
-const modalText = document.getElementById('modal-text');
-const modalLike = document.getElementById('modal-like');
-const modalClose = document.getElementById('modal-close');
-const modalDelete = document.getElementById('modal-delete');
+let currentWeek = Math.floor((new Date()-new Date('2025-09-04'))/(7*24*60*60*1000))+1;
 
-let currentModalNote = null;
-let userId = localStorage.getItem('userId') || (localStorage.setItem('userId', crypto.randomUUID()), localStorage.getItem('userId'));
-
-// Open modal (fixed likes)
-async function openModal(note){
-  currentModalNote = note;
-  
-  // Get latest likes from Firestore
-  const docRef = doc(db,'notes',memberName,'memberNotes',note.id);
-  const docSnap = await getDoc(docRef);
-  if(docSnap.exists()){
-    currentModalNote = {id: docSnap.id, ...docSnap.data()};
-  }
-
-  modalImg.src = currentModalNote.img;
-  modalText.textContent = currentModalNote.text;
-  modalLike.textContent = `❤ ${currentModalNote.likes || 0}`;
-  modalDelete.style.display = (currentModalNote.creator === userId) ? 'inline-block' : 'none';
-  modal.style.display = 'flex';
-}
-
-// Close modal
-modalClose.onclick = (e)=>{ e.stopPropagation(); modal.style.display='none'; }
-modal.onclick = ()=> modal.style.display='none';
-document.getElementById('modal-content').onclick = (e)=> e.stopPropagation();
-
-// Like button
-modalLike.onclick = async () => {
-  if(!currentModalNote) return;
-  let liked = JSON.parse(localStorage.getItem('likedNotes')||'[]');
-  if(liked.includes(currentModalNote.id)){ alert("Already liked!"); return; }
-  await updateDoc(doc(db,'notes',memberName,'memberNotes',currentModalNote.id),{ likes:(currentModalNote.likes||0)+1 });
-  currentModalNote.likes = (currentModalNote.likes||0)+1;
-  modalLike.textContent = `❤ ${currentModalNote.likes}`;
-  liked.push(currentModalNote.id);
-  localStorage.setItem('likedNotes', JSON.stringify(liked));
-};
-
-// Delete button
-modalDelete.onclick = async () => {
-  if(!currentModalNote) return;
-  if(!confirm("Delete your note?")) return;
-  await deleteDoc(doc(db,'notes',memberName,'memberNotes',currentModalNote.id));
-  modal.style.display='none';
-};
-
-// Render notes
+// Render notes on the wall
 function renderNotes(notes){
-  wall.innerHTML='';
+  wall.innerHTML = '';
   let maxLikes = -1;
   let topNoteId = null;
-  const currentWeek = Math.floor((new Date()-new Date('2025-09-04'))/(7*24*60*60*1000))+1;
 
-  notes = notes.filter(n => n.creator);
-
- notes.forEach(n=>{
+  notes.forEach(n => {
     if(n.week === currentWeek && (n.likes||0) > maxLikes){
       maxLikes = n.likes||0;
       topNoteId = n.id;
     }
   });
 
-   notes.forEach(n=>{
+  notes.forEach(n => {
     const div = document.createElement('div');
-    div.className='sticky-note';
-    if(n.id===topNoteId) div.classList.add('top-note');
+    div.className = 'sticky-note';
+    if(n.id === topNoteId) div.classList.add('top-note');
+
+    // Image
     const imgEl = document.createElement('img');
     imgEl.src = n.img;
     imgEl.alt = 'Note';
 
+    // Text overlay
     const textDiv = document.createElement('div');
     textDiv.className = 'text';
     textDiv.textContent = n.text;
-    textDiv.style.color = n.color || 'black'; // apply saved color
+    textDiv.style.color = n.color || 'black';
+    textDiv.style.textAlign = n.align || 'left';
+    textDiv.style.fontSize = n.fontSize || '0.75rem';
+    textDiv.style.whiteSpace = 'pre-wrap';
 
     div.appendChild(imgEl);
     div.appendChild(textDiv);
 
-    div.onclick = ()=>openModal(n);
+    // Right-click download with text baked in
+    div.oncontextmenu = async (e) => {
+      e.preventDefault();
+      const clone = div.cloneNode(true); // clone for canvas
+      clone.style.width = "400px"; // bigger for download
+      clone.style.height = "400px";
+      document.body.appendChild(clone);
+      const canvas = await html2canvas(clone, {backgroundColor: null});
+      const link = document.createElement('a');
+      link.download = 'note.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      document.body.removeChild(clone);
+    };
+
     wall.appendChild(div);
   });
 }
 
-
-
-// Firestore realtime
+// Firestore realtime listener
 const notesCol = collection(db,'notes',memberName,'memberNotes');
-onSnapshot(notesCol, snapshot=>{
-  const notes = snapshot.docs.map(d=>{
-    const data = d.data();
-    return {id:d.id, creator: data.creator, ...data};
-  });
+onSnapshot(notesCol, snapshot => {
+  const notes = snapshot.docs.map(d => ({id:d.id, creator: d.data().creator, ...d.data()}));
   renderNotes(notes);
 });
-
-
-
-  const modalDownload = document.getElementById("modal-download");
-
-modalDownload.onclick = () => {
-  const noteElement = document.querySelector("#modal-content > div"); // the note wrapper
-  html2canvas(noteElement).then(canvas => {
-    const link = document.createElement("a");
-    link.download = "note.png";
-    link.href = canvas.toDataURL("image/png");
-    link.click();
-  });
-};
-
 </script>
-
 </body>
-</html> 
+</html>
+
+
 
 
