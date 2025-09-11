@@ -171,26 +171,43 @@ function renderNotes(notes){
     }
   });
 
-  notes.forEach(n=>{
+  notes.forEach(async n => {
     const div = document.createElement('div');
     div.className='sticky-note';
     if(n.id===topNoteId) div.classList.add('top-note');
+
+    // Create image element
     const imgEl = document.createElement('img');
     imgEl.src = n.img;
     imgEl.alt = 'Note';
 
+    // Create text overlay
     const textDiv = document.createElement('div');
-    textDiv.className = 'text';
+    textDiv.className='text';
     textDiv.textContent = n.text;
-    textDiv.style.color = n.color || 'black'; // apply saved color
+    textDiv.style.color = n.color || 'black';
+    textDiv.style.textAlign = n.align || 'left';
+    textDiv.style.fontSize = n.fontSize || '0.75rem';
 
+    // Add to container
     div.appendChild(imgEl);
     div.appendChild(textDiv);
 
+    // Generate canvas version with text baked in
+    const canvas = await html2canvas(div);
+    const dataURL = canvas.toDataURL('image/png');
+    const combinedImg = document.createElement('img');
+    combinedImg.src = dataURL;
+    combinedImg.alt = 'Note';
+    div.innerHTML = '';   // clear div
+    div.appendChild(combinedImg);
+
+    // Click opens modal as before
     div.onclick = ()=>openModal(n);
+
     wall.appendChild(div);
-  });
-}
+});
+
 
 // Firestore realtime
 const notesCol = collection(db,'notes',memberName,'memberNotes');
@@ -220,3 +237,4 @@ modalDownload.onclick = () => {
 
 </body>
 </html> 
+
