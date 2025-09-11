@@ -34,9 +34,9 @@ section.wall { display:flex; flex-wrap:wrap; justify-content:flex-start; gap:20p
   right:10px;
   bottom:10px;
   color:black;
-  font-size:0.75rem; /* smaller text for preview */
+  font-size:0.75rem; 
   white-space: pre-wrap;
-  overflow: hidden; 
+  overflow: hidden;
   text-overflow: ellipsis;
 }
 
@@ -92,6 +92,9 @@ footer a:hover { text-decoration:underline; }
 <img src="logo.png" alt="Logo" height="80">
 </footer>
 
+<!-- html2canvas for downloads -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
 import { getFirestore, collection, onSnapshot, doc, updateDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
@@ -124,28 +127,24 @@ let currentModalNote = null;
 let userId = localStorage.getItem('userId');
 if(!userId){ userId = crypto.randomUUID(); localStorage.setItem('userId', userId); }
 
-// Open modal (likes fix)
+// Open modal
 async function openModal(note){
   currentModalNote = note;
-
-  // Fetch latest likes from Firestore
   const docRef = doc(db,'notes',memberName,'memberNotes',note.id);
   const docSnap = await getDoc(docRef);
-  if(docSnap.exists()){
-    currentModalNote = {id: docSnap.id, ...docSnap.data()};
-  }
+  if(docSnap.exists()){ currentModalNote = {id: docSnap.id, ...docSnap.data()}; }
 
   modalImg.src = currentModalNote.img;
   modalText.textContent = currentModalNote.text;
   modalLike.textContent = `❤ ${currentModalNote.likes || 0}`;
   modalDelete.style.display = (currentModalNote.creator===userId)?'inline-block':'none';
-  modal.style.display = 'flex';
+  modal.style.display='flex';
 }
 
 // Close modal
-modalClose.onclick = (e)=>{ e.stopPropagation(); modal.style.display='none'; }
-modal.onclick = ()=> modal.style.display='none';
-document.getElementById('modal-content').onclick = (e)=> e.stopPropagation();
+modalClose.onclick = e => { e.stopPropagation(); modal.style.display='none'; }
+modal.onclick = () => modal.style.display='none';
+document.getElementById('modal-content').onclick = e => e.stopPropagation();
 
 // Like button
 modalLike.onclick = async () => {
@@ -167,13 +166,12 @@ modalDelete.onclick = async () => {
   modal.style.display='none';
 };
 
-// Render notes
+// Render notes with download
 function renderNotes(notes){
   wall.innerHTML='';
   let maxLikes = -1;
   let topNoteId = null;
   const currentWeek = Math.floor((new Date()-new Date('2025-09-04'))/(7*24*60*60*1000))+1;
-
   notes = notes.filter(n => n.creator);
 
   notes.forEach(n=>{
@@ -201,6 +199,17 @@ function renderNotes(notes){
     div.appendChild(textDiv);
 
     div.onclick = ()=>openModal(n);
+
+    // Right-click download
+    div.addEventListener('contextmenu', async e=>{
+      e.preventDefault();
+      const canvas = await html2canvas(div, { backgroundColor:null, useCORS:true });
+      const link = document.createElement('a');
+      link.download = 'sticky-note.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    });
+
     wall.appendChild(div);
   });
 }
@@ -218,6 +227,3 @@ onSnapshot(notesCol, snapshot=>{
 
 </body>
 </html>
-
-
-
