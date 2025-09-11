@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Anton Wall - RII7E Project</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
 body {
   font-family: 'Playfair Display', serif;
@@ -25,9 +26,10 @@ header img.banner { width:100%; height:auto; object-fit:contain; border-bottom:2
 
 /* WALL */
 section.wall { display:flex; flex-wrap:wrap; justify-content:flex-start; gap:20px; padding:40px; }
-.sticky-note { width:200px; height:200px; position:relative; cursor:pointer; }
-.sticky-note img { width:100%; height:100%; object-fit:cover; border-radius:15px; }
-.sticky-note .text { position:absolute; top:10px; left:10px; right:10px; bottom:10px; color:black; font-size:0.75rem; white-space:pre-wrap; overflow:hidden; text-overflow:ellipsis; }
+.sticky-note { cursor:pointer; border-radius:15px; display:inline-block; position:relative; width:200px; height:200px; }
+
+/* Note text overlay for html2canvas rendering */
+.note-text { position:absolute; top:0; left:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; text-align:center; font-size:0.75rem; white-space:pre-wrap; padding:10px; box-sizing:border-box; }
 
 /* Highlight top note */
 .top-note { border:5px solid gold; box-shadow:0 0 15px gold; }
@@ -110,17 +112,12 @@ const modalDelete = document.getElementById('modal-delete');
 let currentModalNote = null;
 let userId = localStorage.getItem('userId') || (localStorage.setItem('userId', crypto.randomUUID()), localStorage.getItem('userId'));
 
-// Open modal (fixed likes)
+// Open modal
 async function openModal(note){
   currentModalNote = note;
-  
-  // Get latest likes from Firestore
   const docRef = doc(db,'notes',memberName,'memberNotes',note.id);
   const docSnap = await getDoc(docRef);
-  if(docSnap.exists()){
-    currentModalNote = {id: docSnap.id, ...docSnap.data()};
-  }
-
+  if(docSnap.exists()) currentModalNote = {id: docSnap.id, ...docSnap.data()};
   modalImg.src = currentModalNote.img;
   modalText.textContent = currentModalNote.text;
   modalLike.textContent = `❤ ${currentModalNote.likes || 0}`;
@@ -153,40 +150,59 @@ modalDelete.onclick = async () => {
   modal.style.display='none';
 };
 
-// Render notes
+// Render notes as images for "Save As"
 function renderNotes(notes){
   wall.innerHTML='';
-  let maxLikes = -1;
-  let topNoteId = null;
+  let maxLikes=-1;
+  let topNoteId=null;
   const currentWeek = Math.floor((new Date()-new Date('2025-09-04'))/(7*24*60*60*1000))+1;
 
-  notes = notes.filter(n => n.creator);
+  notes = notes.filter(n=>n.creator);
 
- notes.forEach(n=>{
-    if(n.week === currentWeek && (n.likes||0) > maxLikes){
-      maxLikes = n.likes||0;
-      topNoteId = n.id;
+  notes.forEach(n=>{
+    if(n.week===currentWeek && (n.likes||0)>maxLikes){
+      maxLikes=n.likes||0;
+      topNoteId=n.id;
     }
   });
 
   notes.forEach(n=>{
-    const div = document.createElement('div');
-    div.className='sticky-note';
-    if(n.id===topNoteId) div.classList.add('top-note');
+    // Create container for html2canvas download
+    const noteDiv = document.createElement('div');
+    noteDiv.className='sticky-note';
+    if(n.id===topNoteId) noteDiv.classList.add('top-note');
+    noteDiv.style.width='200px';
+    noteDiv.style.height='200px';
+    noteDiv.style.position='relative';
+
     const imgEl = document.createElement('img');
-    imgEl.src = n.img;
-    imgEl.alt = 'Note';
+    imgEl.src=n.img;
+    imgEl.alt='Note';
+    imgEl.style.width='100%';
+    imgEl.style.height='100%';
+    imgEl.style.objectFit='cover';
+    imgEl.style.borderRadius='15px';
 
     const textDiv = document.createElement('div');
-    textDiv.className = 'text';
-    textDiv.textContent = n.text;
-    textDiv.style.color = n.color || 'black'; // apply saved color
+    textDiv.className='note-text';
+    textDiv.textContent=n.text;
+    textDiv.style.color=n.color || 'black';
 
-    div.appendChild(imgEl);
-    div.appendChild(textDiv);
+    noteDiv.appendChild(imgEl);
+    noteDiv.appendChild(textDiv);
 
-    div.onclick = ()=>openModal(n);
-    wall.appendChild(div);
+    // Right click "Save As" triggers canvas download
+    noteDiv.oncontextmenu = async (e)=>{
+      e.preventDefault();
+      const canvas = await html2canvas(noteDiv);
+      const link = document.createElement('a');
+      link.href = canvas.toDataURL("image/png");
+      link.download = "note.png";
+      link.click();
+    };
+
+    noteDiv.onclick = ()=>openModal(n);
+    wall.appendChild(noteDiv);
   });
 }
 
@@ -202,4 +218,6 @@ onSnapshot(notesCol, snapshot=>{
 </script>
 
 </body>
-</html> 
+</html>
+
+
