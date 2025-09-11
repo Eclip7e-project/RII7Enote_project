@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Shotaro Wall - RII7E Project</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+
+<!-- html2canvas for downloads -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
 <style>
 body {
   font-family: 'Playfair Display', serif;
@@ -34,9 +38,13 @@ section.wall { display:flex; flex-wrap:wrap; justify-content:flex-start; gap:20p
   right:10px;
   bottom:10px;
   color:black;
-  font-size:0.75rem;  /* smaller font to fit inside preview */
+  font-size:0.75rem;
   white-space: pre-wrap;
-  overflow: hidden;    /* prevent overflow */
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  overflow: hidden;
   text-overflow: ellipsis;
 }
 
@@ -194,11 +202,26 @@ function renderNotes(notes){
     textDiv.className = 'text';
     textDiv.textContent = n.text;
     textDiv.style.color = n.color || 'black';
+    textDiv.style.display = 'flex';
+    textDiv.style.alignItems = 'center';
+    textDiv.style.justifyContent = 'center';
+    textDiv.style.textAlign = 'center';
 
     div.appendChild(imgEl);
     div.appendChild(textDiv);
 
     div.onclick = ()=>openModal(n);
+
+    // Right-click download
+    div.addEventListener('contextmenu', async (e)=>{
+      e.preventDefault();
+      const canvas = await html2canvas(div, { backgroundColor:null, useCORS:true });
+      const link = document.createElement('a');
+      link.download = 'sticky-note.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    });
+
     wall.appendChild(div);
   });
 }
@@ -215,4 +238,4 @@ onSnapshot(notesCol, snapshot=>{
 </script>
 
 </body>
-</html>  
+</html>
