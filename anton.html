@@ -185,6 +185,26 @@ function renderNotes(notes){
     div.appendChild(imgEl);
     div.appendChild(textDiv);
 
+
+// ⬇ Add Download button here
+  const downloadBtn = document.createElement('button');
+  downloadBtn.textContent = "⬇ Download";
+  downloadBtn.style.position = "absolute";
+  downloadBtn.style.bottom = "5px";
+  downloadBtn.style.right = "5px";
+  downloadBtn.style.fontSize = "0.7rem";
+  downloadBtn.style.padding = "3px 6px";
+  downloadBtn.style.border = "none";
+  downloadBtn.style.borderRadius = "5px";
+  downloadBtn.style.background = "gold";
+  downloadBtn.style.cursor = "pointer";
+  downloadBtn.onclick = (e) => {
+    e.stopPropagation();
+    downloadNote(n);
+  };
+  div.appendChild(downloadBtn);
+
+    
     div.onclick = ()=>openModal(n);
     wall.appendChild(div);
   });
@@ -199,10 +219,42 @@ onSnapshot(notesCol, snapshot=>{
   });
   renderNotes(notes);
 });
+
+
+
+
+
+  function downloadNote(note) {
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+
+  const img = new Image();
+  img.crossOrigin = "anonymous"; 
+  img.src = note.img;
+
+  img.onload = () => {
+    canvas.width = img.width;
+    canvas.height = img.height;
+
+    ctx.drawImage(img, 0, 0);
+
+    ctx.font = "20px Arial";
+    ctx.fillStyle = note.color || "black";
+    ctx.textAlign = "center";
+    ctx.fillText(note.text, canvas.width / 2, canvas.height - 30);
+
+    const link = document.createElement("a");
+    link.download = "note.png";
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+  };
+}
+
 </script>
 
 </body>
 </html> 
+
 
 
 
