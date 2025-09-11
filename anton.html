@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Anton Wall - RII7E Project</title>
@@ -72,6 +73,7 @@ footer a:hover { text-decoration:underline; }
     <div id="modal-buttons">
       <button id="modal-like">❤ 0</button>
       <button id="modal-delete">Delete</button>
+       <button id="modal-download">⬇ Download</button> <!-- new -->
     </div>
   </div>
 </div>
@@ -205,10 +207,26 @@ onSnapshot(notesCol, snapshot=>{
 
 
 
+
+
+
+  const modalDownload = document.getElementById("modal-download");
+
+modalDownload.onclick = () => {
+  const noteElement = document.querySelector("#modal-content > div"); // the note wrapper
+  html2canvas(noteElement).then(canvas => {
+    const link = document.createElement("a");
+    link.download = "note.png";
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+  });
+};
+
 </script>
 
 </body>
 </html> 
+
 
 
 
