@@ -113,6 +113,9 @@ const modalLike = document.getElementById('modal-like');
 const modalClose = document.getElementById('modal-close');
 const modalDelete = document.getElementById('modal-delete');
 
+// 🔑 Owner ID
+const OWNER_ID = "cris_owner_001"; // this is you 
+  
 let currentModalNote = null;
 let userId = localStorage.getItem('userId') || (localStorage.setItem('userId', crypto.randomUUID()), localStorage.getItem('userId'));
 
@@ -127,7 +130,13 @@ async function openModal(note){
   modalImg.src = currentModalNote.img;
   modalText.textContent = currentModalNote.text;
   modalLike.textContent = `❤ ${currentModalNote.likes || 0}`;
-  modalDelete.style.display = (currentModalNote.creator === userId) ? 'inline-block' : 'none';
+  
+  // ✅ Show delete button if creator OR owner
+  modalDelete.style.display = 
+    (currentModalNote.creator === userId || userId === OWNER_ID) 
+    ? 'inline-block' 
+    : 'none';
+  
   modal.style.display = 'flex';
 }
 
@@ -151,7 +160,7 @@ modalLike.onclick = async () => {
 // Delete button
 modalDelete.onclick = async () => {
   if(!currentModalNote) return;
-  if(!confirm("Delete your note?")) return;
+  if(!confirm("Delete this note?")) return;
   await deleteDoc(doc(db,'notes',memberName,'memberNotes',currentModalNote.id));
   modal.style.display='none';
 };
