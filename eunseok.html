@@ -41,7 +41,12 @@ section.wall { display:flex; flex-wrap:wrap; justify-content:flex-start; gap:20p
 }
 
 /* Highlight top note */
-.top-note { border:5px solid gold; box-shadow:0 0 15px gold; }
+.top-note {
+  border:5px solid gold;
+  box-shadow:0 0 15px gold;
+  border-radius:15px; /* add this */
+}
+
 
 /* MODAL */
 #modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); justify-content:center; align-items:center; z-index:1000; }
@@ -227,3 +232,4 @@ onSnapshot(notesCol, snapshot=>{
 
 </body>
 </html>
+
