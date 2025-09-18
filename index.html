@@ -382,7 +382,7 @@ localStorage.setItem('userId', userId);
 
 // ----------------- Helpers -----------------
 const getMemberColor = name => members.find(m => m.name === name)?.color || '#ccc';
-const getCurrentWeek = () => Math.floor((new Date() - new Date('2025-09-01')) / (7*24*60*60*1000)) + 1;
+const getCurrentWeek = () => Math.floor((new Date() - new Date('2025-09-04')) / (7*24*60*60*1000)) + 1;
 
 // ----------------- Modal -----------------
 function setupModal() {
@@ -441,7 +441,7 @@ function renderPickSection() {
     wall.innerHTML = '';
 
     // 1️⃣ Placeholders
-    for (let i = 1; i <= 4; i++) {
+    for (let i = 1; i <= 10; i++) {
       const imgFile = `${member.name}${i}.png`;
       const note = document.createElement('div');
       note.className = 'sticky-note';
@@ -650,6 +650,7 @@ setupManageDesignsRealtime();
 
 </body>
 </html> 
+
 
 
 
