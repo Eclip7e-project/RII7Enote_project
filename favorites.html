@@ -179,10 +179,6 @@ const members = [
   {name:'brii7e', color:'#FFA500', wall:'brii7e.html'}
 ];
 
-const today = new Date();
-const weekNumber = getWeekNumber(today);
-document.getElementById("week-label").textContent = "Week " + weekNumber;
-
   
 const currentWeek = Math.floor((new Date()-new Date('2025-09-05'))/(7*24*60*60*1000)) + 1;
 const favoritesContainer = document.getElementById('favorites-container');
@@ -282,6 +278,7 @@ members.forEach(member=>{
 
 </body>
 </html>  
+
 
 
 
