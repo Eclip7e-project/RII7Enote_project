@@ -180,14 +180,10 @@ const members = [
 ];
 
   
-// Define the start date for week 1
-const startDate = new Date('2025-09-05'); // change this to whatever you like
 
-// Calculate the current week dynamically
-const currentWeek = Math.floor((new Date() - startDate) / (7 * 24 * 60 * 60 * 1000)) + 1;
-function getNoteWeek(noteDate) {
-  return Math.floor((new Date(noteDate) - startDate) / (7 * 24 * 60 * 60 * 1000)) + 1;
-}
+const currentWeek = Math.floor((new Date()-new 
+Date('2025-09-05'))/(7*24*60*60*1000)) + 1; 
+const favoritesContainer = document.getElementById('favorites-container');
 
 
 
@@ -223,7 +219,6 @@ function renderMemberNotes(member, notes){
   Object.values(weekMap).forEach(n => {
     const div = document.createElement('div');
     div.className = 'note';
-    const noteWeek = getNoteWeek(n.timestamp); // same as above
 if (noteWeek === currentWeek) div.classList.add('top-note');
 
     // Image
@@ -242,9 +237,7 @@ if (noteWeek === currentWeek) div.classList.add('top-note');
     // Info box
     const infoDiv = document.createElement('div');
     infoDiv.className = 'info-box';
-   // Calculate the note's week dynamically using your timestamp
-const noteWeek = getNoteWeek(n.timestamp); // n.timestamp should be the note's creation date
-infoDiv.innerHTML = `<span>❤️ ${n.likes || 0}</span><span>Week ${noteWeek}</span>`; 
+infoDiv.innerHTML = `<span>❤️ ${n.likes || 0}</span> <span>Week ${noteWeek}</span>`; 
     div.appendChild(infoDiv);
 
     // Delete button if creator
@@ -290,6 +283,7 @@ members.forEach(member=>{
 
 </body>
 </html>  
+
 
 
 
