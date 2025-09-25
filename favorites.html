@@ -180,8 +180,13 @@ const members = [
 ];
 
   
-const currentWeek = Math.floor((new Date()-new Date('2025-09-05'))/(7*24*60*60*1000)) + 1;
-const favoritesContainer = document.getElementById('favorites-container');
+function getCurrentWeek() {
+  return Math.floor((new Date() - new Date('2025-09-05')) / (7*24*60*60*1000)) + 1;
+}
+
+// Then use getCurrentWeek() whenever you need the week
+if (n.week === getCurrentWeek()) div.classList.add('top-note');
+
 
 members.forEach(m=>{
   if(!localStorage.getItem('userId_'+m.name)){
@@ -278,6 +283,7 @@ members.forEach(member=>{
 
 </body>
 </html>  
+
 
 
 
