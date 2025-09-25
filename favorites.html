@@ -180,12 +180,8 @@ const members = [
 ];
 
   
-function getCurrentWeek() {
-  return Math.floor((new Date() - new Date('2025-09-05')) / (7*24*60*60*1000)) + 1;
-}
-
-// Then use getCurrentWeek() whenever you need the week
-if (n.week === getCurrentWeek()) div.classList.add('top-note');
+const startDate = new Date('2025-09-05'); // week 1 start
+const currentWeek = Math.floor((currentDate - startDate) / (7*24*60*60*1000)) + 1;
 
 
 members.forEach(m=>{
@@ -283,6 +279,7 @@ members.forEach(member=>{
 
 </body>
 </html>  
+
 
 
 
