@@ -180,13 +180,11 @@ const members = [
 ];
 
   
-// Set your start date here
-const startDate = new Date('2025-09-05');  // <- change this to your desired start
-
-// Calculate the current week based on startDate
-const currentWeek = Math.floor((new Date() - startDate) / (7 * 24 * 60 * 60 * 1000)) + 1;
-
-console.log('Current week:', currentWeek);
+notes = notes.map(n => {
+  const noteDate = new Date(n.timestamp); // or n.createdAt if you store it
+  const week = Math.floor((noteDate - startDate) / (7 * 24 * 60 * 60 * 1000)) + 1;
+  return { ...n, week };
+});
 
 
 
@@ -285,6 +283,7 @@ members.forEach(member=>{
 
 </body>
 </html>  
+
 
 
 
