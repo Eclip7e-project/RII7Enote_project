@@ -235,7 +235,7 @@ function renderMemberNotes(member, notes){
     // Info box
     const infoDiv = document.createElement('div');
     infoDiv.className = 'info-box';
-    infoDiv.innerHTML = `<span>❤️ ${n.likes || 0}</span>`;
+    infoDiv.innerHTML = `<span>❤️ ${n.likes || 0}</span> <span>Week ${n.week}</span>`;
     div.appendChild(infoDiv);
 
     // Delete button if creator
@@ -281,6 +281,7 @@ members.forEach(member=>{
 
 </body>
 </html>  
+
 
 
 
