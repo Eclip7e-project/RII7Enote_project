@@ -181,8 +181,7 @@ const members = [
 
   
 const currentWeek = Math.floor((new Date()-new 
-// Example: set manually
-let currentDate = new Date('2025-09-05'); // <- change this to test different dates
+Date('2025-09-05'))/(7*24*60*60*1000)) + 1;
 const favoritesContainer = document.getElementById('favorites-container');
 
 
@@ -281,6 +280,7 @@ members.forEach(member=>{
 
 </body>
 </html>  
+
 
 
 
