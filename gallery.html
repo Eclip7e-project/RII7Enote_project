@@ -118,176 +118,192 @@ section { padding:30px; }
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-import { getFirestore, collection, addDoc, doc, onSnapshot, updateDoc, deleteDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+import { getFirestore, collection, onSnapshot, doc, updateDoc, deleteDoc, getDoc, addDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 
-// 🔑 Your Firebase config
+// Firebase config
 const firebaseConfig = {
-  apiKey: "AIzaSyCM69r2wUibBFIFpML07Y5RUTrxHgonlSc",
-  authDomain: "rii7e-sticky-notes-project.firebaseapp.com",
-  projectId: "rii7e-sticky-notes-project",
-  storageBucket: "rii7e-sticky-notes-project.firebasestorage.app",
-  messagingSenderId: "962319162792",
-  appId: "1:962319162792:web:8fad2b11c316766c8a119d"
+  apiKey:"AIzaSyCM69r2wUibBFIFpML07Y5RUTrxHgonlSc",
+  authDomain:"rii7e-sticky-notes-project.firebaseapp.com",
+  projectId:"rii7e-sticky-notes-project",
+  storageBucket:"rii7e-sticky-notes-project.firebasestorage.app",
+  messagingSenderId:"962319162792",
+  appId:"1:962319162792:web:8fad2b11c316766c8a119d"
 };
 initializeApp(firebaseConfig);
 const db = getFirestore();
+const auth = getAuth();
+signInAnonymously(auth).catch(console.error);
 
-// Elements
-const galleryContainer = document.getElementById('galleryContainer');
-const submitBtn = document.getElementById('submitImage');
-const imageFile = document.getElementById('imageFile');
-const imageMember = document.getElementById('imageMember');
-const imageMessage = document.getElementById('imageMessage');
-const submitMsg = document.getElementById('submitMsg');
-const searchInput = document.getElementById('searchInput');
+// Username
+let username = localStorage.getItem('username');
+if(!username){ username = prompt("Choose a username:") || "Anonymous"; localStorage.setItem('username', username);}
 
-const lightbox = document.getElementById('lightbox');
-const closeLightbox = document.getElementById('close-lightbox');
-const lightboxImg = document.getElementById('lightbox-img');
-const lightboxMember = document.getElementById('lightbox-member');
-const lightboxMessage = document.getElementById('lightbox-message');
-const lightboxComments = document.getElementById('lightbox-comments');
-const lightboxNewComment = document.getElementById('lightbox-new-comment');
-const lightboxSubmitComment = document.getElementById('lightbox-submit-comment');
-const lightboxLikeBtn = document.getElementById('lightbox-like');
-const lightboxSuggestions = document.getElementById('lightbox-suggestions');
+// DOM Elements
+const wall = document.getElementById('letters-wall');
+const modal = document.getElementById('modal');
+const modalImg = document.getElementById('modal-img');
+const modalText = document.getElementById('modal-text');
+const modalLike = document.getElementById('modal-like');
 const modalDelete = document.getElementById('modal-delete');
+const modalClose = document.getElementById('modal-close');
+const commentsList = document.getElementById('comments-list');
+const commentInput = document.getElementById('comment-input');
+const submitComment = document.getElementById('submit-comment');
 
-let currentImage = null;
-let userId = localStorage.getItem('userId') || (localStorage.setItem('userId', crypto.randomUUID()), localStorage.getItem('userId'));
+let currentModalNote = null;
+let commentsUnsubscribe = null;
 
-// ✅ Submit image
-submitBtn.onclick = async () => {
-  const file = imageFile.files[0];
-  if (!file) { submitMsg.textContent = 'Select an image!'; return; }
+// ---------------- Render Notes ----------------
+function renderNotes(notes){
+  wall.innerHTML='';
+  notes.forEach(n=>{
+    const div=document.createElement('div');
+    div.className='sticky-note';
+    const imgEl=document.createElement('img');
+    imgEl.src=n.img;
+    imgEl.alt='Note';
+    const textDiv=document.createElement('div');
+    textDiv.className='text';
+    textDiv.textContent = n.text;
+    textDiv.style.color = n.color || 'white';
+    div.appendChild(imgEl);
+    div.appendChild(textDiv);
+    div.onclick = ()=>openModal(n);
+    wall.appendChild(div);
+  });
+}
 
-  const reader = new FileReader();
-  reader.onload = async e => {
-    try {
-      await addDoc(collection(db, "gallery"), {
-        creator: userId,
-        member: imageMember.value,
-        message: imageMessage.value,
-        src: e.target.result,  // Base64 image
-        likes: 0,
-        comments: [],
-        timestamp: Date.now()
-      });
+// ---------------- Open Modal ----------------
+async function openModal(note){
+  currentModalNote = note;
+  const docRef = doc(db,'notes','letters','memberNotes',note.id);
+  const docSnap = await getDoc(docRef);
+  if(docSnap.exists()) currentModalNote = {id: docSnap.id, ...docSnap.data()};
 
-      submitMsg.textContent = 'Image submitted successfully!';
-      imageFile.value = '';
-      imageMessage.value = '';
-    } catch (err) {
-      submitMsg.textContent = 'Upload failed: ' + err.message;
-      console.error(err);
-    }
-  };
-  reader.readAsDataURL(file);
+  modalImg.src = currentModalNote.img;
+  modalText.textContent = currentModalNote.text;
+  modalText.style.color = currentModalNote.color || 'white';
+  modalLike.textContent = `❤ ${currentModalNote.likes || 0}`;
+  modalDelete.style.display = 'none';
+
+  const user = auth.currentUser;
+  if(user && (currentModalNote.creator === user.uid || user.uid === "cris_owner_001")){
+    modalDelete.style.display = 'inline-block';
+  }
+
+  modal.style.display = 'flex';
+  loadComments();
+}
+
+// ---------------- Close Modal ----------------
+modalClose.onclick = e=>{ e.stopPropagation(); modal.style.display='none'; }
+modal.onclick = ()=> modal.style.display='none';
+document.getElementById('modal-content').onclick = e=> e.stopPropagation();
+
+// ---------------- Likes ----------------
+modalLike.onclick = async () => {
+  if(!currentModalNote) return;
+  const user = auth.currentUser;
+  if(!user) { alert("Not signed in!"); return; }
+
+  let liked = JSON.parse(localStorage.getItem('likedNotes')||'[]');
+  if(liked.includes(currentModalNote.id)){ alert("Already liked!"); return; }
+
+  const noteRef = doc(db,'notes','letters','memberNotes',currentModalNote.id);
+  await updateDoc(noteRef,{ likes:(currentModalNote.likes||0)+1 });
+  currentModalNote.likes = (currentModalNote.likes||0)+1;
+  modalLike.textContent = `❤ ${currentModalNote.likes}`;
+  liked.push(currentModalNote.id);
+  localStorage.setItem('likedNotes', JSON.stringify(liked));
 };
 
-// Store all documents for search/filter
-let allDocs = [];
+// ---------------- Delete Note ----------------
+modalDelete.onclick = async () => {
+  if(!currentModalNote) return;
+  if(!confirm("Delete your note?")) return;
+  await deleteDoc(doc(db,'notes','letters','memberNotes',currentModalNote.id));
+  modal.style.display='none';
+};
 
-// Real-time listener
-onSnapshot(collection(db, "gallery"), snapshot => {
-  allDocs = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-  renderGallery(searchInput.value, allDocs);
+// ---------------- Real-time Notes ----------------
+const notesCol = collection(db,'notes','letters','memberNotes');
+onSnapshot(notesCol, snapshot=>{
+  const notes = snapshot.docs.map(d=>({id:d.id, creator:d.data().creator, ...d.data()}));
+  renderNotes(notes);
 });
 
-// Search input
-searchInput.oninput = e => renderGallery(e.target.value, allDocs);
+// ---------------- Comments ----------------
+async function loadComments(){
+  if(commentsUnsubscribe) commentsUnsubscribe();
+  commentsList.innerHTML='';
 
-// Render gallery
-function renderGallery(filter='', docs=[]){
-  galleryContainer.innerHTML='';
-  const filtered = docs.filter(d => !filter || d.member.toLowerCase().includes(filter.toLowerCase()));
-  filtered.forEach(item => {
-    const div = document.createElement('div');
-    div.className='gallery-item';
-    div.innerHTML=`
-      <div class="category-label">${item.member.toUpperCase()}</div>
-      <img src="${item.src}">
-      <div class="info"><span>${item.member.toUpperCase()}</span>
-      <span><button class="like-btn">❤ ${item.likes||0}</button></span></div>
-    `;
-    if(item.creator===userId){
-      const delBtn = document.createElement('button');
-      delBtn.className='delete-btn';
-      delBtn.textContent='Delete';
-      delBtn.onclick=async e=>{
-        e.stopPropagation();
-        if(confirm("Delete?")) await deleteDoc(doc(db,"gallery",item.id));
-      };
-      div.appendChild(delBtn);
-    }
-    div.querySelector('img').onclick = ()=>openLightbox(item);
-    div.querySelector('.like-btn').onclick = async e=>{
-      e.stopPropagation();
-      await updateDoc(doc(db,"gallery",item.id), { likes:(item.likes||0)+1 });
-    };
-    galleryContainer.appendChild(div);
+  const commentsCol = collection(db,'notes','letters','memberNotes',currentModalNote.id,'comments');
+  const q = query(commentsCol, orderBy('timestamp','asc'));
+
+  commentsUnsubscribe = onSnapshot(q, snapshot=>{
+    commentsList.innerHTML='';
+    snapshot.docs.forEach(docSnap=>{
+      const data = docSnap.data();
+      const div = document.createElement('div');
+      div.className='comment';
+      div.innerHTML = `<span class="username">${data.username}:</span><span class="text">${data.text}</span>`;
+
+      const user = auth.currentUser;
+      if(user && (data.creator === user.uid || user.uid === "cris_owner_001")){
+        const editBtn = document.createElement('button');
+        editBtn.textContent='Edit';
+        editBtn.onclick = async ()=>{
+          const newText = prompt('Edit comment:', data.text);
+          if(newText) await updateDoc(doc(db,'notes','letters','memberNotes',currentModalNote.id,'comments',docSnap.id),{text:newText});
+        };
+        const delBtn = document.createElement('button');
+        delBtn.textContent='Delete';
+        delBtn.onclick = async ()=>{
+          if(confirm('Delete comment?')) await deleteDoc(doc(db,'notes','letters','memberNotes',currentModalNote.id,'comments',docSnap.id));
+        };
+        div.appendChild(editBtn);
+        div.appendChild(delBtn);
+      }
+
+      commentsList.appendChild(div);
+    });
+
+    // Auto-scroll to bottom
+    commentsList.scrollTop = commentsList.scrollHeight;
   });
 }
 
-// Lightbox functions
-function openLightbox(item){
-  currentImage=item;
-  lightboxImg.src=item.src;
-  lightboxMember.textContent=item.member.toUpperCase();
-  lightboxMessage.textContent=item.message||'';
-  lightboxLikeBtn.textContent=`❤ ${item.likes||0}`;
-  modalDelete.style.display=(item.creator===userId)?'inline-block':'none';
-  lightbox.style.display='block';
-  renderComments(item);
-  renderSuggestions(item);
-}
+// ---------------- Submit Comment ----------------
+submitComment.onclick = async () => {
+  const text = commentInput.value.trim();
+  if(!text || !currentModalNote) return;
 
-function renderComments(item){
-  lightboxComments.innerHTML='';
-  (item.comments||[]).forEach(c=>{
-    const div=document.createElement('div');
-    div.textContent=c;
-    lightboxComments.appendChild(div);
-  });
-}
+  try {
+    const user = auth.currentUser;
+    if(!user) { alert("Not signed in!"); return; }
 
-lightboxSubmitComment.onclick = async ()=>{
-  const txt = lightboxNewComment.value.trim(); 
-  if(!txt) return; 
-  await updateDoc(doc(db,"gallery",currentImage.id),{ comments: arrayUnion(txt) }); 
-  lightboxNewComment.value=''; 
-};
+    const commentsCol = collection(db, 'notes', 'letters', 'memberNotes', currentModalNote.id, 'comments');
+    await addDoc(commentsCol,{
+      text,
+      username,
+      creator: user.uid,
+      timestamp: new Date()
+    });
 
-lightboxLikeBtn.onclick = async ()=>{
-  await updateDoc(doc(db,"gallery",currentImage.id),{ likes:(currentImage.likes||0)+1 });
-};
-
-modalDelete.onclick = async ()=>{
-  if(confirm("Delete?")){ 
-    await deleteDoc(doc(db,"gallery",currentImage.id)); 
-    lightbox.style.display='none'; 
+    commentInput.value = '';
+  } catch (err) {
+    console.error("Failed to submit comment:", err);
+    alert("Failed to submit comment: " + err.message);
   }
 };
-
-closeLightbox.onclick = ()=>lightbox.style.display='none';
-lightbox.onclick = ()=>lightbox.style.display='none';
-document.querySelector('.lightbox-content').onclick=e=>e.stopPropagation();
-
-// Suggestions
-function renderSuggestions(item){
-  lightboxSuggestions.innerHTML='';
-  allDocs.filter(d=>d.id!==item.id).slice(0,8).forEach(d=>{
-    const img=document.createElement('img');
-    img.src=d.src;
-    img.onclick=()=>openLightbox(d);
-    lightboxSuggestions.appendChild(img);
-  });
-}
 </script>
+
 
 
 </body>
 </html>  
+
 
 
 
