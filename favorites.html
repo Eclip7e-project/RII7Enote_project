@@ -41,16 +41,16 @@ h1{
   justify-content: flex-start;
 }
 
-.note {
-  flex: 0 0 180px;  /* desktop width */
+.note, .letter {
+  flex: 0 0 180px;
   min-height:180px;
   border-radius:12px;
   position: relative;
   cursor: pointer;
-  aspect-ratio: 1 / 1; /* keeps square shape */
+  aspect-ratio: 1 / 1;
 }
 
-.note img {
+.note img, .letter img {
   width: 100%;
   height: 100%;
   object-fit:cover;
@@ -58,12 +58,12 @@ h1{
   display:block;
 }
 
-.note .text {
+.text {
   position: absolute;
   top:10px;
   left:10px;
   right:10px;
-  bottom:35px;  /* leave space for info box */
+  bottom:35px;
   color:black;
   white-space: pre-wrap;
   overflow-wrap: break-word;
@@ -86,7 +86,7 @@ h1{
   justify-content:space-between;
 }
 
-.top-note{
+.top-note, .top-letter{
   border:3px solid gold;
   box-shadow:0 0 15px gold;
 }
@@ -118,30 +118,28 @@ footer a:hover{
   text-decoration:underline;
 }
 
-/* MOBILE STYLES: one note per row, smaller */
+/* MOBILE STYLES */
 @media screen and (max-width: 768px) {
   .wall-container {
-    display: block;       /* one note per row */
-    padding: 0 10px 20px; 
+    display: block;
+    padding: 0 10px 20px;
   }
 
-  .note {
-    width: 160px;         /* smaller width on mobile */
-    margin: 0 auto 15px;  /* center with spacing */
-    height: auto;         
-    aspect-ratio: 1 / 1;  /* keep square */
-    font-size: 0.70rem;   /* text fits inside */
+  .note, .letter {
+    width: 160px;
+    margin: 0 auto 15px;
+    height: auto;
+    aspect-ratio: 1 / 1;
+    font-size: 0.70rem;
   }
 }
 </style>
-
-
 </head>
 <body>
 
 <header>
 <h1>Weekly Favorites Archive</h1>
-<p>See the top-liked note for each member from week 1 onwards. Current week is highlighted in gold! Click any note to visit that member’s wall.</p>
+<p>See the top-liked note and letter for each member from week 1 onwards. Current week is highlighted in gold! Click any to visit that member’s wall.</p>
 <a href="index.html">← Back to Homepage</a>
 </header>
 
@@ -167,20 +165,28 @@ const firebaseConfig = {
 initializeApp(firebaseConfig);
 const db = getFirestore();
 
+// calculate current weeks
+function calculateWeek(startDateStr) {
+  const startDate = new Date(startDateStr);
+  const today = new Date();
+  const diffWeeks = Math.floor((today - startDate) / (7 * 24 * 60 * 60 * 1000)) + 1;
+  return diffWeeks < 1 ? 1 : diffWeeks;
+}
+const currentNoteWeek = calculateWeek('2025-09-04');
+const currentLetterWeek = calculateWeek('2025-10-26');
+
 const members = [
-  {name:'shotaro', color:'#8B0000', wall:'shotaro.html'},
-  {name:'eunseok', color:'#D3D3D3', wall:'eunseok.html'},
-  {name:'sungchan', color:'#008000', wall:'sungchan.html'},
-  {name:'wonbin', color:'#FF0000', wall:'wonbin.html'},
-  {name:'seunghan', color:'#0000FF', wall:'seunghan.html'},
-  {name:'sohee', color:'#FFFF00', wall:'sohee.html'},
-  {name:'anton', color:'#1E3A5F', wall:'anton.html'},
-  {name:'rii7e', color:'#FFA500', wall:'rii7e.html'},
-  {name:'brii7e', color:'#FFA500', wall:'brii7e.html'}
+  {name:'shotaro', wall:'shotaro.html'},
+  {name:'eunseok', wall:'eunseok.html'},
+  {name:'sungchan', wall:'sungchan.html'},
+  {name:'wonbin', wall:'wonbin.html'},
+  {name:'seunghan', wall:'seunghan.html'},
+  {name:'sohee', wall:'sohee.html'},
+  {name:'anton', wall:'anton.html'},
+  {name:'rii7e', wall:'rii7e.html'},
+  {name:'brii7e', wall:'brii7e.html'}
 ];
 
-  
-const currentWeek = Math.floor((new Date()-new Date('2025-09-04'))/(7*24*60*60*1000)) + 1;
 const favoritesContainer = document.getElementById('favorites-container');
 
 members.forEach(m=>{
@@ -189,7 +195,7 @@ members.forEach(m=>{
   }
 });
 
-function renderMemberNotes(member, notes){
+function renderMember(member, notes, letters){
   const section = document.createElement('div');
   section.className = 'member-section';
   const title = document.createElement('h2');
@@ -199,59 +205,99 @@ function renderMemberNotes(member, notes){
   const wallDiv = document.createElement('div');
   wallDiv.className = 'wall-container';
 
-  notes = notes.filter(n=>n.week>=1 && !n.deleted);
+  // filter out invalid weeks
+  notes = notes.filter(n => n.week >= 1 && !n.deleted);
+  letters = letters.filter(l => l.week >= 1 && !l.deleted);
 
-  // Only most liked per week
-  const weekMap = {};
+  // most liked per week
+  const weekMapNotes = {};
   notes.forEach(n=>{
-    if(!weekMap[n.week] || (n.likes||0) > (weekMap[n.week].likes||0)){
-      weekMap[n.week] = n;
+    if(!weekMapNotes[n.week] || (n.likes||0) > (weekMapNotes[n.week].likes||0)){
+      weekMapNotes[n.week] = n;
     }
   });
 
-  const userId = localStorage.getItem('userId_'+member.name);
+  const weekMapLetters = {};
+  letters.forEach(l=>{
+    if(!weekMapLetters[l.week] || (l.likes||0) > (weekMapLetters[l.week].likes||0)){
+      weekMapLetters[l.week] = l;
+    }
+  });
 
-  Object.values(weekMap).forEach(n => {
+  const currentUser = localStorage.getItem('userId_'+member.name);
+
+  // render notes
+  Object.values(weekMapNotes).forEach(n=>{
     const div = document.createElement('div');
     div.className = 'note';
-    if (n.week === currentWeek) div.classList.add('top-note');
+    if(n.week === currentNoteWeek) div.classList.add('top-note');
+    div.onclick = ()=>window.location.href=member.wall;
 
-    // Image
     const imgEl = document.createElement('img');
     imgEl.src = n.img;
-    imgEl.alt = 'Note';
     div.appendChild(imgEl);
 
-    // Text
     const textDiv = document.createElement('div');
     textDiv.className = 'text';
     textDiv.textContent = n.text;
     textDiv.style.color = n.color || 'black';
     div.appendChild(textDiv);
 
-    // Info box
-    const infoDiv = document.createElement('div');
-    infoDiv.className = 'info-box';
-    infoDiv.innerHTML = `<span>❤️ ${n.likes || 0}</span><span>Week ${n.week}</span>`;
-    div.appendChild(infoDiv);
+    const info = document.createElement('div');
+    info.className = 'info-box';
+    info.innerHTML = `<span>❤️ ${n.likes||0}</span><span>Note Week ${n.week}</span>`;
+    div.appendChild(info);
 
-    // Delete button if creator
-    if(n.creator === userId){
-      const btn = document.createElement('button');
-      btn.textContent='Delete';
+    if(n.creator===currentUser){
+      const btn=document.createElement('button');
       btn.className='delete-btn';
-      btn.onclick = async (e)=>{
+      btn.textContent='Delete';
+      btn.onclick=async(e)=>{
         e.stopPropagation();
         if(confirm("Delete your note?")){
-          const noteDoc = doc(db,'notes',member.name,'memberNotes',n.id);
-          await deleteDoc(noteDoc);
+          await deleteDoc(doc(db,'notes',member.name,'memberNotes',n.id));
         }
       }
       div.appendChild(btn);
     }
 
-    // Click to member wall
-    div.onclick = () => { window.location.href = member.wall; }
+    wallDiv.appendChild(div);
+  });
+
+  // render letters
+  Object.values(weekMapLetters).forEach(l=>{
+    const div = document.createElement('div');
+    div.className = 'letter';
+    if(l.week === currentLetterWeek) div.classList.add('top-letter');
+    div.onclick = ()=>window.location.href=member.wall;
+
+    const imgEl = document.createElement('img');
+    imgEl.src = l.bg || 'letterbg.png';
+    div.appendChild(imgEl);
+
+    const textDiv = document.createElement('div');
+    textDiv.className = 'text';
+    textDiv.textContent = l.text.slice(0,300);
+    textDiv.style.color = l.color || 'black';
+    div.appendChild(textDiv);
+
+    const info = document.createElement('div');
+    info.className = 'info-box';
+    info.innerHTML = `<span>❤️ ${l.likes||0}</span><span>Letter Week ${l.week}</span>`;
+    div.appendChild(info);
+
+    if(l.creator===currentUser){
+      const btn=document.createElement('button');
+      btn.className='delete-btn';
+      btn.textContent='Delete';
+      btn.onclick=async(e)=>{
+        e.stopPropagation();
+        if(confirm("Delete your letter?")){
+          await deleteDoc(doc(db,'letters',member.name,'memberLetters',l.id));
+        }
+      }
+      div.appendChild(btn);
+    }
 
     wallDiv.appendChild(div);
   });
@@ -260,29 +306,26 @@ function renderMemberNotes(member, notes){
   favoritesContainer.appendChild(section);
 }
 
-
 members.forEach(member=>{
-  const col = collection(db,'notes',member.name,'memberNotes');
-  onSnapshot(col, snapshot=>{
-    const notes = snapshot.docs.map(d=>{
-      const data = d.data();
-      return {id:d.id, creator:data.creator, ...data};
-    });
-    const oldSection = [...favoritesContainer.getElementsByClassName('member-section')]
-        .find(s=>s.querySelector('h2').textContent===member.name.toUpperCase());
-    if(oldSection) oldSection.remove();
-    renderMemberNotes(member, notes);
+  const notesCol = collection(db,'notes',member.name,'memberNotes');
+  const lettersCol = collection(db,'letters',member.name,'memberLetters');
+  let notes=[], letters=[];
+  onSnapshot(notesCol, snap=>{
+    notes = snap.docs.map(d=>({id:d.id, ...d.data()}));
+    update();
   });
+  onSnapshot(lettersCol, snap=>{
+    letters = snap.docs.map(d=>({id:d.id, ...d.data()}));
+    update();
+  });
+
+  function update(){
+    const oldSection=[...favoritesContainer.getElementsByClassName('member-section')]
+      .find(s=>s.querySelector('h2').textContent===member.name.toUpperCase());
+    if(oldSection) oldSection.remove();
+    renderMember(member, notes, letters);
+  }
 });
 </script>
-
 </body>
-</html>  
-
-
-
-
-
-
-
-
+</html>
