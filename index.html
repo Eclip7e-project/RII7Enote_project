@@ -1,4 +1,4 @@
-   <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
@@ -125,7 +125,26 @@ body {
 }
 
 
-     
+
+
+    /* Only for letters: confine text to letter area */
+.preview-text.letters {
+  position: absolute;
+  top: 22%;       /* adjust as needed */
+  left: 16%;
+  right: 14%;
+  width: 70%;
+  height: 60%;    /* adjust to fit letter area */
+  display: flex;
+  align-items: flex-start; /* top-align for letter text */
+  justify-content: center;
+  text-align: left;
+  font-size: 0.6rem;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  pointer-events: none;
+}
+
      
   </style>
 </head>
@@ -150,6 +169,7 @@ body {
   <a href="anton.html">ANTON</a>
   <a href="rii7e.html">RII7E</a>
   <a href="brii7e.html">BRII7E</a>
+  <a href="letters.html">LETTERS</a> <!-- ✅ NEW NAV LINK -->
   <a href="favorites.html">FAVORITES</a>
   <a href="gallery.html">GALLERY</a>
 </nav>
@@ -213,6 +233,12 @@ body {
   </div>
 </section>
 
+   <!-- ✅ NEW LETTERS SECTION -->
+  <div class="member-section" id="letters-selection">
+    <h3>LETTERS</h3>
+    <div class="wall" data-member="letters"></div>
+  </div>
+
 <section id="design-submission" style="margin-top:36px;">
   <h2>Submit Your Sticky Note Design</h2>
   <p style="max-width:720px;margin:0 auto 12px;color:#ddd;">Upload your design so other fans can use it!</p>
@@ -228,6 +254,7 @@ body {
       <option value="anton">ANTON</option>
       <option value="rii7e">RII7E</option>
       <option value="brii7e">BRII7E</option>
+      <option value="letters">LETTERS</option> <!-- ✅ ADDED HERE -->
     </select>
     <button id="submitDesign" class="btn btn-submit">Submit Design</button>
   </div>
@@ -250,11 +277,12 @@ body {
     <li>Pick a sticky note for your favorite member and write your message (up to 300 characters).</li>
     <li>Submitted notes will appear instantly on the member's wall.</li>
     <li>You can only delete <strong>your own submissions</strong>.</li>
-    <li>Give love by clicking the ❤️ button! Each note can only be liked once per browser.</li>
+    <li>Give love by clicking the ❤️ button! Each note/letter can only be liked once per browser.</li>
+    <li>Others can comment on your note/letter.</li>
     <li>Weekly top-liked notes are highlighted with a gold border and also appear on the Favorites page.</li>
     <li>On the member walls: click any note to open it in full view, then click the ❤️ button to like it.</li>
-  <li>You can <strong>upload your own sticky note designs instantly</strong> to share with others.</li>
-    <li> 🎨 Note: Designs can only be uploaded as <strong>PNG</strong> files under <strong>10MB</strong>.  
+  <li>You can <strong>upload your own note/letter designs instantly</strong> to share with others.</li>
+    <li> 🎨 Note: Designs can only be uploaded as <strong>PNG</strong> files under <strong>500 KB</strong>.  
   If you meet these requirements and still can’t upload, please let us know 💌</li>
   <li><strong>New official sticky note designs</strong> are uploaded every two weeks (designed by the project coordinator).</li>
   </ul>
@@ -267,6 +295,30 @@ body {
     <li>You can delete your own uploaded images anytime.</li>
     <li>Gallery supports <strong>images, edits, and other creative content</strong>.</li>
   </ul>
+
+  <h2>📜 Letters & Comments Guidelines</h2>
+  
+  <h3>Nickname</h3>
+  <ul>
+    <li>When you visit a member’s page for the first time, you’ll be asked to choose a nickname.</li>
+    <li>Your nickname will appear beside your comments.</li>
+    <li>You can’t change it later, so choose carefully.</li>
+    <li>This nickname is only for comments.</li>
+  </ul>
+
+  <h3>Letters</h3>
+  <ul>
+    <li>Write a letter of up to <strong>2000 characters</strong>.</li>
+    <li>You can delete your own letter anytime.</li>
+    <li>Others can like and comment on your letter.</li>
+  </ul>
+
+  <h3>Comments</h3>
+  <ul>
+    <li>Comments show your chosen nickname.</li>
+    <li>You can edit or delete only your own comments.</li>
+    <li>Be respectful, no spam, hate, or inappropriate language.</li>
+  </ul>  
 Thank you for helping us celebrate and support RII7E! 🧡
   </p>
 
@@ -310,6 +362,7 @@ Thank you for helping us celebrate and support RII7E! 🧡
         <input id="color-picker" type="color" value="#000000">
         <label style="margin-top:10px">Write your message (max 300 chars)</label>
         <textarea id="note-text" maxlength="300" placeholder="Write your message (max 300 chars)"></textarea>
+        <small id="char-count" style="display:block; text-align:right; color:#888; margin-top:2px;">0 / 300</small>
         <div class="modal-actions">
           <button class="btn btn-cancel" id="modal-cancel">Cancel</button>
           <button class="btn btn-submit" id="modal-submit">Submit</button>
@@ -326,7 +379,8 @@ Thank you for helping us celebrate and support RII7E! 🧡
 // ----------------- Firebase SDK -----------------
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
 import { getFirestore, collection, addDoc, onSnapshot, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
-
+// ✅ Add Firebase Auth
+import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 // ----------------- Firebase Setup -----------------
 const firebaseConfig = {
   apiKey: "AIzaSyCM69r2wUibBFIFpML07Y5RUTrxHgonlSc",
@@ -339,6 +393,12 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+  // ✅ Initialize Firebase Auth
+const auth = getAuth();
+signInAnonymously(auth)
+  .then(() => console.log("Signed in anonymously"))
+  .catch(err => console.error("Auth error:", err));
+
 // ----------------- Members -----------------
 const members = [
   {name:'shotaro', color:'#8B0000'},
@@ -349,7 +409,8 @@ const members = [
   {name:'sohee', color:'#FFFF00'},
   {name:'anton', color:'#1E3A5F'},
   {name:'rii7e', color:'#FFA500'},
-  {name:'brii7e', color:'#FFA500'}
+  {name:'brii7e', color:'#FFA500'},
+  {name:'letters', color:'#A0522D'} // ✅ NEW MEMBER-LIKE SECTION
 ];
 
 // ----------------- DOM Helpers -----------------
@@ -388,9 +449,36 @@ const getCurrentWeek = () => Math.floor((new Date() - new Date('2025-09-04')) / 
 function setupModal() {
   modalImg.src = currentImg;
   previewText.textContent = '';
+
+// Remove all previous special classes first
+previewText.classList.remove('letters');
+
+// Apply letters class only if current member is 'letters'
+if(currentMember === 'letters'){
+    previewText.classList.add('letters');
+}
+  
   previewText.style.color = colorPicker.value || '#000';
   noteText.value = '';
 
+  // Set maxlength depending on member
+  if(currentMember === 'letters'){
+    noteText.maxLength = 2000;
+    noteText.placeholder = "Write your letter (max 2000 chars)";
+  } else {
+    noteText.maxLength = 300;
+    noteText.placeholder = "Write your message (max 300 chars)";
+  }
+  const charCount = $('#char-count');
+// ✅ Reset char counter each time modal opens
+const limit = currentMember === 'letters' ? 2000 : 300;
+charCount.textContent = `0 / ${limit}`;
+
+
+// ✅ Add this right here:
+const label = noteText.previousElementSibling; // gets the <label> above the textarea
+label.textContent = currentMember === 'letters' ? 'Write your letter (max 2000 chars)' : 'Write your message (max 300 chars)';
+  
   if(currentMode === 'simple'){
     modalMemberTitle.textContent = 'Plain Note';
     memberSelect.style.display = 'block';
@@ -452,6 +540,30 @@ function renderPickSection() {
     }
   });
 }
+
+
+
+
+
+
+   function renderLettersSection() {
+  const wall = document.querySelector('#letters-selection .wall');
+  if (!wall) return;
+
+  wall.innerHTML = '';
+
+  // 9 placeholders for letters
+  for (let i = 1; i <= 7; i++) {
+    const imgFile = `letter${i}.png`; // Make sure these images exist
+    const note = document.createElement('div');
+    note.className = 'sticky-note';
+    note.style.border = `4px solid #FFA500`; // gold border or pick any color
+    note.innerHTML = `<img src="${imgFile}" alt="Letter placeholder ${i}">`;
+    note.onclick = () => openModalForMember('letters', imgFile); // Reuse modal
+    wall.appendChild(note);
+  }
+}
+
 
 // ----------------- Fan Designs in Pick Section (Realtime) -----------------
 function setupPickFanDesignsRealtime() {
@@ -537,29 +649,67 @@ function renderSimpleNotes(){
     wall.appendChild(note);
   });
 }
-
+  
 // ----------------- Submit Fan Design -----------------
-submitDesignBtn.addEventListener('click', async ()=>{
+submitDesignBtn.addEventListener('click', async () => {
   const file = designFileInput.files[0];
   const member = designMember.value;
-  if(!file){ designMsg.textContent='Select a file!'; return; }
+  if (!file) { 
+    designMsg.textContent = 'Select a file!'; 
+    return; 
+  }
 
-  const reader = new FileReader();
-  reader.onload = async e=>{
-    const imgData = e.target.result;
-    try{
-      await addDoc(collection(db,'designs',member,'fanDesigns'), { img: imgData, creator: userId });
-      designMsg.textContent='Design submitted!';
-      designFileInput.value='';
-      setTimeout(()=>designMsg.textContent='',3000);
-    }catch(err){
-      console.error(err);
-      designMsg.textContent='Error submitting design.';
-      setTimeout(()=>designMsg.textContent='',3000);
-    }
+  const maxSizeBytes = 900 * 1024; // ~900 KB to stay under Firestore limit
+
+  const resizeImage = (file, callback) => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        let canvas = document.createElement('canvas');
+        let ctx = canvas.getContext('2d');
+
+        let [width, height] = [img.width, img.height];
+        let ratio = 1;
+
+        // Reduce size gradually until under max size
+        const step = 0.9; // scale down 10% each iteration
+        const convertAndCheck = () => {
+          canvas.width = width * ratio;
+          canvas.height = height * ratio;
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          let dataUrl = canvas.toDataURL('image/png');
+          let size = Math.ceil((dataUrl.length * 3) / 4); // approximate bytes
+          if (size > maxSizeBytes) {
+            ratio *= step;
+            convertAndCheck();
+          } else {
+            callback(dataUrl);
+          }
+        };
+
+        convertAndCheck();
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
   };
-  reader.readAsDataURL(file);
+
+  resizeImage(file, async (resizedData) => {
+    try {
+      await addDoc(collection(db, 'designs', member, 'fanDesigns'), { img: resizedData, creator: userId });
+      designMsg.textContent = 'Design submitted!';
+      designFileInput.value = '';
+      setTimeout(() => designMsg.textContent = '', 3000);
+    } catch (err) {
+      console.error(err);
+      designMsg.textContent = 'Error submitting design.';
+      setTimeout(() => designMsg.textContent = '', 3000);
+    }
+  });
 });
+
 
 // ----------------- Manage Designs (Realtime) -----------------
 function setupManageDesignsRealtime() {
@@ -640,69 +790,30 @@ modalSubmit.addEventListener('click', async ()=>{
   }
 });
 
+
+
+const charCount = $('#char-count');
+
+noteText.addEventListener('input', e => {
+  // Determine limit based on current member
+  const limit = currentMember === 'letters' ? 2000 : 300;
+  if(e.target.value.length > limit){
+    e.target.value = e.target.value.slice(0, limit);
+  }
+  charCount.textContent = `${e.target.value.length} / ${limit}`;
+  previewText.textContent = e.target.value;
+});
+
+  
 // ----------------- Initialize -----------------
 renderPickSection();
 setupPickFanDesignsRealtime();
 renderSimpleNotes();
 members.forEach(m => renderMemberWall(m.name));
 setupManageDesignsRealtime();
+   // Add this line
+renderLettersSection();
 </script>
 
 </body>
 </html> 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
