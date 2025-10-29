@@ -115,33 +115,40 @@ modalDelete.id='modal-delete';
 modalLike.textContent='❤ 0';
 modalDelete.textContent='Delete';
 
-  const modalDownload = document.createElement('button');
-modalDownload.id = 'modal-download';
-modalDownload.textContent = 'Download';
-modalDownload.style.padding = '5px 10px';
-modalDownload.style.border = 'none';
-modalDownload.style.borderRadius = '5px';
-modalDownload.style.background = 'gold';
-modalDownload.style.color = 'black';
-modalDownload.style.fontWeight = 'bold';
-modalDownload.style.cursor = 'pointer';
-document.getElementById('modal-buttons')?.appendChild(modalDownload); // optional container
-modalImageContainer.appendChild(modalDownload); // simpler
+modalDownload.onclick = async () => {
+  if (!currentModalNote) return;
+  const div = modalImageContainer.querySelector('.sticky-note');
+  const canvas = await html2canvas(div, { backgroundColor: null, useCORS: true });
+  const radius = 15;
+  const clippedCanvas = document.createElement('canvas');
+  clippedCanvas.width = canvas.width;
+  clippedCanvas.height = canvas.height;
+  const ctx = clippedCanvas.getContext('2d');
 
-  modalDownload.onclick = () => {
-  if(!currentModalNote) return;
+  ctx.clearRect(0, 0, clippedCanvas.width, clippedCanvas.height);
+  ctx.beginPath();
+  ctx.moveTo(radius, 0);
+  ctx.lineTo(clippedCanvas.width - radius, 0);
+  ctx.quadraticCurveTo(clippedCanvas.width, 0, clippedCanvas.width, radius);
+  ctx.lineTo(clippedCanvas.width, clippedCanvas.height - radius);
+  ctx.quadraticCurveTo(clippedCanvas.width, clippedCanvas.height, clippedCanvas.width - radius, clippedCanvas.height);
+  ctx.lineTo(radius, clippedCanvas.height);
+  ctx.quadraticCurveTo(0, clippedCanvas.height, 0, clippedCanvas.height - radius);
+  ctx.lineTo(0, radius);
+  ctx.quadraticCurveTo(0, 0, radius, 0);
+  ctx.closePath();
+  ctx.clip();
 
-  html2canvas(modalImageContainer.querySelector('.sticky-note'), {
-    backgroundColor: null, // preserves transparency if needed
-    borderRadius: 15        // ensures rounded corners
-  }).then(canvas => {
-    const link = document.createElement('a');
-    link.download = 'brii7e-note.png';
-    link.href = canvas.toDataURL('image/png');
-    link.click();
-  });
+  ctx.drawImage(canvas, 0, 0);
+
+  const link = document.createElement('a');
+  link.download = 'sticky-note.png';
+  link.href = clippedCanvas.toDataURL('image/png');
+  link.click();
 };
 
+
+  
 
 const modalClose = document.getElementById('modal-close');
 const commentsList = document.getElementById('comments-list');
@@ -307,6 +314,7 @@ onSnapshot(notesCol, snapshot=>{
 </script>
 </body>
 </html>
+
 
 
 
