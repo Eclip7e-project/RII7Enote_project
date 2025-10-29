@@ -115,6 +115,21 @@ modalDelete.id='modal-delete';
 modalLike.textContent='❤ 0';
 modalDelete.textContent='Delete';
 
+
+
+  const modalDownload = document.createElement('button');
+modalDownload.id = 'modal-download';
+modalDownload.textContent = 'Download';
+modalDownload.style.padding = '5px 10px';
+modalDownload.style.border = 'none';
+modalDownload.style.borderRadius = '5px';
+modalDownload.style.background = 'gold';
+modalDownload.style.color = 'black';
+modalDownload.style.fontWeight = 'bold';
+modalDownload.style.cursor = 'pointer';
+document.getElementById('modal-buttons')?.appendChild(modalDownload); // optional container
+modalImageContainer.appendChild(modalDownload); // simpler
+
 modalDownload.onclick = async () => {
   if (!currentModalNote) return;
   const div = modalImageContainer.querySelector('.sticky-note');
@@ -314,6 +329,7 @@ onSnapshot(notesCol, snapshot=>{
 </script>
 </body>
 </html>
+
 
 
 
