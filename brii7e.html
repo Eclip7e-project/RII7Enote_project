@@ -274,7 +274,46 @@ onSnapshot(notesCol, snapshot=>{
   const notes = snapshot.docs.map(d=>({id:d.id, creator:d.data().creator, ...d.data()}));
   renderNotes(notes);
 });
+
+
+   // Right-click download with rounded corners
+    div.addEventListener('contextmenu', async e=>{
+      e.preventDefault();
+      const canvas = await html2canvas(div, { backgroundColor:null, useCORS:true });
+      const radius = 15;
+      const clippedCanvas = document.createElement('canvas');
+      clippedCanvas.width = canvas.width;
+      clippedCanvas.height = canvas.height;
+      const ctx = clippedCanvas.getContext('2d');
+
+      ctx.clearRect(0,0,clippedCanvas.width,clippedCanvas.height);
+      ctx.beginPath();
+      ctx.moveTo(radius, 0);
+      ctx.lineTo(clippedCanvas.width-radius, 0);
+      ctx.quadraticCurveTo(clippedCanvas.width, 0, clippedCanvas.width, radius);
+      ctx.lineTo(clippedCanvas.width, clippedCanvas.height-radius);
+      ctx.quadraticCurveTo(clippedCanvas.width, clippedCanvas.height, clippedCanvas.width-radius, clippedCanvas.height);
+      ctx.lineTo(radius, clippedCanvas.height);
+      ctx.quadraticCurveTo(0, clippedCanvas.height, 0, clippedCanvas.height-radius);
+      ctx.lineTo(0, radius);
+      ctx.quadraticCurveTo(0,0,radius,0);
+      ctx.closePath();
+      ctx.clip();
+
+      ctx.drawImage(canvas,0,0);
+
+      const link=document.createElement('a');
+      link.download='sticky-note.png';
+      link.href=clippedCanvas.toDataURL('image/png');
+      link.click();
+    });
+
+    wall.appendChild(div);
+  });
+}
+
 </script>
 </body>
 </html>
+
 
