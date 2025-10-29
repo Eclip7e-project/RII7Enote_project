@@ -178,9 +178,6 @@ async function openModal(note){
 
   noteDiv.appendChild(textDiv);
 
-
- div.onclick = ()=>openModal(n);
-
     // Right-click download with rounded corners
     div.addEventListener('contextmenu', async e=>{
       e.preventDefault();
@@ -318,6 +315,7 @@ onSnapshot(notesCol, snapshot=>{
 </script>
 </body>
 </html>
+
 
 
 
