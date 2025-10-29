@@ -179,50 +179,39 @@ async function openModal(note){
   noteDiv.appendChild(textDiv);
 
 
-// Inside openModal(note), after you create noteDiv, imgEl, and textDiv
-noteDiv.addEventListener('contextmenu', async e => {
-  e.preventDefault();
+ div.onclick = ()=>openModal(n);
 
-  const radius = 15;
+    // Right-click download with rounded corners
+    div.addEventListener('contextmenu', async e=>{
+      e.preventDefault();
+      const canvas = await html2canvas(div, { backgroundColor:null, useCORS:true });
+      const radius = 15;
+      const clippedCanvas = document.createElement('canvas');
+      clippedCanvas.width = canvas.width;
+      clippedCanvas.height = canvas.height;
+      const ctx = clippedCanvas.getContext('2d');
 
-  // Clone the noteDiv temporarily
-  const tempDiv = noteDiv.cloneNode(true);
-  tempDiv.style.width = noteDiv.offsetWidth + 'px';
-  tempDiv.style.height = noteDiv.offsetHeight + 'px';
-  tempDiv.style.position = 'relative';
-  tempDiv.style.borderRadius = radius + 'px';
-  tempDiv.style.overflow = 'hidden';
+      ctx.clearRect(0,0,clippedCanvas.width,clippedCanvas.height);
+      ctx.beginPath();
+      ctx.moveTo(radius, 0);
+      ctx.lineTo(clippedCanvas.width-radius, 0);
+      ctx.quadraticCurveTo(clippedCanvas.width, 0, clippedCanvas.width, radius);
+      ctx.lineTo(clippedCanvas.width, clippedCanvas.height-radius);
+      ctx.quadraticCurveTo(clippedCanvas.width, clippedCanvas.height, clippedCanvas.width-radius, clippedCanvas.height);
+      ctx.lineTo(radius, clippedCanvas.height);
+      ctx.quadraticCurveTo(0, clippedCanvas.height, 0, clippedCanvas.height-radius);
+      ctx.lineTo(0, radius);
+      ctx.quadraticCurveTo(0,0,radius,0);
+      ctx.closePath();
+      ctx.clip();
 
-  // Use html2canvas
-  const canvas = await html2canvas(tempDiv, { backgroundColor: null, useCORS: true });
+      ctx.drawImage(canvas,0,0);
 
-  // Clip corners
-  const clippedCanvas = document.createElement('canvas');
-  clippedCanvas.width = canvas.width;
-  clippedCanvas.height = canvas.height;
-  const ctx = clippedCanvas.getContext('2d');
-
-  ctx.beginPath();
-  ctx.moveTo(radius, 0);
-  ctx.lineTo(clippedCanvas.width - radius, 0);
-  ctx.quadraticCurveTo(clippedCanvas.width, 0, clippedCanvas.width, radius);
-  ctx.lineTo(clippedCanvas.width, clippedCanvas.height - radius);
-  ctx.quadraticCurveTo(clippedCanvas.width, clippedCanvas.height, clippedCanvas.width - radius, clippedCanvas.height);
-  ctx.lineTo(radius, clippedCanvas.height);
-  ctx.quadraticCurveTo(0, clippedCanvas.height, 0, clippedCanvas.height - radius);
-  ctx.lineTo(0, radius);
-  ctx.quadraticCurveTo(0, 0, radius, 0);
-  ctx.closePath();
-  ctx.clip();
-
-  ctx.drawImage(canvas, 0, 0);
-
-  // Trigger download
-  const link = document.createElement('a');
-  link.download = 'sticky-note.png';
-  link.href = clippedCanvas.toDataURL('image/png');
-  link.click();
-});
+      const link=document.createElement('a');
+      link.download='sticky-note.png';
+      link.href=clippedCanvas.toDataURL('image/png');
+      link.click();
+    });
 
 
   
@@ -329,6 +318,7 @@ onSnapshot(notesCol, snapshot=>{
 </script>
 </body>
 </html>
+
 
 
 
