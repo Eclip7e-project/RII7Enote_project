@@ -151,71 +151,6 @@ async function openModal(note){
   modalImageContainer.appendChild(modalLike);
   modalImageContainer.appendChild(modalDelete);
 
-  // Add this inside your openModal(note) function after setting modalImg.src and modalText.textContent
-modalImg.oncontextmenu = async (e) => {
-  e.preventDefault();
-
-  // Create a temporary div like a sticky-note
-  const tempDiv = document.createElement('div');
-  tempDiv.style.width = modalImg.width + 'px';
-  tempDiv.style.height = modalImg.height + 'px';
-  tempDiv.style.position = 'relative';
-  tempDiv.style.borderRadius = '15px';
-  tempDiv.style.overflow = 'hidden';
-
-  // Clone image
-  const imgClone = modalImg.cloneNode(true);
-  imgClone.style.width = '100%';
-  imgClone.style.height = '100%';
-  imgClone.style.objectFit = 'cover';
-  tempDiv.appendChild(imgClone);
-
-  // Clone text
-  const textClone = modalText.cloneNode(true);
-  textClone.style.position = 'absolute';
-  textClone.style.top = '10px';
-  textClone.style.left = '10px';
-  textClone.style.right = '10px';
-  textClone.style.color = modalText.style.color || 'black';
-  textClone.style.whiteSpace = 'pre-wrap';
-  textClone.style.pointerEvents = 'none';
-  textClone.style.fontSize = '1rem';
-  textClone.style.overflowWrap = 'break-word';
-  tempDiv.appendChild(textClone);
-
-  // Use html2canvas
-  const canvas = await html2canvas(tempDiv, { backgroundColor: null, useCORS: true });
-
-  // Clip corners
-  const radius = 15;
-  const clippedCanvas = document.createElement('canvas');
-  clippedCanvas.width = canvas.width;
-  clippedCanvas.height = canvas.height;
-  const ctx = clippedCanvas.getContext('2d');
-
-  ctx.beginPath();
-  ctx.moveTo(radius, 0);
-  ctx.lineTo(clippedCanvas.width - radius, 0);
-  ctx.quadraticCurveTo(clippedCanvas.width, 0, clippedCanvas.width, radius);
-  ctx.lineTo(clippedCanvas.width, clippedCanvas.height - radius);
-  ctx.quadraticCurveTo(clippedCanvas.width, clippedCanvas.height, clippedCanvas.width - radius, clippedCanvas.height);
-  ctx.lineTo(radius, clippedCanvas.height);
-  ctx.quadraticCurveTo(0, clippedCanvas.height, 0, clippedCanvas.height - radius);
-  ctx.lineTo(0, radius);
-  ctx.quadraticCurveTo(0, 0, radius, 0);
-  ctx.closePath();
-  ctx.clip();
-
-  ctx.drawImage(canvas, 0, 0);
-
-  // Trigger download
-  const link = document.createElement('a');
-  link.download = 'sticky-note.png';
-  link.href = clippedCanvas.toDataURL('image/png');
-  link.click();
-};
-
-
   // Create note in modal
   const noteDiv = document.createElement('div');
   noteDiv.className='sticky-note';
@@ -297,6 +232,73 @@ modalDelete.onclick = async () => {
 };
 
 
+// Add this inside your openModal(note) function after setting modalImg.src and modalText.textContent
+modalImg.oncontextmenu = async (e) => {
+  e.preventDefault();
+
+  // Create a temporary div like a sticky-note
+  const tempDiv = document.createElement('div');
+  tempDiv.style.width = modalImg.width + 'px';
+  tempDiv.style.height = modalImg.height + 'px';
+  tempDiv.style.position = 'relative';
+  tempDiv.style.borderRadius = '15px';
+  tempDiv.style.overflow = 'hidden';
+
+  // Clone image
+  const imgClone = modalImg.cloneNode(true);
+  imgClone.style.width = '100%';
+  imgClone.style.height = '100%';
+  imgClone.style.objectFit = 'cover';
+  tempDiv.appendChild(imgClone);
+
+  // Clone text
+  const textClone = modalText.cloneNode(true);
+  textClone.style.position = 'absolute';
+  textClone.style.top = '10px';
+  textClone.style.left = '10px';
+  textClone.style.right = '10px';
+  textClone.style.color = modalText.style.color || 'black';
+  textClone.style.whiteSpace = 'pre-wrap';
+  textClone.style.pointerEvents = 'none';
+  textClone.style.fontSize = '1rem';
+  textClone.style.overflowWrap = 'break-word';
+  tempDiv.appendChild(textClone);
+
+  // Use html2canvas
+  const canvas = await html2canvas(tempDiv, { backgroundColor: null, useCORS: true });
+
+  // Clip corners
+  const radius = 15;
+  const clippedCanvas = document.createElement('canvas');
+  clippedCanvas.width = canvas.width;
+  clippedCanvas.height = canvas.height;
+  const ctx = clippedCanvas.getContext('2d');
+
+  ctx.beginPath();
+  ctx.moveTo(radius, 0);
+  ctx.lineTo(clippedCanvas.width - radius, 0);
+  ctx.quadraticCurveTo(clippedCanvas.width, 0, clippedCanvas.width, radius);
+  ctx.lineTo(clippedCanvas.width, clippedCanvas.height - radius);
+  ctx.quadraticCurveTo(clippedCanvas.width, clippedCanvas.height, clippedCanvas.width - radius, clippedCanvas.height);
+  ctx.lineTo(radius, clippedCanvas.height);
+  ctx.quadraticCurveTo(0, clippedCanvas.height, 0, clippedCanvas.height - radius);
+  ctx.lineTo(0, radius);
+  ctx.quadraticCurveTo(0, 0, radius, 0);
+  ctx.closePath();
+  ctx.clip();
+
+  ctx.drawImage(canvas, 0, 0);
+
+  // Trigger download
+  const link = document.createElement('a');
+  link.download = 'sticky-note.png';
+  link.href = clippedCanvas.toDataURL('image/png');
+  link.click();
+};
+
+
+  
+
 function loadComments(){
   if(!currentModalNote) return;
   if(commentsUnsubscribe) commentsUnsubscribe();
@@ -344,6 +346,7 @@ onSnapshot(notesCol, snapshot=>{
 </script>
 </body>
 </html>
+
 
 
 
