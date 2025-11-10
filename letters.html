@@ -24,16 +24,43 @@ header img.banner { width:100%; height:auto; object-fit:contain; border-bottom:2
 .header-text h1 { font-size:2.5rem; color:gold; margin:10px 0; text-shadow:2px 2px 5px rgba(0,0,0,0.7); }
 .header-text p { max-width:700px; font-size:1rem; margin:0 auto; color:white; text-shadow:1px 1px 3px rgba(0,0,0,0.7); }
 
-/* PINNED NOTE */
-.pinned-note {
-  background: orange;
-  color: black;
-  font-weight: bold;
-  padding: 10px 20px;
-  margin-bottom: 20px;
-  border-radius: 10px;
-  text-align: center;
+<!-- Pinned Note Script -->
+<script>
+// ----------------- PINNED NOTE -----------------
+const pinnedNoteLifetime = 2 * 24 * 60 * 60 * 1000; // 2 days in ms
+const now = Date.now();
+const pinnedNoteCreated = localStorage.getItem('pinnedNoteCreated');
+
+if(!pinnedNoteCreated || now - pinnedNoteCreated < pinnedNoteLifetime){
+  const pinned = document.createElement('div');
+  pinned.className = 'pinned-note';
+  pinned.textContent = "✅ The like button has been fixed. Thank you for your patience!";
+  pinned.style.position = 'fixed';
+  pinned.style.top = '20px';
+  pinned.style.left = '50%';
+  pinned.style.transform = 'translateX(-50%)';
+  pinned.style.zIndex = '9999';
+  pinned.style.fontSize = '0.9rem';
+  pinned.style.padding = '8px 15px';
+  pinned.style.borderRadius = '8px';
+  pinned.style.boxShadow = '0 0 10px rgba(0,0,0,0.5)';
+  pinned.style.transition = 'opacity 0.5s ease';
+  pinned.style.opacity = '1';
+  pinned.style.cursor = 'default';
+
+  document.body.appendChild(pinned);
+
+  // Fade out after 3 seconds
+  setTimeout(() => {
+    pinned.style.opacity = '0';
+    setTimeout(() => pinned.remove(), 500); // remove after fade out
+  }, 3000);
+
+  // Only set localStorage on first creation
+  if(!pinnedNoteCreated) localStorage.setItem('pinnedNoteCreated', now);
 }
+</script>
+
 
 /* WALL */
 section.wall { display:flex; flex-wrap:wrap; justify-content:flex-start; gap:20px; padding:40px; }
@@ -339,4 +366,5 @@ modalDelete.onclick = async () => {
 
 </body>
 </html>
+
 
