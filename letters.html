@@ -352,30 +352,34 @@ modalDelete.onclick = async () => {
   } catch (err) { console.error("Failed to delete letter:", err); alert("Error deleting letter — check console."); }
 
 
+document.addEventListener("DOMContentLoaded", () => {
   // ------------------ Mini Pinned Note (2 days) ------------------
-const pinnedNoteKey = "likeFixPinnedNoteShown";
-const now = new Date().getTime();
-const twoDays = 2 * 24 * 60 * 60 * 1000; // 2 days in ms
-const lastShown = localStorage.getItem(pinnedNoteKey);
+  const pinnedNoteKey = "likeFixPinnedNoteShown";
+  const now = new Date().getTime();
+  const twoDays = 2 * 24 * 60 * 60 * 1000; // 2 days in ms
+  const lastShown = localStorage.getItem(pinnedNoteKey);
 
-if (!lastShown || now - lastShown > twoDays) {
-  const pinnedDiv = document.createElement('div');
-  pinnedDiv.className = 'pinned-note';
+  if (!lastShown || now - lastShown > twoDays) {
+    const pinnedDiv = document.createElement('div');
+    pinnedDiv.className = 'pinned-note';
 
-  pinnedDiv.innerHTML = `
-    <span>✅ Like button issue has been fixed. Thank you for your understanding!</span>
-    <button id="closePinnedNote">X</button>
-  `;
+    pinnedDiv.innerHTML = `
+      <span>✅ Like button issue has been fixed. Thank you for your understanding!</span>
+      <button id="closePinnedNote">X</button>
+    `;
 
-  document.body.appendChild(pinnedDiv);
+    document.body.appendChild(pinnedDiv);
 
-  document.getElementById('closePinnedNote').onclick = () => pinnedDiv.remove();
+    document.getElementById('closePinnedNote').onclick = () => pinnedDiv.remove();
 
-  // Mark as shown
-  localStorage.setItem(pinnedNoteKey, now);
-}
+    // Mark as shown
+    localStorage.setItem(pinnedNoteKey, now);
+  }
+});
+
 
 };
 </script>
 </body>
 </html>
+
