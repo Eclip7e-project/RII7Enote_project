@@ -188,7 +188,7 @@ const twoDays = 2 * 24 * 60 * 60 * 1000;
 if(!pinnedNoteCreated || now - pinnedNoteCreated < twoDays){
   const pinned = document.createElement('div');
   pinned.className = 'pinned-note';
-  pinned.textContent = "✅ We’ve fixed the like button! Thank you for your patience and understanding.";
+  pinned.textContent = "The like button issue has been resolved. Thank you for your patience and support!";
   wall.appendChild(pinned);
   localStorage.setItem('pinnedNoteCreated', now);
 }
@@ -339,3 +339,4 @@ modalDelete.onclick = async () => {
 
 </body>
 </html>
+
