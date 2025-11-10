@@ -102,6 +102,24 @@ footer a:hover { text-decoration:underline; }
   #comments-list { display: flex; flex-direction: column-reverse; gap: 5px; }
   .comment .text { font-size: 0.9rem; }
 }
+
+
+  .pinned-note {
+  background: orange;
+  color: black;
+  font-weight: bold;
+  font-family: "Comic Sans MS", cursive, sans-serif;
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 10px 15px;
+  border-radius: 6px;
+  margin: 10px auto;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+  opacity: 1;
+  transition: opacity 0.5s ease;
+}
 </style>
 </head>
 <body>
@@ -116,6 +134,11 @@ footer a:hover { text-decoration:underline; }
 </header>
 
 <section class="wall" id="letters-wall"></section>
+
+  <!-- Pinned Note -->
+<div class="pinned-note">
+  📌 The like button issue has been resolved. Thank you for your patience and support!
+</div>
 
 <!-- Modal -->
 <div id="modal">
@@ -315,3 +338,4 @@ modalDelete.onclick = async () => {
 </script>
 </body>
 </html>
+
