@@ -14,25 +14,20 @@ body {
   background-image:url('https://www.transparenttextures.com/patterns/stardust.png');
   text-align:center;
 }
-
 header{
   padding:30px;
 }
-
 h1{
   color:gold;
 }
-
 .member-section{
   margin:40px 0;
 }
-
 .member-section h2{
   text-align:center;
   color:gold;
   margin-bottom:20px;
 }
-
 .wall-container{
   display:flex;
   flex-wrap: wrap;
@@ -40,16 +35,13 @@ h1{
   padding: 0 20px 20px 20px;
   justify-content: flex-start;
 }
-
 .note, .letter {
   flex: 0 0 180px;
   min-height:180px;
   border-radius:12px;
   position: relative;
   cursor: pointer;
-  aspect-ratio: 1 / 1;
 }
-
 .note img, .letter img {
   width: 100%;
   height: 100%;
@@ -57,21 +49,18 @@ h1{
   border-radius:12px;
   display:block;
 }
-
 .text {
   position: absolute;
   top:10px;
   left:10px;
   right:10px;
   bottom:35px;
-  color:black;
   white-space: pre-wrap;
   overflow-wrap: break-word;
   font-size: 0.70rem;
   line-height:1.1em;
   overflow:hidden;
 }
-
 .info-box{
   position:absolute;
   bottom:5px;
@@ -85,12 +74,15 @@ h1{
   display:flex;
   justify-content:space-between;
 }
-
+.info-box.current-week {
+  background: gold;
+  color: black;
+  font-weight: bold;
+}
 .top-note, .top-letter{
   border:3px solid gold;
   box-shadow:0 0 15px gold;
 }
-
 .delete-btn{
   position:absolute;
   top:5px;
@@ -102,36 +94,38 @@ h1{
   padding:3px 7px;
   cursor:pointer;
 }
-
 footer{
   padding:30px 0;
   border-top:2px solid gold;
   text-align:center;
 }
-
 footer a{
   color:gold;
   text-decoration:none;
 }
-
 footer a:hover{
   text-decoration:underline;
 }
-
 /* MOBILE STYLES */
 @media screen and (max-width: 768px) {
   .wall-container {
     display: block;
     padding: 0 10px 20px;
   }
-
   .note, .letter {
-    width: 160px;
+    width: 90%;
     margin: 0 auto 15px;
     height: auto;
     aspect-ratio: 1 / 1;
     font-size: 0.70rem;
   }
+}
+
+/* Letter specific styling */
+.letter {
+  flex: 0 0 200px;
+  min-height: 280px;
+  aspect-ratio: 3 / 4;
 }
 </style>
 </head>
@@ -139,7 +133,7 @@ footer a:hover{
 
 <header>
 <h1>Weekly Favorites Archive</h1>
-<p>See the top-liked note and letter for each member from week 1 onwards. Current week is highlighted in gold! Click any to visit that member’s wall.</p>
+<p>See the top-liked notes for each member from week 1 onwards. Letters start from Nov 10, 2025.</p>
 <a href="index.html">← Back to Homepage</a>
 </header>
 
@@ -165,15 +159,14 @@ const firebaseConfig = {
 initializeApp(firebaseConfig);
 const db = getFirestore();
 
-// calculate current weeks
-function calculateWeek(startDateStr) {
+function calculateWeek(startDateStr, currentDate=new Date()) {
   const startDate = new Date(startDateStr);
-  const today = new Date();
-  const diffWeeks = Math.floor((today - startDate) / (7 * 24 * 60 * 60 * 1000)) + 1;
-  return diffWeeks < 1 ? 1 : diffWeeks;
+  const diffWeeks = Math.floor((currentDate - startDate) / (7*24*60*60*1000))+1;
+  return diffWeeks<1 ? 1 : diffWeeks;
 }
+
 const currentNoteWeek = calculateWeek('2025-09-04');
-const currentLetterWeek = calculateWeek('2025-10-26');
+const currentLetterWeek = calculateWeek('2025-11-10');
 
 const members = [
   {name:'shotaro', wall:'shotaro.html'},
@@ -189,13 +182,15 @@ const members = [
 
 const favoritesContainer = document.getElementById('favorites-container');
 
+// generate userId
 members.forEach(m=>{
   if(!localStorage.getItem('userId_'+m.name)){
-    localStorage.setItem('userId_'+m.name, Date.now() + Math.random());
+    localStorage.setItem('userId_'+m.name, Date.now()+Math.random());
   }
 });
 
-function renderMember(member, notes, letters){
+// --- Render Notes by Member ---
+function renderMember(member, notes){
   const section = document.createElement('div');
   section.className = 'member-section';
   const title = document.createElement('h2');
@@ -205,46 +200,35 @@ function renderMember(member, notes, letters){
   const wallDiv = document.createElement('div');
   wallDiv.className = 'wall-container';
 
-  // filter out invalid weeks
-  notes = notes.filter(n => n.week >= 1 && !n.deleted);
-  letters = letters.filter(l => l.week >= 1 && !l.deleted);
-
-  // most liked per week
   const weekMapNotes = {};
+  notes = notes.filter(n => n.week>=1 && !n.deleted);
   notes.forEach(n=>{
     if(!weekMapNotes[n.week] || (n.likes||0) > (weekMapNotes[n.week].likes||0)){
-      weekMapNotes[n.week] = n;
-    }
-  });
-
-  const weekMapLetters = {};
-  letters.forEach(l=>{
-    if(!weekMapLetters[l.week] || (l.likes||0) > (weekMapLetters[l.week].likes||0)){
-      weekMapLetters[l.week] = l;
+      weekMapNotes[n.week]=n;
     }
   });
 
   const currentUser = localStorage.getItem('userId_'+member.name);
 
-  // render notes
   Object.values(weekMapNotes).forEach(n=>{
     const div = document.createElement('div');
-    div.className = 'note';
-    if(n.week === currentNoteWeek) div.classList.add('top-note');
-    div.onclick = ()=>window.location.href=member.wall;
+    div.className='note';
+    if(n.week===currentNoteWeek) div.classList.add('top-note');
+    div.onclick=()=>window.location.href=member.wall;
 
-    const imgEl = document.createElement('img');
-    imgEl.src = n.img;
+    const imgEl=document.createElement('img');
+    imgEl.src=n.img;
     div.appendChild(imgEl);
 
-    const textDiv = document.createElement('div');
-    textDiv.className = 'text';
-    textDiv.textContent = n.text;
-    textDiv.style.color = n.color || 'black';
+    const textDiv=document.createElement('div');
+    textDiv.className='text';
+    textDiv.textContent=n.text;
+    textDiv.style.color=n.color||'black';
     div.appendChild(textDiv);
 
     const info = document.createElement('div');
     info.className = 'info-box';
+    if(n.week === currentNoteWeek) info.classList.add('current-week');
     info.innerHTML = `<span>❤️ ${n.likes||0}</span><span>Note Week ${n.week}</span>`;
     div.appendChild(info);
 
@@ -257,14 +241,18 @@ function renderMember(member, notes, letters){
         if(confirm("Delete your note?")){
           await deleteDoc(doc(db,'notes',member.name,'memberNotes',n.id));
         }
-      }
+      };
       div.appendChild(btn);
     }
 
     wallDiv.appendChild(div);
   });
 
- // --- Render Generic Letters with proper image & color ---
+  section.appendChild(wallDiv);
+  favoritesContainer.appendChild(section);
+}
+
+// --- Render Generic Letters with proper image & color ---
 function renderLetters(letters){
   const section = document.createElement('div');
   section.className='member-section';
@@ -289,13 +277,11 @@ function renderLetters(letters){
     }
   });
 
-   // Render only the weekly favorite letters
+  // Render only the weekly favorite letters
   Object.values(weekMap).forEach(l=>{
     const div=document.createElement('div');
     div.className='letter';
-   div.onclick = () => {
-    window.location.href = 'letters.html';
-  };
+    div.onclick = ()=>window.location.href='letter.html?id=' + l.id;
 
     const imgEl=document.createElement('img');
     imgEl.src=l.img || l.image || 'letterbg.png';
@@ -315,10 +301,24 @@ function renderLetters(letters){
 
     wallDiv.appendChild(div);
   });
+
   section.appendChild(wallDiv);
   favoritesContainer.appendChild(section);
 }
 
+
+// --- Fetch Notes ---
+members.forEach(member=>{
+  const notesCol = collection(db,'notes',member.name,'memberNotes');
+  let notes=[];
+  onSnapshot(notesCol,snap=>{
+    notes=snap.docs.map(d=>({id:d.id,...d.data()}));
+    const oldSection=[...favoritesContainer.getElementsByClassName('member-section')]
+      .find(s=>s.querySelector('h2').textContent===member.name.toUpperCase());
+    if(oldSection) oldSection.remove();
+    renderMember(member,notes);
+  });
+});
 
 // --- Fetch Letters ---
 const lettersCol = collection(db,'notes','letters','memberNotes');
@@ -332,5 +332,3 @@ onSnapshot(lettersCol,snap=>{
 </script>
 </body>
 </html>
-
-
