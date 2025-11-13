@@ -299,7 +299,10 @@ function renderLetters(letters){
   Object.values(weekMap).forEach(l=>{
     const div=document.createElement('div');
     div.className='letter';
-    div.onclick = ()=>window.location.href='letter.html?id=' + l.id;
+    div.onclick = () => {
+    // Navigate to letter page
+    window.location.href = `/letters/${letter.id}.html`; 
+};
 
     const imgEl=document.createElement('img');
     imgEl.src=l.img || l.image || 'letterbg.png';
@@ -350,4 +353,5 @@ onSnapshot(lettersCol,snap=>{
 </script>
 </body>
 </html>
+
 
