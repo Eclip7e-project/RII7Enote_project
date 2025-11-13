@@ -320,19 +320,6 @@ function renderLetters(letters){
 }
 
 
-// --- Fetch Notes ---
-members.forEach(member=>{
-  const notesCol = collection(db,'notes',member.name,'memberNotes');
-  let notes=[];
-  onSnapshot(notesCol,snap=>{
-    notes=snap.docs.map(d=>({id:d.id,...d.data()}));
-    const oldSection=[...favoritesContainer.getElementsByClassName('member-section')]
-      .find(s=>s.querySelector('h2').textContent===member.name.toUpperCase());
-    if(oldSection) oldSection.remove();
-    renderMember(member,notes);
-  });
-});
-
 // --- Fetch Letters ---
 const lettersCol = collection(db,'notes','letters','memberNotes');
 onSnapshot(lettersCol,snap=>{
@@ -345,4 +332,5 @@ onSnapshot(lettersCol,snap=>{
 </script>
 </body>
 </html>
+
 
