@@ -134,20 +134,33 @@ h1{
 /* Mobile responsive */
 @media screen and (max-width: 768px) {
   .wall-container {
-    display: block;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
     padding: 0 10px 20px;
   }
+  
   .note, .letter {
-    width: 90%;
+    width: 150px;       /* smaller width */
+    min-height: auto;
+    aspect-ratio: 3 / 4; /* letters remain portrait, notes become slightly taller than wide */
     margin: 0 auto 15px;
-    aspect-ratio: 1 / 1; /* notes remain square, letters 3/4 */
   }
-  .letter {
-    aspect-ratio: 3 / 4;
+
+  .note .text {
+    font-size: 0.55rem;  /* smaller text */
   }
-  .note .text { font-size:0.65rem; }
-  .letter .text { font-size:0.55rem; }
+  .letter .text {
+    font-size: 0.5rem;   /* smaller text */
+  }
+
+  .top-letter, .top-note {
+    border-width: 2px;  /* slightly thinner on mobile */
+    box-shadow: 0 0 10px gold;
+  }
 }
+
 footer{
   padding:30px 0;
   border-top:2px solid gold;
@@ -354,4 +367,5 @@ onSnapshot(lettersCol,snap=>{
 </script>
 </body>
 </html>
+
 
