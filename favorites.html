@@ -14,20 +14,25 @@ body {
   background-image:url('https://www.transparenttextures.com/patterns/stardust.png');
   text-align:center;
 }
+
 header{
   padding:30px;
 }
+
 h1{
   color:gold;
 }
+
 .member-section{
   margin:40px 0;
 }
+
 .member-section h2{
   text-align:center;
   color:gold;
   margin-bottom:20px;
 }
+
 .wall-container{
   display:flex;
   flex-wrap: wrap;
@@ -35,23 +40,30 @@ h1{
   padding: 0 20px 20px 20px;
   justify-content: flex-start;
 }
+
 .note, .letter {
-  flex: 0 0 180px;
-  min-height:180px;
-  border-radius:12px;
   position: relative;
   cursor: pointer;
-  aspect-ratio: 1 / 1;
-}
-.note img, .letter img {
-  width: 100%;
-  height: 100%;
-  object-fit:cover;
   border-radius:12px;
-  display:block;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
 }
+
+.note img {
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+
+.letter img {
+  width:100%;
+  aspect-ratio:3/4;
+  object-fit:cover;
+}
+
 .text {
-  position: absolute;
+  position:absolute;
   top:10px;
   left:10px;
   right:10px;
@@ -59,35 +71,29 @@ h1{
   color:black;
   white-space: pre-wrap;
   overflow-wrap: break-word;
-  font-size: 0.70rem;
+  font-size:0.70rem;
   line-height:1.1em;
   overflow:hidden;
 }
+
 .info-box{
-  position:absolute;
-  bottom:5px;
-  left:10px;
-  right:10px;
+  width:100%;
   background:rgba(0,0,0,0.6);
   color:white;
   font-size:0.8em;
-  padding:2px 5px;
+  padding:4px 6px;
   border-radius:5px;
+  margin-top:5px;
   display:flex;
   justify-content:space-between;
-}
-
-  /* Highlight Week X rectangle if it's the current week */
-.info-box.current-week {
-  background: gold;       /* rectangle becomes gold */
-  color: black;           /* text becomes black for contrast */
-  font-weight: bold;      /* optional: make it stand out */
+  box-sizing:border-box;
 }
 
 .top-note, .top-letter{
   border:3px solid gold;
   box-shadow:0 0 15px gold;
 }
+
 .delete-btn{
   position:absolute;
   top:5px;
@@ -99,92 +105,40 @@ h1{
   padding:3px 7px;
   cursor:pointer;
 }
+
 footer{
   padding:30px 0;
   border-top:2px solid gold;
   text-align:center;
 }
+
 footer a{
   color:gold;
   text-decoration:none;
 }
+
 footer a:hover{
   text-decoration:underline;
 }
+
 /* MOBILE STYLES */
 @media screen and (max-width: 768px) {
   .wall-container {
     display: block;
-    padding: 0 10px 20px;
+    padding:0 10px 20px;
   }
   .note, .letter {
-    width: 160px;
-    margin: 0 auto 15px;
-    height: auto;
-    aspect-ratio: 1 / 1;
-    font-size: 0.70rem;
+    width:100%;
+    margin-bottom:15px;
   }
 }
-
-
-
-  /* Letter specific styling */
-.letter {
-  flex: 0 0 200px;       /* slightly bigger than notes */
-  min-height: 280px;     /* taller to be portrait style */
-  border-radius: 12px;
-  position: relative;
-  cursor: pointer;
-  aspect-ratio: 3 / 4;   /* portrait ratio */
-}
-
-/* Letters images fill the letter div */
-.letter img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 12px;
-  display: block;
-}
-
-/* Letters info-box under the letter */
-.letter .info-box {
-  position: absolute;
-  bottom: 5px;
-  left: 10px;
-  right: 10px;
-  height: auto;
-  background: rgba(0,0,0,0.6);
-  border-radius: 5px;
-  font-size: 0.8em;
-  display: flex;
-  justify-content: space-between;
-  padding: 4px 6px;
-}
-
-/* Highlight current week for letters */
-.letter .info-box.current-week {
-  background: gold;
-  color: black;
-  font-weight: bold;
-}
-
-/* Responsive for mobile: letters full width one per row */
-@media screen and (max-width: 768px) {
-  .letter {
-    width: 90%;
-    margin: 0 auto 15px;
-    aspect-ratio: 3 / 4; /* portrait */
-  }
-}
-
 </style>
 </head>
 <body>
 
 <header>
 <h1>Weekly Favorites Archive</h1>
-<p>See the top-liked notes for each member from week 1 onwards. Current week is highlighted in gold! Letters start from Nov 10, 2025.</p>
+<p>See the top-liked notes for each member from week 1 onwards. Current week is highlighted in gold! Click any note or letter to visit the respective page.</p>
 <a href="index.html">← Back to Homepage</a>
 </header>
 
@@ -197,7 +151,7 @@ footer a:hover{
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-import { getFirestore, collection, onSnapshot, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey:"AIzaSyCM69r2wUibBFIFpML07Y5RUTrxHgonlSc",
@@ -213,8 +167,7 @@ const db = getFirestore();
 function calculateWeek(startDateStr) {
   const startDate = new Date(startDateStr);
   const today = new Date();
-  const diffWeeks = Math.floor((today - startDate) / (7*24*60*60*1000))+1;
-  return diffWeeks<1 ? 1 : diffWeeks;
+  return Math.floor((today - startDate) / (7*24*60*60*1000)) + 1;
 }
 
 const currentNoteWeek = calculateWeek('2025-09-04');
@@ -234,36 +187,40 @@ const members = [
 
 const favoritesContainer = document.getElementById('favorites-container');
 
-// generate userId
 members.forEach(m=>{
   if(!localStorage.getItem('userId_'+m.name)){
-    localStorage.setItem('userId_'+m.name, Date.now()+Math.random());
+    localStorage.setItem('userId_'+m.name, Date.now() + Math.random());
   }
 });
 
-// --- Render Notes by Member ---
-function renderMember(member, notes){
+// ------------------- Render Notes per Member -------------------
+members.forEach(member=>{
+  const notesCol = collection(db,'notes',member.name,'memberNotes');
+  onSnapshot(notesCol, snap=>{
+    const notes = snap.docs.map(d=>({id:d.id, ...d.data()}));
+    renderMemberNotes(member, notes);
+  });
+});
+
+function renderMemberNotes(member, notes){
   const section = document.createElement('div');
-  section.className = 'member-section';
+  section.className='member-section';
   const title = document.createElement('h2');
-  title.textContent = member.name.toUpperCase();
+  title.textContent=member.name.toUpperCase();
   section.appendChild(title);
 
   const wallDiv = document.createElement('div');
-  wallDiv.className = 'wall-container';
+  wallDiv.className='wall-container';
 
   const weekMapNotes = {};
-  notes = notes.filter(n => n.week>=1 && !n.deleted);
   notes.forEach(n=>{
-    if(!weekMapNotes[n.week] || (n.likes||0) > (weekMapNotes[n.week].likes||0)){
+    if(!n.deleted && (!weekMapNotes[n.week] || (n.likes||0) > (weekMapNotes[n.week].likes||0))){
       weekMapNotes[n.week]=n;
     }
   });
 
-  const currentUser = localStorage.getItem('userId_'+member.name);
-
   Object.values(weekMapNotes).forEach(n=>{
-    const div = document.createElement('div');
+    const div=document.createElement('div');
     div.className='note';
     if(n.week===currentNoteWeek) div.classList.add('top-note');
     div.onclick=()=>window.location.href=member.wall;
@@ -278,25 +235,10 @@ function renderMember(member, notes){
     textDiv.style.color=n.color||'black';
     div.appendChild(textDiv);
 
-    const info = document.createElement('div');
-info.className = 'info-box';
-if(n.week === currentNoteWeek) info.classList.add('current-week'); // <-- add this line
-info.innerHTML = `<span>❤️ ${n.likes||0}</span><span>Note Week ${n.week}</span>`;
-div.appendChild(info);
-
-
-    if(n.creator===currentUser){
-      const btn=document.createElement('button');
-      btn.className='delete-btn';
-      btn.textContent='Delete';
-      btn.onclick=async(e)=>{
-        e.stopPropagation();
-        if(confirm("Delete your note?")){
-          await deleteDoc(doc(db,'notes',member.name,'memberNotes',n.id));
-        }
-      };
-      div.appendChild(btn);
-    }
+    const info=document.createElement('div');
+    info.className='info-box';
+    info.innerHTML=`<span>❤️ ${n.likes||0}</span><span>Note Week ${n.week}</span>`;
+    div.appendChild(info);
 
     wallDiv.appendChild(div);
   });
@@ -305,9 +247,15 @@ div.appendChild(info);
   favoritesContainer.appendChild(section);
 }
 
-// --- Render Generic Letters ---
+// ------------------- Render Generic Letters -------------------
+const lettersCol = collection(db,'notes','letters','memberNotes');
+onSnapshot(lettersCol, snap=>{
+  const letters = snap.docs.map(d=>({id:d.id, ...d.data()}));
+  renderLetters(letters);
+});
+
 function renderLetters(letters){
-  const section = document.createElement('div');
+  const section=document.createElement('div');
   section.className='member-section';
   const title=document.createElement('h2');
   title.textContent='LETTERS';
@@ -316,39 +264,29 @@ function renderLetters(letters){
   const wallDiv=document.createElement('div');
   wallDiv.className='wall-container';
 
-  const startDate=new Date('2025-11-10');
-  const weekMap={};
-
   letters.forEach(l=>{
-    const week = Math.floor((new Date() - startDate)/(7*24*60*60*1000))+1;
-    l.week=week;
+    const letterDate = l.date || l.timestamp?.toDate?.() || new Date();
+    l.week = Math.floor((new Date(letterDate) - new Date('2025-11-10'))/(7*24*60*60*1000)) + 1;
 
-    if(!weekMap[week] || (l.likes||0) > (weekMap[week].likes||0)){
-      weekMap[week]=l;
-    }
-  });
-
-  Object.values(weekMap).forEach(l=>{
     const div=document.createElement('div');
     div.className='letter';
     if(l.week===currentLetterWeek) div.classList.add('top-letter');
+    div.onclick=()=>window.location.href='letters.html';
 
     const imgEl=document.createElement('img');
-    imgEl.src=l.bg||'letterbg.png';
+    imgEl.src=l.img || l.bg || 'letterbg.png';
     div.appendChild(imgEl);
 
     const textDiv=document.createElement('div');
     textDiv.className='text';
-    textDiv.textContent=l.text.slice(0,300);
+    textDiv.textContent=l.text || '';
     textDiv.style.color=l.color||'black';
     div.appendChild(textDiv);
 
-    const info = document.createElement('div');
-info.className = 'info-box';
-if(l.week === currentLetterWeek) info.classList.add('current-week'); // <-- add this line
-info.innerHTML = `<span>❤️ ${l.likes||0}</span><span>Letter Week ${l.week}</span>`;
-div.appendChild(info);
-
+    const info=document.createElement('div');
+    info.className='info-box';
+    info.innerHTML=`<span>❤️ ${l.likes||0}</span><span>Letter Week ${l.week}</span>`;
+    div.appendChild(info);
 
     wallDiv.appendChild(div);
   });
@@ -356,35 +294,7 @@ div.appendChild(info);
   section.appendChild(wallDiv);
   favoritesContainer.appendChild(section);
 }
-
-// --- Fetch Notes ---
-members.forEach(member=>{
-  const notesCol = collection(db,'notes',member.name,'memberNotes');
-  let notes=[];
-  onSnapshot(notesCol,snap=>{
-    notes=snap.docs.map(d=>({id:d.id,...d.data()}));
-    update();
-  });
-
-  function update(){
-    const oldSection=[...favoritesContainer.getElementsByClassName('member-section')]
-      .find(s=>s.querySelector('h2').textContent===member.name.toUpperCase());
-    if(oldSection) oldSection.remove();
-    renderMember(member,notes);
-  }
-});
-
-// --- Fetch Letters (generic) ---
-const lettersCol = collection(db,'notes','letters','memberNotes');
-let letters=[];
-onSnapshot(lettersCol,snap=>{
-  letters=snap.docs.map(d=>({id:d.id,...d.data()}));
-  const oldSection=[...favoritesContainer.getElementsByClassName('member-section')]
-    .find(s=>s.querySelector('h2').textContent==='LETTERS');
-  if(oldSection) oldSection.remove();
-  renderLetters(letters);
-});
 </script>
+
 </body>
 </html>
-
