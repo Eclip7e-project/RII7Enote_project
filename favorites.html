@@ -123,17 +123,7 @@ h1{
 }
 
 /* Mobile */
-@media screen and (max-width:768px)
-  .letter .text {
-    top:18px;        /* adjust position for phones */
-    left:9px;
-    right:8px;
-    bottom:20px;    /* more/less space below */
-    font-size:0.35rem; /* make the text smaller ONLY on phones */
-    line-height:08em; /* tighter spacing */
-  }
-}
-  {
+@media screen and (max-width:768px){
   .wall-container{
     justify-content:center;
     gap:10px;
@@ -152,7 +142,15 @@ h1{
     height:200px;
   }
   .note .text{font-size:0.55rem;}
-  .letter .text{font-size:0.5rem;}
+  .letter .text {
+    top:18px;        /* adjust position for phones */
+    left:9px;
+    right:8px;
+    bottom:20px;    /* more/less space below */
+    font-size:0.35rem; /* make the text smaller ONLY on phones */
+    line-height:08em; /* tighter spacing */
+  }
+}
   .top-note,.top-letter{border-width:2px; box-shadow:0 0 10px gold;}
 }
 
@@ -380,6 +378,7 @@ onSnapshot(lettersCol,snap=>{
 </script>
 </body>
 </html>
+
 
 
 
