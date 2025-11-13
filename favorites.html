@@ -295,36 +295,32 @@ function renderLetters(letters){
     }
   });
 
-  // Render only the weekly favorite letters
- Object.values(weekMap).forEach(l => {
-  const div = document.createElement('div');
-  div.className = 'letter';
-  if(l.week === currentLetterWeek) div.classList.add('top-letter');
-
-  const imgEl = document.createElement('img');
-  imgEl.src = l.bg || 'letterbg.png';
-  div.appendChild(imgEl);
-
-  const textDiv = document.createElement('div');
-  textDiv.className = 'text';
-  textDiv.textContent = l.text.slice(0,300);
-  textDiv.style.color = l.color || 'black';
-  div.appendChild(textDiv);
-
-  const info = document.createElement('div');
-  info.className = 'info-box';
-  if(l.week === currentLetterWeek) info.classList.add('current-week');
-  info.innerHTML = `<span>❤️ ${l.likes||0}</span><span>Letter Week ${l.week}</span>`;
-  div.appendChild(info);
-
-  // <-- CHANGE HERE: navigate to letters.html on click
-  div.onclick = () => {
+   // Render only the weekly favorite letters
+  Object.values(weekMap).forEach(l=>{
+    const div=document.createElement('div');
+    div.className='letter';
+   div.onclick = () => {
     window.location.href = 'letters.html';
   };
 
-  wallDiv.appendChild(div);
-});
+    const imgEl=document.createElement('img');
+    imgEl.src=l.img || l.image || 'letterbg.png';
+    div.appendChild(imgEl);
 
+    const textDiv=document.createElement('div');
+    textDiv.className='text';
+    textDiv.textContent=l.text || l.content || '';
+    textDiv.style.color = l.color || 'black';
+    div.appendChild(textDiv);
+
+    const info = document.createElement('div');
+    info.className = 'info-box';
+    info.classList.add('current-week'); // always top letter for the week
+    info.innerHTML = `<span>❤️ ${l.likes||0}</span><span>Letter Week ${l.week}</span>`;
+    div.appendChild(info);
+
+    wallDiv.appendChild(div);
+  });
   section.appendChild(wallDiv);
   favoritesContainer.appendChild(section);
 }
@@ -355,6 +351,7 @@ onSnapshot(lettersCol,snap=>{
 </script>
 </body>
 </html>
+
 
 
 
