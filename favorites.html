@@ -143,14 +143,19 @@ h1{
   }
   .note .text{font-size:0.55rem;}
   .letter .text {
-    top:18px;        /* adjust position for phones */
-    left:9px;
-    right:8px;
-    bottom:20px;    /* more/less space below */
-    font-size:0.35rem; /* make the text smaller ONLY on phones */
-    line-height:08em; /* tighter spacing */
-  }
+   position: absolute;
+  top:10px;
+  left:10px;
+  right:10px;
+  bottom:35px;
+  color:black;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  font-size: 0.70rem;
+  line-height:1.1em;
+  overflow:hidden;
 }
+
   .top-note,.top-letter{border-width:2px; box-shadow:0 0 10px gold;}
 }
 
@@ -378,6 +383,7 @@ onSnapshot(lettersCol,snap=>{
 </script>
 </body>
 </html>
+
 
 
 
