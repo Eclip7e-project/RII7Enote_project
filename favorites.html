@@ -123,7 +123,17 @@ h1{
 }
 
 /* Mobile */
-@media screen and (max-width:768px){
+@media screen and (max-width:768px)
+  .letter .text {
+    top:6px;        /* adjust position for phones */
+    left:6px;
+    right:6px;
+    bottom:28px;    /* more/less space below */
+    font-size:0.45rem; /* make the text smaller ONLY on phones */
+    line-height:1.05em; /* tighter spacing */
+  }
+}
+  {
   .wall-container{
     justify-content:center;
     gap:10px;
@@ -370,6 +380,7 @@ onSnapshot(lettersCol,snap=>{
 </script>
 </body>
 </html>
+
 
 
 
