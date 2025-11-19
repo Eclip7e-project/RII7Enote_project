@@ -231,6 +231,15 @@ body {
     <p style="max-width:720px;margin:6px auto 12px;color:#ddd;">Prefer something minimal? Click a plain one-color sticky note, pick a member, choose your text color, and write your message, you'll preview the text on the note in real time.</p>
     <div class="wall" id="simple-note-wall"></div>
   </div>
+
+  <div class="member-section" id="birthday-notes">
+    <h3>Birthday Sticky Notes</h3>
+    <p style="max-width:720px;margin:6px auto 12px;color:#ddd;">
+      Special birthday versions of the sticky notes. Click a note design, choose your member, and write your birthday message. More designs will be added for each member on their birthdays.
+    </p>
+    <div class="wall" id="birthday-note-wall"></div>
+</div>
+
 </section>
 
    <!-- ✅ NEW LETTERS SECTION -->
@@ -346,7 +355,7 @@ Thank you for helping us celebrate and support RII7E! 🧡
       </div>
       <div class="modal-right">
         <h3 id="modal-member">Member</h3>
-        <label id="member-select-label" style="display:none">Choose member (for plain notes)</label>
+        <label id="member-select-label" style="display:none">Choose member</label>
         <select id="member-select" style="display:none; width:100%; padding:8px; border-radius:8px; margin-bottom:8px;">
           <option value="shotaro">SHOTARO</option>
           <option value="eunseok">EUNSEOK</option>
@@ -541,6 +550,31 @@ function renderPickSection() {
   });
 }
 
+
+  function renderBirthdayNotes() {
+  const wall = document.querySelector('#birthday-note-wall');
+  if (!wall) return;
+
+  wall.innerHTML = '';
+
+  const birthdayPlaceholders = [
+    'soheebirthdaynote1.png',
+    'soheebirthdaynote2.png'
+    // Add more if needed
+  ];
+
+  birthdayPlaceholders.forEach(imgFile => {
+    const note = document.createElement('div');
+    note.className = 'sticky-note';
+    note.style.border = '4px solid #FFA500'; // gold border
+    note.innerHTML = `<img src="${imgFile}" alt="Birthday note placeholder">`;
+
+    // Open modal in "simple" mode so user can pick member
+    note.onclick = () => openModalForSimple(imgFile);
+
+    wall.appendChild(note);
+  });
+}
 
 
 
@@ -809,6 +843,7 @@ noteText.addEventListener('input', e => {
 renderPickSection();
 setupPickFanDesignsRealtime();
 renderSimpleNotes();
+renderBirthdayNotes(); // ✅ new
 members.forEach(m => renderMemberWall(m.name));
 setupManageDesignsRealtime();
    // Add this line
@@ -817,5 +852,6 @@ renderLettersSection();
 
 </body>
 </html> 
+
 
 
