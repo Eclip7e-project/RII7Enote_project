@@ -261,10 +261,15 @@ modalDelete.onclick = async () => {
 
     const noteData = docSnap.data();
 
-   if (noteData.creator !== userId && userId !== OWNER_ID) {
-    alert("You don't have permission to delete this note.");
-    return;
+   // ✅ Show delete button if creator OR owner
+  modalDelete.style.display = 
+    (currentModalNote.creator === userId || userId === OWNER_ID) 
+    ? 'inline-block' 
+    : 'none';
+  
+  modal.style.display = 'flex';
 }
+
 
 
     await deleteDoc(docRef);
@@ -321,6 +326,7 @@ onSnapshot(notesCol, snapshot=>{
 </script>
 </body>
 </html>
+
 
 
 
