@@ -221,13 +221,13 @@ async function openModal(note){
   modalImageContainer.insertBefore(noteDiv, modalLike);
 
   modalLike.textContent=`❤ ${currentModalNote.likes||0}`;
- modalDelete.style.display =
+
+  modalDelete.style.display =
   (note.creator === userId || userId === "cris_owner_001")
     ? 'inline-block'
     : 'none';
 
   modal.style.display='flex';
-  loadComments();
 }
 
 modalClose.onclick = e=>{ e.stopPropagation(); modal.style.display='none'; }
@@ -318,4 +318,5 @@ onSnapshot(notesCol, snapshot=>{
 </script>
 </body>
 </html>
+
 
