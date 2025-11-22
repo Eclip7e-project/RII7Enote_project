@@ -266,8 +266,6 @@ modalDelete.onclick = async () => {
     (currentModalNote.creator === userId || userId === OWNER_ID) 
     ? 'inline-block' 
     : 'none';
-  
-  modal.style.display = 'flex';
 }
 
 
@@ -326,6 +324,7 @@ onSnapshot(notesCol, snapshot=>{
 </script>
 </body>
 </html>
+
 
 
 
