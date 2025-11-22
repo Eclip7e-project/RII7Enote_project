@@ -106,6 +106,8 @@ signInAnonymously(auth).catch(console.error);
 let username = localStorage.getItem('username') || prompt("Choose a username:") || "Anonymous";
 localStorage.setItem('username', username);
 let userId = localStorage.getItem('userId') || (localStorage.setItem('userId', crypto.randomUUID()), localStorage.getItem('userId'));
+const OWNER_ID = "f648c13b-0681-42bf-8b45-d7c8d55a8588";
+
 
 const wall = document.getElementById('sohee-wall');
 const modal = document.getElementById('modal');
@@ -318,6 +320,7 @@ onSnapshot(notesCol, snapshot=>{
 </script>
 </body>
 </html>
+
 
 
 
