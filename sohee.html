@@ -261,10 +261,11 @@ modalDelete.onclick = async () => {
 
     const noteData = docSnap.data();
 
-    if (noteData.creator !== userId && userId !== "f648c13b-0681-42bf-8b45-d7c8d55a8588") {
-      alert("You don't have permission to delete this note.");
-      return;
-    }
+   if (noteData.creator !== userId && userId !== OWNER_ID) {
+    alert("You don't have permission to delete this note.");
+    return;
+}
+
 
     await deleteDoc(docRef);
     modal.style.display = 'none';
@@ -320,6 +321,7 @@ onSnapshot(notesCol, snapshot=>{
 </script>
 </body>
 </html>
+
 
 
 
