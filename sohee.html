@@ -106,8 +106,6 @@ signInAnonymously(auth).catch(console.error);
 let username = localStorage.getItem('username') || prompt("Choose a username:") || "Anonymous";
 localStorage.setItem('username', username);
 let userId = localStorage.getItem('userId') || (localStorage.setItem('userId', crypto.randomUUID()), localStorage.getItem('userId'));
-const OWNER_ID = "f648c13b-0681-42bf-8b45-d7c8d55a8588";
-
 
 const wall = document.getElementById('sohee-wall');
 const modal = document.getElementById('modal');
@@ -223,13 +221,13 @@ async function openModal(note){
   modalImageContainer.insertBefore(noteDiv, modalLike);
 
   modalLike.textContent=`❤ ${currentModalNote.likes||0}`;
-
-  modalDelete.style.display =
+ modalDelete.style.display =
   (note.creator === userId || userId === "cris_owner_001")
     ? 'inline-block'
     : 'none';
 
   modal.style.display='flex';
+  loadComments();
 }
 
 modalClose.onclick = e=>{ e.stopPropagation(); modal.style.display='none'; }
@@ -261,14 +259,10 @@ modalDelete.onclick = async () => {
 
     const noteData = docSnap.data();
 
-   // ✅ Show delete button if creator OR owner
-  modalDelete.style.display = 
-    (currentModalNote.creator === userId || userId === OWNER_ID) 
-    ? 'inline-block' 
-    : 'none';
-}
-
-
+    if (noteData.creator !== userId && userId !== "cris_owner_001") {
+      alert("You don't have permission to delete this note.");
+      return;
+    }
 
     await deleteDoc(docRef);
     modal.style.display = 'none';
@@ -324,10 +318,3 @@ onSnapshot(notesCol, snapshot=>{
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
