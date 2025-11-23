@@ -489,7 +489,7 @@ const label = noteText.previousElementSibling; // gets the <label> above the tex
 label.textContent = currentMember === 'letters' ? 'Write your letter (max 2000 chars)' : 'Write your message (max 300 chars)';
   
   if(currentMode === 'simple'){
-    modalMemberTitle.textContent = 'Plain Note';
+    modalMemberTitle.textContent = 'Plain/Birthday Note';
     memberSelect.style.display = 'block';
     memberSelectLabel.style.display = 'block';
     memberSelect.value = currentMember || 'shotaro';
@@ -854,6 +854,7 @@ renderLettersSection();
 
 </body>
 </html> 
+
 
 
 
