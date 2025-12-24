@@ -240,6 +240,16 @@ body {
     <div class="wall" id="birthday-note-wall"></div>
 </div>
 
+
+<div class="member-section" id="christmas-notes">
+  <h3>Christmas Sticky Notes</h3>
+  <p style="max-width:720px;margin:6px auto 12px;color:#ddd;">
+    Festive Christmas-themed note designs. Click a design, choose the member, write your message, and preview it in real time.
+  </p>
+
+  <div class="wall" id="christmas-note-wall"></div>
+</div>
+  
 </section>
 
    <!-- ✅ NEW LETTERS SECTION -->
@@ -580,6 +590,36 @@ function renderPickSection() {
 
 
 
+  function renderChristmasNotes() {
+  const wall = document.querySelector('#christmas-note-wall');
+  if (!wall) return;
+
+  wall.innerHTML = '';
+
+  const christmasPlaceholders = [
+    'christmasnote1.png',
+    'christmasnote2.png',
+    'christmasnote3.png',
+    'christmasnote4.png',
+    'christmasnote5.png',
+    'christmasnote6.png',
+    'christmasnote7.png',
+    'christmasnote8.png',
+    'christmasnote9.png'
+  ];
+
+  christmasPlaceholders.forEach(imgFile => {
+    const note = document.createElement('div');
+    note.className = 'sticky-note';
+    note.style.border = '4px solid #c62828'; // Christmas red
+    note.innerHTML = `<img src="${imgFile}" alt="Christmas note placeholder">`;
+
+    note.onclick = () => openModalForSimple(imgFile);
+
+    wall.appendChild(note);
+  });
+}
+
 
 
    function renderLettersSection() {
@@ -845,7 +885,8 @@ noteText.addEventListener('input', e => {
 renderPickSection();
 setupPickFanDesignsRealtime();
 renderSimpleNotes();
-renderBirthdayNotes(); // ✅ new
+renderBirthdayNotes(); 
+renderChristmasNotes();// ✅ new
 members.forEach(m => renderMemberWall(m.name));
 setupManageDesignsRealtime();
    // Add this line
@@ -854,6 +895,7 @@ renderLettersSection();
 
 </body>
 </html> 
+
 
 
 
